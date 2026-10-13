@@ -33,7 +33,13 @@ public partial class Form1 : Form
                 conn.Open();
 
                 // Câu truy vấn kiểm tra tài khoản trong bảng Users
-                string query = "SELECT FullName, RoleId FROM Users WHERE Username = @u AND PasswordHash = @p AND IsActive = 1";
+                string query = @"
+    SELECT u.FullName, u.RoleId, r.RoleName
+    FROM Users AS u
+    INNER JOIN Roles AS r ON r.RoleId = u.RoleId
+    WHERE u.Username = @u
+      AND u.PasswordHash = @p
+      AND u.IsActive = 1";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -46,8 +52,7 @@ public partial class Form1 : Form
                         {
                             // Đăng nhập thành công!
                             string fullName = reader["FullName"].ToString() ?? "Người dùng";
-                            int roleId = Convert.ToInt32(reader["RoleId"]);
-                            string roleName = (roleId == 1) ? "Quản trị viên (Admin)" : "Nhân viên bán hàng (Staff)";
+                           string roleName = reader["RoleName"].ToString() ?? "";
 
                             MessageBox.Show($"Đăng nhập thành công!\nXin chào: {fullName}\nVai trò: {roleName}",
                                             "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);

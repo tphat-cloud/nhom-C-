@@ -10,6 +10,27 @@ public partial class FormMain : Form
     private string _roleName;
     private int _selectedProductId = -1; // Lưu mã sản phẩm đang được chọn để Sửa hoặc Xóa
 
+    /// <summary>
+    /// Kiểm tra người đang đăng nhập có quyền Admin hay không.
+    /// Nếu không phải Admin, hiển thị cảnh báo và trả về false để dừng thao tác.
+    /// </summary>
+    private bool KiemTraQuyenAdmin()
+    {
+        // So sánh không phân biệt chữ hoa/chữ thường để tránh sai khác như "admin" và "Admin".
+        if (string.Equals(_roleName, "Admin", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        MessageBox.Show(
+            "Bạn không có quyền thực hiện chức năng này.",
+            "Không đủ quyền",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning);
+
+        return false;
+    }
+
     public FormMain(string fullName, string roleName)
     {
         _fullName = fullName;
@@ -22,6 +43,9 @@ public partial class FormMain : Form
     {
         this.Text = $"Quản Lý Shop Quần Áo - Người dùng: {_fullName} ({_roleName})";
         lblXinChao.Text = $"Người dùng: {_fullName} | Quyền: {_roleName}";
+        bool isAdmin = string.Equals(_roleName, "Admin", StringComparison.OrdinalIgnoreCase);
+
+
 
         // Tải danh mục vào ComboBox và tải danh sách quần áo lên bảng DataGridView
         LoadDanhMuc();
@@ -128,9 +152,18 @@ public partial class FormMain : Form
         }
     }
 
-    // 4. Nút "Thêm Mới"
+    /// <summary>
+    /// Thêm sản phẩm mới vào cơ sở dữ liệu sau khi xác nhận người dùng là Admin
+    /// và các thông tin nhập vào hợp lệ.
+    /// </summary>
     private void btnThem_Click(object sender, EventArgs e)
     {
+        // Kiểm tra quyền tại thời điểm xử lý, không chỉ dựa vào việc nút đang bật hay tắt.
+        if (!KiemTraQuyenAdmin())
+        {
+            return;
+        }
+
         string maSP = txtMaSP.Text.Trim();
         string tenSP = txtTenSP.Text.Trim();
         string moTa = txtMoTa.Text.Trim();
@@ -187,9 +220,18 @@ public partial class FormMain : Form
         }
     }
 
-    // 5. Nút "Cập Nhật (Sửa)"
+    /// <summary>
+    /// Cập nhật sản phẩm đang được chọn sau khi xác nhận quyền Admin
+    /// và kiểm tra dữ liệu người dùng nhập vào.
+    /// </summary>
     private void btnSua_Click(object sender, EventArgs e)
     {
+        // Dừng ngay nếu người đăng nhập không có quyền sửa sản phẩm.
+        if (!KiemTraQuyenAdmin())
+        {
+            return;
+        }
+
         if (_selectedProductId <= 0)
         {
             MessageBox.Show("Vui lòng click chọn 1 sản phẩm trên bảng để sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -241,9 +283,18 @@ public partial class FormMain : Form
         }
     }
 
-    // 6. Nút "Xóa"
+    /// <summary>
+    /// Xóa sản phẩm đang được chọn sau khi xác nhận quyền Admin
+    /// và hỏi người dùng xác nhận thao tác xóa.
+    /// </summary>
     private void btnXoa_Click(object sender, EventArgs e)
     {
+        // Dừng ngay nếu người đăng nhập không có quyền xóa sản phẩm.
+        if (!KiemTraQuyenAdmin())
+        {
+            return;
+        }
+
         if (_selectedProductId <= 0)
         {
             MessageBox.Show("Vui lòng click chọn 1 sản phẩm trên bảng để xóa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -324,5 +375,18 @@ public partial class FormMain : Form
         FormDonHang f = new FormDonHang();
         f.ShowDialog(); // Mở cửa sổ đơn hàng lên
 
+    }
+
+    private void button2_Click(object sender, EventArgs e)
+    {
+        // Chỉ Admin được mở màn hình quản lý danh mục.
+        if (!KiemTraQuyenAdmin())
+        {
+            return;
+        }
+
+        // Mở form danh mục như cửa sổ con và chờ đóng form rồi mới quay lại.
+        using FormDanhMuc formDanhMuc = new FormDanhMuc();
+        formDanhMuc.ShowDialog(this);
     }
 }

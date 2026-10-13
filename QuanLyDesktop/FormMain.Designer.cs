@@ -62,6 +62,7 @@ partial class FormMain
         txtTimKiem = new TextBox();
         btnDangXuat = new Button();
         button1 = new Button();
+        btnDanhMuc = new Button();
         grpThongTin.SuspendLayout();
         grpDanhSach.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)dgvSanPham).BeginInit();
@@ -112,9 +113,9 @@ partial class FormMain
         grpThongTin.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
         grpThongTin.ForeColor = Color.FromArgb(13, 71, 161);
         grpThongTin.Location = new Point(25, 112);
-        grpThongTin.Margin = new Padding(4, 4, 4, 4);
+        grpThongTin.Margin = new Padding(4);
         grpThongTin.Name = "grpThongTin";
-        grpThongTin.Padding = new Padding(4, 4, 4, 4);
+        grpThongTin.Padding = new Padding(4);
         grpThongTin.Size = new Size(1212, 238);
         grpThongTin.TabIndex = 2;
         grpThongTin.TabStop = false;
@@ -128,7 +129,7 @@ partial class FormMain
         btnLamMoi.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnLamMoi.ForeColor = Color.White;
         btnLamMoi.Location = new Point(731, 162);
-        btnLamMoi.Margin = new Padding(4, 4, 4, 4);
+        btnLamMoi.Margin = new Padding(4);
         btnLamMoi.Name = "btnLamMoi";
         btnLamMoi.Size = new Size(162, 50);
         btnLamMoi.TabIndex = 13;
@@ -144,7 +145,7 @@ partial class FormMain
         btnXoa.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnXoa.ForeColor = Color.White;
         btnXoa.Location = new Point(544, 162);
-        btnXoa.Margin = new Padding(4, 4, 4, 4);
+        btnXoa.Margin = new Padding(4);
         btnXoa.Name = "btnXoa";
         btnXoa.Size = new Size(162, 50);
         btnXoa.TabIndex = 12;
@@ -160,7 +161,7 @@ partial class FormMain
         btnSua.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnSua.ForeColor = Color.White;
         btnSua.Location = new Point(356, 162);
-        btnSua.Margin = new Padding(4, 4, 4, 4);
+        btnSua.Margin = new Padding(4);
         btnSua.Name = "btnSua";
         btnSua.Size = new Size(162, 50);
         btnSua.TabIndex = 11;
@@ -176,7 +177,7 @@ partial class FormMain
         btnThem.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnThem.ForeColor = Color.White;
         btnThem.Location = new Point(169, 162);
-        btnThem.Margin = new Padding(4, 4, 4, 4);
+        btnThem.Margin = new Padding(4);
         btnThem.Name = "btnThem";
         btnThem.Size = new Size(162, 50);
         btnThem.TabIndex = 10;
@@ -188,7 +189,7 @@ partial class FormMain
         // 
         txtMoTa.Font = new Font("Segoe UI", 9.5F);
         txtMoTa.Location = new Point(569, 96);
-        txtMoTa.Margin = new Padding(4, 4, 4, 4);
+        txtMoTa.Margin = new Padding(4);
         txtMoTa.Name = "txtMoTa";
         txtMoTa.PlaceholderText = "Chất liệu cotton, thoáng mát...";
         txtMoTa.Size = new Size(618, 33);
@@ -210,7 +211,7 @@ partial class FormMain
         // 
         txtGiaBan.Font = new Font("Segoe UI", 9.5F);
         txtGiaBan.Location = new Point(169, 96);
-        txtGiaBan.Margin = new Padding(4, 4, 4, 4);
+        txtGiaBan.Margin = new Padding(4);
         txtGiaBan.Name = "txtGiaBan";
         txtGiaBan.PlaceholderText = "VD: 250000";
         txtGiaBan.Size = new Size(224, 33);
@@ -234,7 +235,7 @@ partial class FormMain
         cboDanhMuc.Font = new Font("Segoe UI", 9.5F);
         cboDanhMuc.FormattingEnabled = true;
         cboDanhMuc.Location = new Point(994, 40);
-        cboDanhMuc.Margin = new Padding(4, 4, 4, 4);
+        cboDanhMuc.Margin = new Padding(4);
         cboDanhMuc.Name = "cboDanhMuc";
         cboDanhMuc.Size = new Size(193, 33);
         cboDanhMuc.TabIndex = 5;
@@ -255,7 +256,7 @@ partial class FormMain
         // 
         txtTenSP.Font = new Font("Segoe UI", 9.5F);
         txtTenSP.Location = new Point(569, 40);
-        txtTenSP.Margin = new Padding(4, 4, 4, 4);
+        txtTenSP.Margin = new Padding(4);
         txtTenSP.Name = "txtTenSP";
         txtTenSP.PlaceholderText = "VD: Áo Thun Polo Nam";
         txtTenSP.Size = new Size(286, 33);
@@ -277,7 +278,7 @@ partial class FormMain
         // 
         txtMaSP.Font = new Font("Segoe UI", 9.5F);
         txtMaSP.Location = new Point(169, 40);
-        txtMaSP.Margin = new Padding(4, 4, 4, 4);
+        txtMaSP.Margin = new Padding(4);
         txtMaSP.Name = "txtMaSP";
         txtMaSP.PlaceholderText = "VD: AT-010";
         txtMaSP.Size = new Size(224, 33);
@@ -306,9 +307,9 @@ partial class FormMain
         grpDanhSach.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
         grpDanhSach.ForeColor = Color.FromArgb(13, 71, 161);
         grpDanhSach.Location = new Point(25, 369);
-        grpDanhSach.Margin = new Padding(4, 4, 4, 4);
+        grpDanhSach.Margin = new Padding(4);
         grpDanhSach.Name = "grpDanhSach";
-        grpDanhSach.Padding = new Padding(4, 4, 4, 4);
+        grpDanhSach.Padding = new Padding(4);
         grpDanhSach.Size = new Size(1212, 419);
         grpDanhSach.TabIndex = 3;
         grpDanhSach.TabStop = false;
@@ -323,7 +324,7 @@ partial class FormMain
         dgvSanPham.BackgroundColor = Color.WhiteSmoke;
         dgvSanPham.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         dgvSanPham.Location = new Point(25, 94);
-        dgvSanPham.Margin = new Padding(4, 4, 4, 4);
+        dgvSanPham.Margin = new Padding(4);
         dgvSanPham.MultiSelect = false;
         dgvSanPham.Name = "dgvSanPham";
         dgvSanPham.ReadOnly = true;
@@ -341,7 +342,7 @@ partial class FormMain
         btnHienTatCa.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         btnHienTatCa.ForeColor = Color.White;
         btnHienTatCa.Location = new Point(625, 36);
-        btnHienTatCa.Margin = new Padding(4, 4, 4, 4);
+        btnHienTatCa.Margin = new Padding(4);
         btnHienTatCa.Name = "btnHienTatCa";
         btnHienTatCa.Size = new Size(138, 42);
         btnHienTatCa.TabIndex = 2;
@@ -357,7 +358,7 @@ partial class FormMain
         btnTimKiem.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         btnTimKiem.ForeColor = Color.White;
         btnTimKiem.Location = new Point(475, 36);
-        btnTimKiem.Margin = new Padding(4, 4, 4, 4);
+        btnTimKiem.Margin = new Padding(4);
         btnTimKiem.Name = "btnTimKiem";
         btnTimKiem.Size = new Size(138, 42);
         btnTimKiem.TabIndex = 1;
@@ -369,7 +370,7 @@ partial class FormMain
         // 
         txtTimKiem.Font = new Font("Segoe UI", 9.5F);
         txtTimKiem.Location = new Point(25, 40);
-        txtTimKiem.Margin = new Padding(4, 4, 4, 4);
+        txtTimKiem.Margin = new Padding(4);
         txtTimKiem.Name = "txtTimKiem";
         txtTimKiem.PlaceholderText = "Nhập tên hoặc mã sản phẩm cần tìm...";
         txtTimKiem.Size = new Size(436, 33);
@@ -384,7 +385,7 @@ partial class FormMain
         btnDangXuat.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         btnDangXuat.ForeColor = Color.White;
         btnDangXuat.Location = new Point(1100, 25);
-        btnDangXuat.Margin = new Padding(4, 4, 4, 4);
+        btnDangXuat.Margin = new Padding(4);
         btnDangXuat.Name = "btnDangXuat";
         btnDangXuat.Size = new Size(138, 44);
         btnDangXuat.TabIndex = 6;
@@ -394,13 +395,26 @@ partial class FormMain
         // 
         // button1
         // 
-        button1.Location = new Point(967, 35);
+        button1.BackColor = Color.Gray;
+        button1.Location = new Point(955, 35);
         button1.Name = "button1";
-        button1.Size = new Size(112, 34);
+        button1.Size = new Size(138, 34);
         button1.TabIndex = 7;
         button1.Text = "Đơn Hàng";
-        button1.UseVisualStyleBackColor = true;
+        button1.UseVisualStyleBackColor = false;
         button1.Click += button1_Click;
+        // 
+        // btnDanhMuc
+        // 
+        btnDanhMuc.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnDanhMuc.BackColor = Color.DarkOrange;
+        btnDanhMuc.Location = new Point(796, 35);
+        btnDanhMuc.Name = "btnDanhMuc";
+        btnDanhMuc.Size = new Size(138, 34);
+        btnDanhMuc.TabIndex = 8;
+        btnDanhMuc.Text = "Danh Mục";
+        btnDanhMuc.UseVisualStyleBackColor = false;
+        btnDanhMuc.Click += button2_Click;
         // 
         // FormMain
         // 
@@ -408,13 +422,14 @@ partial class FormMain
         AutoScaleMode = AutoScaleMode.Font;
         BackColor = Color.WhiteSmoke;
         ClientSize = new Size(1262, 812);
+        Controls.Add(btnDanhMuc);
         Controls.Add(button1);
         Controls.Add(btnDangXuat);
         Controls.Add(grpDanhSach);
         Controls.Add(grpThongTin);
         Controls.Add(lblXinChao);
         Controls.Add(lblTitle);
-        Margin = new Padding(4, 4, 4, 4);
+        Margin = new Padding(4);
         MinimumSize = new Size(1182, 736);
         Name = "FormMain";
         StartPosition = FormStartPosition.CenterScreen;
@@ -430,4 +445,5 @@ partial class FormMain
     }
 
     private Button button1;
+    private Button btnDanhMuc;
 }
