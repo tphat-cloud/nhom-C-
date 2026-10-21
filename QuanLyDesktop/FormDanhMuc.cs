@@ -5,8 +5,7 @@ namespace QuanLyDesktop;
 
 public partial class FormDanhMuc : Form
 {
-    private readonly string connectionString =
-        "Server=.;Database=FashionShopDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    private string connectionString => DatabaseConfig.ConnectionString;
     private int _selectedCategoryId = -1;
     private bool _selectedCategoryIsActive;
 

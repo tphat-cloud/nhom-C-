@@ -7,21 +7,34 @@ namespace QuanLyDesktop
 {
     public partial class FormDonHang : Form
     {
-        private string connectionString = "Server=.;Database=FashionShopDb;Trusted_Connection=True;TrustServerCertificate=True;";
+        private string connectionString => DatabaseConfig.ConnectionString;
 
         public FormDonHang()
         {
             InitializeComponent();
+            cboLocTrangThai.Items.AddRange(new object[]
+            {
+                "Tất cả trạng thái",
+                "Chờ xử lý",
+                "Đã duyệt",
+                "Đang giao",
+                "Hoàn thành",
+                "Đã hủy"
+            });
+            cboLocTrangThai.SelectedIndex = 0;
+            cboTrangThaiMoi.Enabled = false;
             LoadDonHang();
         }
 
         /// <summary>
-        /// Tải danh sách đơn hàng mới nhất và xóa chi tiết cũ để tránh nhầm với đơn khác.
+        /// Tải danh sách đơn hàng theo từ khóa/trạng thái và xóa chi tiết của lựa chọn trước.
         /// </summary>
-        private void LoadDonHang()
+        private void LoadDonHang(string keyword = "", string status = "")
         {
             dgvChiTiet.DataSource = null;
             lblDetailSection.Text = "CHI TIẾT ĐƠN HÀNG - CHỌN ĐƠN RỒI BẤM XEM CHI TIẾT";
+            cboTrangThaiMoi.Items.Clear();
+            cboTrangThaiMoi.Enabled = false;
 
             try
             {
@@ -39,10 +52,20 @@ namespace QuanLyDesktop
                             Status AS [Trạng Thái],
                             OrderDate AS [Ngày Đặt]
                         FROM Orders
+                        WHERE (@keyword = N''
+                               OR OrderCode LIKE N'%' + @keyword + N'%'
+                               OR CustomerName LIKE N'%' + @keyword + N'%'
+                               OR CustomerPhone LIKE N'%' + @keyword + N'%')
+                          AND (@status = N'' OR Status = @status)
                         ORDER BY OrderId DESC";
 
                     using (SqlDataAdapter da = new SqlDataAdapter(sql, conn))
                     {
+                        da.SelectCommand.Parameters.Add("@keyword", SqlDbType.NVarChar, 100)
+                            .Value = keyword;
+                        da.SelectCommand.Parameters.Add("@status", SqlDbType.NVarChar, 50)
+                            .Value = status;
+
                         DataTable dt = new DataTable();
                         da.Fill(dt);
                         dgvDonHang.DataSource = dt;
@@ -57,6 +80,8 @@ namespace QuanLyDesktop
 
                         if (dgvDonHang.Columns["Ngày Đặt"] != null)
                             dgvDonHang.Columns["Ngày Đặt"].DefaultCellStyle.Format = "dd/MM/yyyy HH:mm";
+
+                        dgvDonHang.ClearSelection();
                     }
                 }
             }
@@ -67,7 +92,7 @@ namespace QuanLyDesktop
         }
 
         /// <summary>
-        /// Duyệt đơn hàng đang được chọn và tải lại danh sách để cập nhật trạng thái.
+        /// Cập nhật trạng thái đơn theo các bước nghiệp vụ được phép.
         /// </summary>
         private void btnDuyetDon_Click(object sender, EventArgs e)
         {
@@ -78,19 +103,75 @@ namespace QuanLyDesktop
             }
 
             int orderId = Convert.ToInt32(dgvDonHang.SelectedRows[0].Cells["OrderId"].Value);
+            string currentStatus = dgvDonHang.SelectedRows[0].Cells["Trạng Thái"].Value?.ToString() ?? "";
+            string nextStatus = cboTrangThaiMoi.SelectedItem?.ToString() ?? "";
+
+            if (string.IsNullOrWhiteSpace(nextStatus))
+            {
+                MessageBox.Show(
+                    "Đơn hàng này không còn trạng thái tiếp theo để chuyển.",
+                    "Không thể cập nhật",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            string[] allowedStatuses = GetAllowedNextStatuses(currentStatus);
+            if (Array.IndexOf(allowedStatuses, nextStatus) < 0)
+            {
+                MessageBox.Show(
+                    "Trạng thái được chọn không hợp lệ với trạng thái hiện tại của đơn.",
+                    "Chuyển trạng thái không hợp lệ",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            DialogResult confirmation = MessageBox.Show(
+                $"Chuyển đơn hàng sang trạng thái '{nextStatus}'?",
+                "Xác nhận cập nhật",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirmation != DialogResult.Yes)
+            {
+                return;
+            }
 
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    string sql = "UPDATE Orders SET Status = N'Đã duyệt' WHERE OrderId = @id";
+                    string sql = @"
+                        UPDATE Orders
+                        SET Status = @nextStatus
+                        WHERE OrderId = @id AND Status = @currentStatus";
+
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
-                        cmd.Parameters.AddWithValue("@id", orderId);
-                        cmd.ExecuteNonQuery();
-                        MessageBox.Show("Đã duyệt đơn hàng thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        LoadDonHang();
+                        cmd.Parameters.Add("@nextStatus", SqlDbType.NVarChar, 50).Value = nextStatus;
+                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = orderId;
+                        cmd.Parameters.Add("@currentStatus", SqlDbType.NVarChar, 50).Value = currentStatus;
+
+                        if (cmd.ExecuteNonQuery() == 0)
+                        {
+                            MessageBox.Show(
+                                "Đơn hàng đã được thay đổi ở nơi khác. Danh sách sẽ được tải lại.",
+                                "Không có thay đổi",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+                        }
+                        else
+                        {
+                            MessageBox.Show(
+                                $"Đã chuyển đơn sang trạng thái '{nextStatus}'.",
+                                "Hoàn tất",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                        }
+
+                        LoadDonHang(txtTimKiem.Text.Trim(), GetSelectedFilterStatus());
                     }
                 }
             }
@@ -98,6 +179,58 @@ namespace QuanLyDesktop
             {
                 MessageBox.Show("Lỗi duyệt đơn: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        /// <summary>
+        /// Trả về các trạng thái tiếp theo hợp lệ cho một đơn hàng.
+        /// </summary>
+        private string[] GetAllowedNextStatuses(string currentStatus)
+        {
+            return currentStatus switch
+            {
+                "Chờ xử lý" => new[] { "Đã duyệt", "Đã hủy" },
+                "Đã duyệt" => new[] { "Đang giao", "Đã hủy" },
+                "Đang giao" => new[] { "Hoàn thành" },
+                _ => Array.Empty<string>()
+            };
+        }
+
+        /// <summary>
+        /// Đưa các trạng thái hợp lệ vào danh sách khi người dùng chọn một đơn.
+        /// </summary>
+        private void dgvDonHang_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0)
+            {
+                return;
+            }
+
+            string currentStatus =
+                dgvDonHang.Rows[e.RowIndex].Cells["Trạng Thái"].Value?.ToString() ?? "";
+            string[] allowedStatuses = GetAllowedNextStatuses(currentStatus);
+
+            cboTrangThaiMoi.Items.Clear();
+            cboTrangThaiMoi.Items.AddRange(allowedStatuses);
+            cboTrangThaiMoi.Enabled = allowedStatuses.Length > 0;
+            cboTrangThaiMoi.SelectedIndex = allowedStatuses.Length > 0 ? 0 : -1;
+        }
+
+        /// <summary>
+        /// Trả về trạng thái lọc; mục "Tất cả" được đổi thành chuỗi rỗng cho SQL.
+        /// </summary>
+        private string GetSelectedFilterStatus()
+        {
+            return cboLocTrangThai.SelectedIndex <= 0
+                ? ""
+                : cboLocTrangThai.SelectedItem?.ToString() ?? "";
+        }
+
+        /// <summary>
+        /// Tìm đơn theo mã, tên khách/số điện thoại và trạng thái đã chọn.
+        /// </summary>
+        private void btnTimKiem_Click(object sender, EventArgs e)
+        {
+            LoadDonHang(txtTimKiem.Text.Trim(), GetSelectedFilterStatus());
         }
         /// <summary>
         /// Hiển thị các mặt hàng thuộc đơn hàng đang chọn trong bảng chi tiết phía dưới.
@@ -177,6 +310,8 @@ namespace QuanLyDesktop
         /// </summary>
         private void btnLamMoi_Click(object sender, EventArgs e)
         {
+            txtTimKiem.Clear();
+            cboLocTrangThai.SelectedIndex = 0;
             LoadDonHang();
         }
     }

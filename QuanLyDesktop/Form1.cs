@@ -4,8 +4,7 @@ namespace QuanLyDesktop;
 
 public partial class Form1 : Form
 {
-    // Chuỗi kết nối tới SQL Server nội bộ trên máy
-    private string connectionString = "Server=.;Database=FashionShopDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    private string connectionString => DatabaseConfig.ConnectionString;
 
     public Form1()
     {
@@ -52,7 +51,7 @@ public partial class Form1 : Form
                         {
                             // Đăng nhập thành công!
                             string fullName = reader["FullName"].ToString() ?? "Người dùng";
-                           string roleName = reader["RoleName"].ToString() ?? "";
+                            string roleName = reader["RoleName"].ToString() ?? "";
 
                             MessageBox.Show($"Đăng nhập thành công!\nXin chào: {fullName}\nVai trò: {roleName}",
                                             "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -61,7 +60,11 @@ public partial class Form1 : Form
                             FormMain fMain = new FormMain(fullName, roleName);
                             this.Hide();
                             fMain.ShowDialog();
-                            this.Close(); // Đóng hẳn khi tắt FormMain
+
+                            // Giữ Form đăng nhập để người dùng có thể đăng nhập lại sau khi đăng xuất.
+                            txtMatKhau.Clear();
+                            txtTaiKhoan.Focus();
+                            this.Show();
                         }
                         else
                         {
@@ -89,5 +92,10 @@ public partial class Form1 : Form
         {
             Application.Exit();
         }
+    }
+
+    private void txtTaiKhoan_TextChanged(object sender, EventArgs e)
+    {
+
     }
 }

@@ -5,7 +5,7 @@ namespace QuanLyDesktop;
 
 public partial class FormMain : Form
 {
-    private string connectionString = "Server=.;Database=FashionShopDb;Trusted_Connection=True;TrustServerCertificate=True;";
+    private string connectionString => DatabaseConfig.ConnectionString;
     private string _fullName;
     private string _roleName;
     private int _selectedProductId = -1; // Lưu mã sản phẩm đang được chọn để Sửa hoặc Xóa
@@ -43,13 +43,103 @@ public partial class FormMain : Form
     {
         this.Text = $"Quản Lý Shop Quần Áo - Người dùng: {_fullName} ({_roleName})";
         lblXinChao.Text = $"Người dùng: {_fullName} | Quyền: {_roleName}";
-        bool isAdmin = string.Equals(_roleName, "Admin", StringComparison.OrdinalIgnoreCase);
-
-
+        lblDashboardGreeting.Text = $"Chào mừng trở lại, {_fullName}";
 
         // Tải danh mục vào ComboBox và tải danh sách quần áo lên bảng DataGridView
         LoadDanhMuc();
         LoadSanPham();
+        LoadDashboardSummary();
+        ShowDashboard();
+    }
+
+    /// <summary>
+    /// Nạp các số liệu tổng quan thật từ SQL Server vào ba thẻ trên trang chủ.
+    /// </summary>
+    private void LoadDashboardSummary()
+    {
+        try
+        {
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            string sql = @"
+                DECLARE @today DATE = CONVERT(DATE, GETDATE());
+
+                SELECT
+                    (SELECT COUNT(1)
+                     FROM Products
+                     WHERE IsActive = 1) AS ActiveProductCount,
+                    (SELECT COUNT(1)
+                     FROM Orders
+                     WHERE OrderDate >= @today
+                       AND OrderDate < DATEADD(DAY, 1, @today)) AS OrdersToday,
+                    (SELECT COALESCE(SUM(TotalAmount), 0)
+                     FROM Orders
+                     WHERE IsPaid = 1
+                       AND OrderDate >= @today
+                       AND OrderDate < DATEADD(DAY, 1, @today)) AS PaidToday";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+            if (reader.Read())
+            {
+                lblStatProductsValue.Text = Convert.ToInt32(reader["ActiveProductCount"]).ToString("N0");
+                lblStatOrdersValue.Text = Convert.ToInt32(reader["OrdersToday"]).ToString("N0");
+                lblStatRevenueValue.Text = Convert.ToDecimal(reader["PaidToday"]).ToString("N0") + " đ";
+            }
+        }
+        catch
+        {
+            // Các form nạp danh sách đã báo lỗi kết nối; dashboard chỉ đánh dấu số liệu chưa tải được.
+            lblStatProductsValue.Text = "--";
+            lblStatOrdersValue.Text = "--";
+            lblStatRevenueValue.Text = "--";
+            lblDashboardStatus.Text = "Không thể tải số liệu tổng quan từ cơ sở dữ liệu.";
+        }
+    }
+
+    /// <summary>
+    /// Hiển thị trang tổng quan và đánh dấu mục Trang chủ trên menu.
+    /// </summary>
+    private void ShowDashboard()
+    {
+        panelDashboard.Visible = true;
+        grpThongTin.Visible = false;
+        grpDanhSach.Visible = false;
+        lblTitle.Text = "TỔNG QUAN CỬA HÀNG";
+
+        btnTrangChu.BackColor = Color.FromArgb(35, 91, 150);
+        btnTrangChu.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        btnSanPham.BackColor = Color.FromArgb(17, 43, 72);
+        btnSanPham.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+    }
+
+    /// <summary>
+    /// Hiển thị khu vực quản lý sản phẩm mà không đóng khung điều hướng chính.
+    /// </summary>
+    private void ShowProducts()
+    {
+        panelDashboard.Visible = false;
+        grpThongTin.Visible = true;
+        grpDanhSach.Visible = true;
+        lblTitle.Text = "QUẢN LÝ SẢN PHẨM";
+
+        btnTrangChu.BackColor = Color.FromArgb(17, 43, 72);
+        btnTrangChu.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        btnSanPham.BackColor = Color.FromArgb(35, 91, 150);
+        btnSanPham.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+    }
+
+    private void btnTrangChu_Click(object sender, EventArgs e)
+    {
+        LoadDashboardSummary();
+        ShowDashboard();
+    }
+
+    private void btnSanPham_Click(object sender, EventArgs e)
+    {
+        ShowProducts();
     }
 
     // 1. Tải danh mục (Áo thun, Sơ mi, Quần Jean...) vào ComboBox
@@ -100,7 +190,8 @@ public partial class FormMain : Form
                         p.CategoryId
                     FROM Products p
                     INNER JOIN Categories c ON p.CategoryId = c.CategoryId
-                    WHERE (@kw = '' OR p.Name LIKE @kw OR p.ProductCode LIKE @kw)
+                                        WHERE p.IsActive = 1
+                                            AND (@kw = '' OR p.Name LIKE @kw OR p.ProductCode LIKE @kw)
                     ORDER BY p.ProductId DESC";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -174,7 +265,7 @@ public partial class FormMain : Form
             return;
         }
 
-        if (!decimal.TryParse(txtGiaBan.Text.Trim(), out decimal giaBan) || giaBan < 0)
+        if (!decimal.TryParse(txtGiaBan.Text.Trim(), out decimal giaBan) || giaBan <= 0)
         {
             MessageBox.Show("Giá bán phải là số hợp lệ lớn hơn 0!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
@@ -242,9 +333,12 @@ public partial class FormMain : Form
         string tenSP = txtTenSP.Text.Trim();
         string moTa = txtMoTa.Text.Trim();
 
-        if (string.IsNullOrEmpty(maSP) || string.IsNullOrEmpty(tenSP) || !decimal.TryParse(txtGiaBan.Text.Trim(), out decimal giaBan))
+        if (string.IsNullOrWhiteSpace(maSP) ||
+            string.IsNullOrWhiteSpace(tenSP) ||
+            !decimal.TryParse(txtGiaBan.Text.Trim(), out decimal giaBan) ||
+            giaBan <= 0)
         {
-            MessageBox.Show("Vui lòng nhập đúng thông tin sản phẩm và giá!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("Vui lòng nhập mã, tên và giá bán lớn hơn 0.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
@@ -284,8 +378,8 @@ public partial class FormMain : Form
     }
 
     /// <summary>
-    /// Xóa sản phẩm đang được chọn sau khi xác nhận quyền Admin
-    /// và hỏi người dùng xác nhận thao tác xóa.
+    /// Ngừng kinh doanh sản phẩm đang được chọn sau khi xác nhận quyền Admin.
+    /// Dữ liệu vẫn được giữ để bảo toàn liên kết với các đơn hàng cũ.
     /// </summary>
     private void btnXoa_Click(object sender, EventArgs e)
     {
@@ -297,12 +391,15 @@ public partial class FormMain : Form
 
         if (_selectedProductId <= 0)
         {
-            MessageBox.Show("Vui lòng click chọn 1 sản phẩm trên bảng để xóa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show("Vui lòng chọn một sản phẩm trước.", "Chưa chọn sản phẩm", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
-        DialogResult result = MessageBox.Show("Bạn có chắc chắn muốn xóa sản phẩm này khỏi cơ sở dữ liệu?",
-                                              "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        DialogResult result = MessageBox.Show(
+            "Bạn có chắc muốn ngừng kinh doanh sản phẩm này?",
+            "Xác nhận ngừng bán",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Question);
 
         if (result == DialogResult.Yes)
         {
@@ -311,13 +408,29 @@ public partial class FormMain : Form
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    string sql = "DELETE FROM Products WHERE ProductId = @id";
+                    // Chuyển trạng thái thay vì xóa dòng để không làm mất lịch sử đơn hàng.
+                    string sql = @"
+                        UPDATE Products
+                        SET IsActive = 0
+                        WHERE ProductId = @id AND IsActive = 1";
+
                     using (SqlCommand cmd = new SqlCommand(sql, conn))
                     {
                         cmd.Parameters.AddWithValue("@id", _selectedProductId);
-                        cmd.ExecuteNonQuery();
 
-                        MessageBox.Show("Đã xóa sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        int rowsAffected = cmd.ExecuteNonQuery();
+                        if (rowsAffected == 0)
+                        {
+                            MessageBox.Show(
+                                "Sản phẩm không còn tồn tại hoặc đã ngừng bán.",
+                                "Không có thay đổi",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Information);
+                            LoadSanPham();
+                            return;
+                        }
+
+                        MessageBox.Show("Đã ngừng kinh doanh sản phẩm.", "Hoàn tất", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         ClearInputs();
                         LoadSanPham();
                     }
@@ -349,6 +462,31 @@ public partial class FormMain : Form
     {
         txtTimKiem.Clear();
         LoadSanPham();
+    }
+
+    /// <summary>
+    /// Mở màn hình quản lý size, màu và tồn kho cho sản phẩm đang chọn.
+    /// </summary>
+    private void btnBienThe_Click(object sender, EventArgs e)
+    {
+        if (!KiemTraQuyenAdmin())
+        {
+            return;
+        }
+
+        if (_selectedProductId <= 0)
+        {
+            MessageBox.Show(
+                "Vui lòng chọn một sản phẩm trước khi quản lý size và tồn kho.",
+                "Chưa chọn sản phẩm",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Warning);
+            return;
+        }
+
+        using FormBienTheSanPham formBienThe =
+            new FormBienTheSanPham(_selectedProductId, txtTenSP.Text.Trim());
+        formBienThe.ShowDialog(this);
     }
 
     // 10. Nút "Đăng Xuất"

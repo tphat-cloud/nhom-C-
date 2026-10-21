@@ -56,7 +56,9 @@ CREATE TABLE Products (
     IsActive BIT NOT NULL DEFAULT 1,
     IsFeatured BIT NOT NULL DEFAULT 0,
     CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    FOREIGN KEY (CategoryId) REFERENCES Categories(CategoryId)
+    FOREIGN KEY (CategoryId) REFERENCES Categories(CategoryId),
+    CONSTRAINT CK_Products_Price CHECK (Price > 0),
+    CONSTRAINT CK_Products_OriginalPrice CHECK (OriginalPrice IS NULL OR OriginalPrice >= 0)
 );
 GO
 
@@ -67,7 +69,9 @@ CREATE TABLE ProductVariants (
     Size NVARCHAR(20) NOT NULL,          -- S, M, L, XL, XXL
     Color NVARCHAR(50) NOT NULL,         -- Trắng, Đen, Be, Xanh...
     StockQuantity INT NOT NULL DEFAULT 0,
-    FOREIGN KEY (ProductId) REFERENCES Products(ProductId) ON DELETE CASCADE
+    FOREIGN KEY (ProductId) REFERENCES Products(ProductId) ON DELETE CASCADE,
+    -- Tồn kho không bao giờ được âm
+    CONSTRAINT CK_ProductVariants_StockQuantity CHECK (StockQuantity >= 0)
 );
 GO
 
@@ -96,7 +100,11 @@ CREATE TABLE Orders (
     Status NVARCHAR(50) NOT NULL DEFAULT N'Chờ xử lý', -- "Chờ xử lý", "Đã duyệt", "Đang giao", "Hoàn thành"
     PaymentMethod NVARCHAR(50) NOT NULL DEFAULT N'COD',
     IsPaid BIT NOT NULL DEFAULT 0,
-    FOREIGN KEY (CustomerId) REFERENCES Customers(CustomerId)
+    FOREIGN KEY (CustomerId) REFERENCES Customers(CustomerId),
+    CONSTRAINT CK_Orders_TotalAmount CHECK (TotalAmount >= 0),
+    -- Chỉ nhận các trạng thái thuộc luồng nghiệp vụ của hệ thống
+    CONSTRAINT CK_Orders_Status CHECK (Status IN (N'Chờ xử lý', N'Đã duyệt', N'Đang giao', N'Hoàn thành', N'Đã hủy')),
+    CONSTRAINT CK_Orders_PaymentMethod CHECK (PaymentMethod IN (N'COD', N'Tiền mặt', N'Chuyển khoản'))
 );
 GO
 
@@ -113,8 +121,42 @@ CREATE TABLE OrderDetails (
     UnitPrice DECIMAL(18,2) NOT NULL,
     TotalPrice DECIMAL(18,2) NOT NULL,
     FOREIGN KEY (OrderId) REFERENCES Orders(OrderId) ON DELETE CASCADE,
-    FOREIGN KEY (ProductId) REFERENCES Products(ProductId)
+    FOREIGN KEY (ProductId) REFERENCES Products(ProductId),
+    CONSTRAINT CK_OrderDetails_Quantity CHECK (Quantity > 0),
+    CONSTRAINT CK_OrderDetails_UnitPrice CHECK (UnitPrice >= 0),
+    CONSTRAINT CK_OrderDetails_TotalPrice CHECK (TotalPrice >= 0)
 );
+GO
+
+-- ==============================================================
+-- CHỈ MỤC (INDEX) PHỤC VỤ TRA CỨU NHANH
+-- ==============================================================
+
+-- Mỗi sản phẩm chỉ có 1 biến thể cho mỗi cặp Size + Màu
+CREATE UNIQUE INDEX UQ_ProductVariants_Product_Size_Color
+    ON ProductVariants (ProductId, Size, Color);
+CREATE INDEX IX_ProductVariants_ProductId ON ProductVariants (ProductId);
+CREATE INDEX IX_Products_CategoryId ON Products (CategoryId) INCLUDE (IsActive);
+CREATE INDEX IX_Orders_Status_OrderDate ON Orders (Status, OrderDate DESC);
+CREATE INDEX IX_Orders_CustomerPhone ON Orders (CustomerPhone);
+CREATE INDEX IX_OrderDetails_OrderId ON OrderDetails (OrderId) INCLUDE (ProductId, Quantity);
+GO
+
+-- View tổng hợp tồn kho theo sản phẩm (dùng cho lưới sản phẩm & kiểm tra còn hàng)
+CREATE VIEW vw_ProductStock
+AS
+SELECT
+    p.ProductId,
+    p.ProductCode,
+    p.Name,
+    p.Price,
+    p.CategoryId,
+    p.IsActive,
+    ISNULL(SUM(v.StockQuantity), 0) AS TotalStock,
+    COUNT(v.ProductVariantId)        AS VariantCount
+FROM Products p
+LEFT JOIN ProductVariants v ON v.ProductId = p.ProductId
+GROUP BY p.ProductId, p.ProductCode, p.Name, p.Price, p.CategoryId, p.IsActive;
 GO
 
 -- ==============================================================
@@ -146,4 +188,32 @@ INSERT INTO Products (ProductCode, Name, Description, Price, OriginalPrice, Cate
 (N'QJ-003', N'Quần Jeans Nam Dáng Suông Vintage', N'Quần bò xanh retro wash nhẹ tôn dáng trẻ trung.', 385000, 490000, 3, 1, 1),
 (N'AK-004', N'Áo Khoác Bomber Lót Dù Unisex', N'Chống nước nhẹ, bo chun cổ tay giữ ấm.', 450000, 550000, 4, 1, 1),
 (N'VD-005', N'Đầm Hoa Nhí Cổ Vuông Dáng Dài', N'Họa tiết hoa vintage, voan tơ mềm mại.', 345000, 420000, 5, 1, 1);
+GO
+
+-- Biến thể size / màu + tồn kho ban đầu (30 dòng)
+INSERT INTO ProductVariants (ProductId, Size, Color, StockQuantity)
+SELECT p.ProductId, v.Size, v.Color, v.StockQuantity
+FROM (VALUES
+    -- Áo thun oversize: 4 size x 2 màu
+    (N'AT-001', N'S',  N'Trắng', 25), (N'AT-001', N'M',  N'Trắng', 30),
+    (N'AT-001', N'L',  N'Trắng', 20), (N'AT-001', N'XL', N'Trắng', 10),
+    (N'AT-001', N'S',  N'Đen',   15), (N'AT-001', N'M',  N'Đen',   22),
+    (N'AT-001', N'L',  N'Đen',   18), (N'AT-001', N'XL', N'Đen',    8),
+    -- Sơ mi oxford: 3 size x 2 màu
+    (N'SM-002', N'S',  N'Trắng', 12), (N'SM-002', N'M',  N'Trắng', 18),
+    (N'SM-002', N'L',  N'Trắng', 15), (N'SM-002', N'S',  N'Xanh',    8),
+    (N'SM-002', N'M',  N'Xanh',  10), (N'SM-002', N'L',  N'Xanh',    6),
+    -- Quần jeans: 4 size x 1 màu
+    (N'QJ-003', N'29', N'Xanh đậm', 10), (N'QJ-003', N'30', N'Xanh đậm', 14),
+    (N'QJ-003', N'31', N'Xanh đậm', 12), (N'QJ-003', N'32', N'Xanh đậm',  6),
+    -- Áo khoác bomber: 3 size x 2 màu
+    (N'AK-004', N'M',  N'Đen',  9), (N'AK-004', N'L', N'Đen', 11),
+    (N'AK-004', N'XL', N'Đen',  5), (N'AK-004', N'M', N'Be',   7),
+    (N'AK-004', N'L',  N'Be',   8), (N'AK-004', N'XL', N'Be',  4),
+    -- Đầm hoa nhí: 3 size x 2 màu
+    (N'VD-005', N'S',  N'Hồng', 6), (N'VD-005', N'M', N'Hồng', 9),
+    (N'VD-005', N'L',  N'Hồng', 5), (N'VD-005', N'S', N'Đen',   4),
+    (N'VD-005', N'M',  N'Đen',  7), (N'VD-005', N'L', N'Đen',   3)
+) AS v (ProductCode, Size, Color, StockQuantity)
+JOIN Products p ON p.ProductCode = v.ProductCode;
 GO
