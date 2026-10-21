@@ -23,3 +23,12 @@ bld/
 ## OS generated files
 .DS_Store
 Thumbs.db
+
+## Docker / biến môi trường (chứa mật khẩu - KHÔNG commit)
+.env
+.env.*
+!.env.example
+
+## Công cụ khác
+UpgradeLog*.htm
+Backup/
