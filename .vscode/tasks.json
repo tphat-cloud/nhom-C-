@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Chạy web (FashionShop)",
+      "detail": "run-web.cmd: tự nạp mật khẩu SQL từ .env rồi mở http://localhost:5193",
+      "type": "process",
+      "command": "${workspaceFolder}\\run-web.cmd",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
+      "label": "Build web",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "WebBanHang\\WebBanHang.csproj"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$msCompile"
+    }
+  ]
+}

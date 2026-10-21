@@ -1,0 +1,43 @@
+@model ProductListViewModel
+@{
+    ViewData["Title"] = "Sản phẩm";
+}
+
+<h3 class="mb-3">Sản phẩm</h3>
+
+<form method="get" asp-controller="Products" asp-action="Index" class="row g-2 mb-4">
+    <div class="col-12 col-md-5">
+        <input class="form-control" type="search" name="keyword" value="@Model.Keyword"
+               placeholder="Tìm theo tên hoặc mã sản phẩm..." />
+    </div>
+    <div class="col-8 col-md-4">
+        <select class="form-select" name="categoryId">
+            <option value="0" selected="@(Model.CategoryId == 0)">Tất cả danh mục</option>
+            @foreach (var category in Model.Categories)
+            {
+                <option value="@category.CategoryId" selected="@(category.CategoryId == Model.CategoryId)">@category.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-4 col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-dark flex-fill">Tìm</button>
+        <a class="btn btn-outline-secondary" asp-controller="Products" asp-action="Index">Bỏ lọc</a>
+    </div>
+</form>
+
+@if (Model.TotalCount == 0)
+{
+    <div class="alert alert-warning">
+        Không tìm thấy sản phẩm phù hợp. Hãy thử từ khóa khác hoặc bỏ lọc danh mục.
+    </div>
+}
+else
+{
+    <p class="text-muted">Tìm thấy <strong>@Model.TotalCount</strong> sản phẩm.</p>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var product in Model.Products)
+        {
+            <partial name="_ProductCard" model="product" />
+        }
+    </div>
+}

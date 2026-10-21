@@ -20,3 +20,27 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Trang chủ */
+.hero {
+  background: linear-gradient(135deg, #1f2937, #4b5563);
+  color: #fff;
+  border-radius: .75rem;
+  padding: 2rem;
+}
+
+/* Thẻ sản phẩm */
+.product-card {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.product-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+}
+
+.product-thumb {
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  background-color: #f3f4f6;
+}
