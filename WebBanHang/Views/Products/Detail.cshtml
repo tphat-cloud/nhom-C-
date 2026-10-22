@@ -1,3 +1,4 @@
+@using WebBanHang.Services
 @model Product
 @{
     ViewData["Title"] = Model.Name;
@@ -54,6 +55,7 @@
                             <th>Size</th>
                             <th>Màu</th>
                             <th class="text-end">Tình trạng</th>
+                            <th class="text-end">Chọn mua</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,6 +73,27 @@
                                     else
                                     {
                                         <span class="badge bg-secondary">Hết hàng</span>
+                                    }
+                                </td>
+                                <td class="text-end">
+                                    @if (variant.IsAvailable)
+                                    {
+                                        <form method="post" asp-controller="Cart" asp-action="Add"
+                                              class="d-inline-flex gap-1 justify-content-end">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="variantId" value="@variant.ProductVariantId" />
+                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
+                                            <input class="form-control form-control-sm cart-qty" type="number"
+                                                   name="quantity" value="1" min="1" max="@ICartService.MaxQuantityPerItem"
+                                                   aria-label="Số lượng size @variant.Size màu @variant.Color" />
+                                            <button type="submit" class="btn btn-sm btn-dark text-nowrap">
+                                                Thêm vào giỏ
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Tạm hết</span>
                                     }
                                 </td>
                             </tr>

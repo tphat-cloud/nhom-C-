@@ -143,6 +143,8 @@ Web dùng **ADO.NET thuần** (`Microsoft.Data.SqlClient` 5.2.2) giống app Des
 | `WebBanHang/Models/` | `Product`, `ProductVariant`, `Category`, `HomeViewModel`, `ProductListViewModel` |
 | `WebBanHang/Controllers/HomeController.cs` | Trang chủ: danh mục + sản phẩm nổi bật + tổng số sản phẩm đang bán |
 | `WebBanHang/Controllers/ProductsController.cs` | Danh sách (tìm kiếm + lọc danh mục) và chi tiết sản phẩm kèm tồn kho |
+| `WebBanHang/Services/ICartService.cs`, `CartService.cs` | Giỏ hàng lưu trong **Session** (JSON), mỗi khách một giỏ, tự hết hạn sau 2 giờ |
+| `WebBanHang/Data/IOrderRepository.cs`, `SqlOrderRepository.cs` | Ghi đơn hàng trong **một `SqlTransaction`**: khách → đơn → chi tiết → trừ kho |
 
 Đăng ký DI trong `Program.cs`:
 
@@ -157,7 +159,10 @@ Các URL đã lấy dữ liệu thật từ SQL Server:
 | --- | --- |
 | `/` | Danh mục + sản phẩm nổi bật (`IsFeatured = 1`) |
 | `/Products` | Tìm theo tên/mã (`keyword`) và lọc theo danh mục (`categoryId`) |
-| `/Products/Detail/1` | Chi tiết sản phẩm + bảng size/màu + tồn kho thực tế |
+| `/Products/Detail/1` | Chi tiết sản phẩm + bảng size/màu + nút "Thêm vào giỏ" cho từng size/màu còn hàng |
+| `/Cart` | Giỏ hàng của khách: cập nhật số lượng, xóa dòng, xóa cả giỏ, tổng tiền |
+| `/Checkout` | Form thông tin nhận hàng + chọn thanh toán + tóm tắt đơn → tạo đơn thật trong CSDL |
+| `/Checkout/Success` | Xác nhận đặt hàng thành công kèm mã đơn (`DH...`) |
 
 Ghi chú kỹ thuật:
 
@@ -166,6 +171,51 @@ Ghi chú kỹ thuật:
 - Sản phẩm chưa có `ImageUrl` tự dùng ảnh mặc định `/images/no-image.svg`.
 - Giá hiển thị theo định dạng Việt Nam (`vi-VN`) — ví dụ `189.000 đ`.
 - Thiếu biến môi trường mật khẩu: web vẫn khởi động nhưng ghi **cảnh báo** rõ ràng ra console (không im lặng lỗi 500).
+
+### 3.1. Giỏ hàng & đặt hàng (BE-2)
+
+| Thành phần | Vai trò |
+| --- | --- |
+| `Services/ICartService.cs`, `Services/CartService.cs` | Giỏ hàng trong **Session** dưới dạng JSON; giá/tên trong giỏ chỉ để hiển thị |
+| `Controllers/CartController.cs` | `Index` (xem giỏ), `Add`, `Update`, `Remove`, `Clear` — mọi POST đều có `[ValidateAntiForgeryToken]` |
+| `Controllers/CheckoutController.cs` | `Index` (form nhận hàng + tóm tắt đơn), `Success` (xác nhận mã đơn) |
+| `Data/IOrderRepository.cs`, `Data/SqlOrderRepository.cs` | Ghi đơn trong **một transaction**: khách hàng → đơn → chi tiết → trừ kho |
+| `Models/` | `CartItem`, `VariantInfo`, `NewOrder`, `OrderResult`, `CheckoutViewModel`, `OrderSuccessViewModel`, `PaymentMethods`, `OrderStatuses` |
+| `Views/Cart/Index.cshtml`, `Views/Checkout/Index.cshtml`, `Views/Checkout/Success.cshtml` | Giao diện giỏ hàng / đặt hàng / xác nhận |
+
+Luồng đặt hàng — **hoặc lưu đủ, hoặc không lưu gì**:
+
+1. Tìm khách theo `PhoneNumber`: chưa có thì `INSERT Customers`, có rồi thì cập nhật tên/email/địa chỉ mới nhất.
+2. `INSERT Orders` với `Status = N'Chờ xử lý'`, `IsPaid = 0`, `TotalAmount = 0` (tạm), `OrderCode = DH + yyMMddHHmmss + 3 số`.
+3. Từng món: đọc lại **tên + giá từ CSDL** (không dùng giá client gửi lên) rồi trừ kho bằng câu lệnh có điều kiện:
+
+   ```sql
+   UPDATE ProductVariants
+   SET StockQuantity = StockQuantity - @quantity
+   WHERE ProductVariantId = @variantId AND StockQuantity >= @quantity;
+   ```
+
+   `@@ROWCOUNT = 0` ⇒ không đủ hàng ⇒ **rollback toàn bộ**; khách thấy lỗi ngay trên form và giỏ được giữ nguyên để sửa.
+4. Ghi `OrderDetails` (`UnitPrice`, `TotalPrice` tính từ giá CSDL) rồi cập nhật `Orders.TotalAmount` = tổng thật.
+5. `COMMIT` → xóa giỏ → chuyển `/Checkout/Success` kèm mã đơn.
+
+Chống lỗi / lạm dụng:
+
+- Mọi POST có `[ValidateAntiForgeryToken]`; `returnUrl` chỉ nhận URL nội bộ (`Url.IsLocalUrl`) nên không bị open-redirect.
+- Số lượng mỗi dòng bị chặn `1..99`; thêm quá tồn kho bị từ chối ngay ở giỏ nhưng **không tiết lộ tồn kho thật**.
+- `PaymentMethod` chỉ nhận `COD` / `Chuyển khoản` (khớp `CK_Orders_PaymentMethod`), `Status` khớp `CK_Orders_Status`.
+- Hai khách đặt cùng lúc: `UNIQUE(OrderCode)` + thử lại 3 lần; trừ kho có điều kiện nên không bán quá tồn.
+- Các dòng trùng biến thể được gộp và sắp theo `ProductVariantId` trước khi trừ kho → hạn chế deadlock.
+
+Đã kiểm thử trên SQL Server thật (`Invoke-WebRequest` + `sqlcmd`):
+
+| Kịch bản | Kết quả |
+| --- | --- |
+| Thêm 2 sản phẩm rồi đặt COD | Đơn `DH...` đúng: `TotalAmount = 378000.00`, 1 dòng chi tiết, khách mới trong `Customers`, tồn kho 18 → 16 |
+| Hạ tồn kho xuống 1 rồi đặt 2 | Không tạo đơn, tồn kho vẫn 1 (rollback), form báo "không đủ số lượng" |
+| Thêm 5 khi tồn kho 3 | Bị chặn ngay ở giỏ, giỏ vẫn trống |
+| Thêm vào giỏ nhưng chưa đặt | Tồn kho **không** đổi |
+| Đặt thành công | Giỏ được xóa, badge "Giỏ hàng" trên menu về 0 |
 
 ---
 

@@ -1,0 +1,58 @@
+@model OrderSuccessViewModel
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+<div class="text-center mb-4">
+    <div class="display-6 text-success mb-2">&#10003;</div>
+    <h3 class="mb-1">Đặt hàng thành công!</h3>
+    <p class="text-muted mb-0">
+        Mã đơn hàng của bạn: <span class="fw-bold text-dark">@Model.OrderCode</span>
+    </p>
+</div>
+
+<div class="row g-4 justify-content-center">
+    <div class="col-12 col-lg-7">
+        <div class="card">
+            <div class="card-header bg-light fw-semibold">Thông tin đơn hàng</div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Người nhận</span>
+                    <span class="fw-semibold">@Model.CustomerName</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Số điện thoại</span>
+                    <span>@Model.PhoneNumber</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between gap-3">
+                    <span class="text-muted text-nowrap">Địa chỉ</span>
+                    <span class="text-end">@Model.Address</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Thanh toán</span>
+                    <span>@Model.PaymentMethod</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Tổng tiền</span>
+                    <span class="fw-bold text-danger">@Model.TotalText</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <span class="text-muted">Trạng thái</span>
+                    <span class="badge bg-warning text-dark align-self-center">@OrderStatuses.Pending</span>
+                </li>
+            </ul>
+            <div class="card-footer text-muted small">
+                @Model.PaymentHint
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <a class="btn btn-dark" asp-controller="Products" asp-action="Index">Tiếp tục mua sắm</a>
+            <a class="btn btn-outline-dark" asp-controller="Home" asp-action="Index">Về trang chủ</a>
+        </div>
+
+        <p class="text-muted small mt-3 mb-0">
+            Vui lòng lưu lại mã đơn hàng để trao đổi với cửa hàng khi cần hỗ trợ.
+        </p>
+    </div>
+</div>

@@ -1,15 +1,29 @@
 using System.Globalization;
 using Microsoft.AspNetCore.Localization;
 using WebBanHang.Data;
+using WebBanHang.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+// Giỏ hàng lưu trong Session -> cần distributed cache (in-memory) + HttpContextAccessor
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = ".FashionShop.Session";
+});
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<ICartService, CartService>();
+
 // Tầng dữ liệu: ADO.NET thuần (Microsoft.Data.SqlClient) - đồng bộ với QuanLyDesktop
 builder.Services.AddSingleton<ISqlConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<IProductRepository, SqlProductRepository>();
+builder.Services.AddScoped<IOrderRepository, SqlOrderRepository>();
 
 var app = builder.Build();
 
@@ -44,6 +58,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Session phải nằm sau UseRouting và trước MapControllerRoute
+app.UseSession();
 
 app.UseAuthorization();
 

@@ -186,6 +186,53 @@ public sealed class SqlProductRepository : IProductRepository
         return variants;
     }
 
+    public async Task<VariantInfo?> GetVariantInfoAsync(
+        int productVariantId,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT
+                v.ProductVariantId,
+                v.ProductId,
+                p.Name AS ProductName,
+                v.Size,
+                v.Color,
+                p.Price,
+                p.ImageUrl,
+                v.StockQuantity
+            FROM ProductVariants v
+            INNER JOIN Products p ON p.ProductId = v.ProductId
+            INNER JOIN Categories c ON c.CategoryId = p.CategoryId
+            WHERE v.ProductVariantId = @variantId
+              AND p.IsActive = 1
+              AND c.IsActive = 1
+            """;
+
+        await using SqlConnection connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        await using SqlCommand command = new(sql, connection);
+        command.Parameters.Add("@variantId", SqlDbType.Int).Value = productVariantId;
+
+        await using SqlDataReader reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+        {
+            return null;
+        }
+
+        return new VariantInfo
+        {
+            ProductVariantId = ReadInt(reader, "ProductVariantId"),
+            ProductId = ReadInt(reader, "ProductId"),
+            ProductName = ReadText(reader, "ProductName"),
+            Size = ReadText(reader, "Size"),
+            Color = ReadText(reader, "Color"),
+            Price = ReadMoney(reader, "Price"),
+            ImageUrl = ReadNullableText(reader, "ImageUrl"),
+            StockQuantity = ReadInt(reader, "StockQuantity")
+        };
+    }
+
     public async Task<Product?> GetProductWithVariantsAsync(
         int productId,
         CancellationToken cancellationToken = default)

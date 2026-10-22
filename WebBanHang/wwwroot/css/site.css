@@ -36,6 +36,23 @@ body {
 
 .product-card:hover {
   transform: translateY(-3px);
+
+/* Ẩn khung cảnh báo khi form chưa có lỗi (asp-validation-summary) */
+.validation-summary-valid {
+    display: none;
+}
+
+/* Giỏ hàng */
+.cart-thumb {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+.cart-qty {
+    width: 76px;
+}
+
   box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
 }
 

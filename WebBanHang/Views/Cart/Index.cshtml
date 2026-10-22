@@ -1,0 +1,84 @@
+@using WebBanHang.Services
+@model IReadOnlyList<CartItem>
+@{
+    ViewData["Title"] = "Giỏ hàng";
+    decimal totalAmount = Model.Sum(item => item.TotalPrice);
+    int totalQuantity = Model.Sum(item => item.Quantity);
+}
+
+<h3 class="mb-3">Giỏ hàng</h3>
+
+@if (Model.Count == 0)
+{
+    <div class="alert alert-info">
+        Giỏ hàng của bạn đang trống. Hãy chọn vài món đồ yêu thích nhé!
+    </div>
+    <a class="btn btn-dark" asp-controller="Products" asp-action="Index">Xem sản phẩm</a>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col">Sản phẩm</th>
+                    <th scope="col" class="text-end">Đơn giá</th>
+                    <th scope="col" class="text-center">Số lượng</th>
+                    <th scope="col" class="text-end">Thành tiền</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (CartItem item in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="@item.DisplayImage" class="cart-thumb rounded border" alt="@item.ProductName" />
+                                <div>
+                                    <a class="text-decoration-none text-dark fw-semibold"
+                                       asp-controller="Products" asp-action="Detail" asp-route-id="@item.ProductId">@item.ProductName</a>
+                                    <div class="text-muted small">Size @item.Size &middot; Màu @item.Color</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-end">@item.UnitPrice.ToString("N0") đ</td>
+                        <td class="text-center">
+                            <form method="post" asp-controller="Cart" asp-action="Update"
+                                  class="d-inline-flex gap-1 justify-content-center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="variantId" value="@item.ProductVariantId" />
+                                <input class="form-control form-control-sm cart-qty" type="number" name="quantity"
+                                       value="@item.Quantity" min="1" max="@ICartService.MaxQuantityPerItem"
+                                       aria-label="Số lượng @item.ProductName" />
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Cập nhật</button>
+                            </form>
+                        </td>
+                        <td class="text-end fw-semibold">@item.TotalPrice.ToString("N0") đ</td>
+                        <td class="text-end">
+                            <form method="post" asp-controller="Cart" asp-action="Remove">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="variantId" value="@item.ProductVariantId" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-3">
+        <div class="text-muted">Tổng cộng <strong>@totalQuantity</strong> sản phẩm</div>
+        <div class="fs-5">Thành tiền: <span class="fw-bold text-danger">@totalAmount.ToString("N0") đ</span></div>
+    </div>
+
+    <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+        <a class="btn btn-outline-dark" asp-controller="Products" asp-action="Index">&larr; Tiếp tục mua sắm</a>
+        <a class="btn btn-dark" asp-controller="Checkout" asp-action="Index">Tiến hành đặt hàng &rarr;</a>
+        <form method="post" asp-controller="Cart" asp-action="Clear" class="ms-auto">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="btn btn-link text-danger text-decoration-none">Xóa toàn bộ giỏ</button>
+        </form>
+    </div>
+}

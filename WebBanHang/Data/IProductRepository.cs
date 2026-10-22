@@ -23,5 +23,11 @@ public interface IProductRepository
 
     Task<IReadOnlyList<ProductVariant>> GetVariantsAsync(int productId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Lấy 1 biến thể kèm tên/giá sản phẩm để thêm vào giỏ hàng.
+    /// Trả về null nếu biến thể không tồn tại hoặc sản phẩm/danh mục đã ngừng bán.
+    /// </summary>
+    Task<VariantInfo?> GetVariantInfoAsync(int productVariantId, CancellationToken cancellationToken = default);
+
     Task<Product?> GetProductWithVariantsAsync(int productId, CancellationToken cancellationToken = default);
 }

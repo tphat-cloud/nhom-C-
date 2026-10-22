@@ -1,0 +1,115 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Đặt hàng";
+}
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a asp-controller="Cart" asp-action="Index">Giỏ hàng</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Đặt hàng</li>
+    </ol>
+</nav>
+
+<h3 class="mb-3">Thông tin đặt hàng</h3>
+
+<form method="post" asp-controller="Checkout" asp-action="Index" class="row g-4">
+    @Html.AntiForgeryToken()
+
+    <div class="col-12 col-lg-7">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="CustomerName">Họ và tên người nhận</label>
+            <input class="form-control" asp-for="CustomerName" autocomplete="name" placeholder="VD: Nguyễn Văn A" />
+            <span class="text-danger small" asp-validation-for="CustomerName"></span>
+        </div>
+
+        <div class="row">
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label" asp-for="PhoneNumber">Số điện thoại</label>
+                <input class="form-control" asp-for="PhoneNumber" inputmode="numeric"
+                       autocomplete="tel" placeholder="VD: 0901234567" />
+                <span class="text-danger small" asp-validation-for="PhoneNumber"></span>
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+                <label class="form-label" asp-for="Email">Email (không bắt buộc)</label>
+                <input class="form-control" asp-for="Email" type="email" autocomplete="email"
+                       placeholder="VD: khachhang@email.com" />
+                <span class="text-danger small" asp-validation-for="Email"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Address">Địa chỉ nhận hàng</label>
+            <input class="form-control" asp-for="Address" autocomplete="street-address"
+                   placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" />
+            <span class="text-danger small" asp-validation-for="Address"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" asp-for="Note">Ghi chú cho cửa hàng</label>
+            <textarea class="form-control" asp-for="Note" rows="2"
+                      placeholder="VD: Giao giờ hành chính, gọi trước khi giao..."></textarea>
+            <span class="text-danger small" asp-validation-for="Note"></span>
+        </div>
+
+        <fieldset class="mb-3">
+            <legend class="form-label fs-6">Phương thức thanh toán</legend>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" asp-for="PaymentMethod"
+                       value="@PaymentMethods.Cod" id="paymentCod" />
+                <label class="form-check-label" for="paymentCod">
+                    Thanh toán khi nhận hàng (COD)
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" asp-for="PaymentMethod"
+                       value="@PaymentMethods.BankTransfer" id="paymentBank" />
+                <label class="form-check-label" for="paymentBank">
+                    Chuyển khoản ngân hàng (cửa hàng sẽ gọi xác nhận)
+                </label>
+            </div>
+            <span class="text-danger small" asp-validation-for="PaymentMethod"></span>
+        </fieldset>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="card">
+            <div class="card-header bg-light fw-semibold">Đơn hàng của bạn</div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    @foreach (CartItem item in Model.Items)
+                    {
+                        <li class="list-group-item d-flex justify-content-between gap-2">
+                            <div>
+                                <div class="fw-semibold">@item.ProductName</div>
+                                <div class="text-muted small">
+                                    Size @item.Size &middot; Màu @item.Color &middot; SL: @item.Quantity
+                                </div>
+                            </div>
+                            <div class="text-nowrap">@item.TotalPrice.ToString("N0") đ</div>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="card-footer d-flex justify-content-between align-items-center">
+                <span class="text-muted">@Model.TotalQuantity sản phẩm</span>
+                <span class="fs-5 fw-bold text-danger">@Model.TotalAmount.ToString("N0") đ</span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-dark w-100 mt-3">Xác nhận đặt hàng</button>
+        <a class="btn btn-link w-100 mt-1 text-decoration-none" asp-controller="Cart" asp-action="Index">
+            &larr; Quay lại giỏ hàng
+        </a>
+        <p class="text-muted small mt-2 mb-0">
+            Bằng việc bấm "Xác nhận đặt hàng", bạn đồng ý cung cấp thông tin trên cho cửa hàng
+            để liên hệ giao hàng.
+        </p>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
