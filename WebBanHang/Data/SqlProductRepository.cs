@@ -22,6 +22,7 @@ public sealed class SqlProductRepository : IProductRepository
             p.ImageUrl,
             p.CategoryId,
             c.Name AS CategoryName,
+            c.ImageUrl AS CategoryImageUrl,
             p.IsFeatured,
             ISNULL((SELECT SUM(v.StockQuantity)
                     FROM ProductVariants v
@@ -112,11 +113,15 @@ public sealed class SqlProductRepository : IProductRepository
         int categoryId,
         CancellationToken cancellationToken = default)
     {
+        // COLLATE Vietnamese_CI_AI: khách gõ không dấu ("ao") vẫn tìm được "Áo" —
+        // collation mặc định của CSDL phân biệt dấu nên sẽ không khớp.
         const string sql = ProductSelect + """
 
             WHERE p.IsActive = 1
               AND c.IsActive = 1
-              AND (@keyword = N'' OR p.Name LIKE @keyword ESCAPE '\' OR p.ProductCode LIKE @keyword ESCAPE '\')
+              AND (@keyword = N''
+                   OR p.Name COLLATE Vietnamese_CI_AI LIKE @keyword ESCAPE '\'
+                   OR p.ProductCode COLLATE Vietnamese_CI_AI LIKE @keyword ESCAPE '\')
               AND (@categoryId = 0 OR p.CategoryId = @categoryId)
             ORDER BY p.IsFeatured DESC, p.Name
             """;
@@ -199,6 +204,7 @@ public sealed class SqlProductRepository : IProductRepository
                 v.Color,
                 p.Price,
                 p.ImageUrl,
+                c.ImageUrl AS CategoryImageUrl,
                 v.StockQuantity
             FROM ProductVariants v
             INNER JOIN Products p ON p.ProductId = v.ProductId
@@ -229,6 +235,7 @@ public sealed class SqlProductRepository : IProductRepository
             Color = ReadText(reader, "Color"),
             Price = ReadMoney(reader, "Price"),
             ImageUrl = ReadNullableText(reader, "ImageUrl"),
+            CategoryImageUrl = ReadNullableText(reader, "CategoryImageUrl"),
             StockQuantity = ReadInt(reader, "StockQuantity")
         };
     }
@@ -273,6 +280,7 @@ public sealed class SqlProductRepository : IProductRepository
         ImageUrl = ReadNullableText(reader, "ImageUrl"),
         CategoryId = ReadInt(reader, "CategoryId"),
         CategoryName = ReadText(reader, "CategoryName"),
+        CategoryImageUrl = ReadNullableText(reader, "CategoryImageUrl"),
         IsFeatured = ReadFlag(reader, "IsFeatured"),
         TotalStock = ReadInt(reader, "TotalStock")
     };

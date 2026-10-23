@@ -1,58 +1,93 @@
 @model OrderSuccessViewModel
 @{
     ViewData["Title"] = "Đặt hàng thành công";
+
+    string paymentLabel = Model.PaymentMethod == PaymentMethods.BankTransfer
+        ? "Chuyển khoản ngân hàng"
+        : "Thanh toán khi nhận hàng (COD)";
 }
 
-<div class="text-center mb-4">
-    <div class="display-6 text-success mb-2">&#10003;</div>
-    <h3 class="mb-1">Đặt hàng thành công!</h3>
-    <p class="text-muted mb-0">
-        Mã đơn hàng của bạn: <span class="fw-bold text-dark">@Model.OrderCode</span>
-    </p>
-</div>
-
-<div class="row g-4 justify-content-center">
-    <div class="col-12 col-lg-7">
-        <div class="card">
-            <div class="card-header bg-light fw-semibold">Thông tin đơn hàng</div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                    <span class="text-muted">Người nhận</span>
-                    <span class="fw-semibold">@Model.CustomerName</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span class="text-muted">Số điện thoại</span>
-                    <span>@Model.PhoneNumber</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between gap-3">
-                    <span class="text-muted text-nowrap">Địa chỉ</span>
-                    <span class="text-end">@Model.Address</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span class="text-muted">Thanh toán</span>
-                    <span>@Model.PaymentMethod</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span class="text-muted">Tổng tiền</span>
-                    <span class="fw-bold text-danger">@Model.TotalText</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    <span class="text-muted">Trạng thái</span>
-                    <span class="badge bg-warning text-dark align-self-center">@OrderStatuses.Pending</span>
-                </li>
-            </ul>
-            <div class="card-footer text-muted small">
-                @Model.PaymentHint
-            </div>
+<div class="confirm">
+    <div class="confirm__head">
+        <div class="confirm__icon" aria-hidden="true">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m5 12.5 4.5 4.5L19 7"></path>
+            </svg>
         </div>
-
-        <div class="d-flex flex-wrap gap-2 mt-3">
-            <a class="btn btn-dark" asp-controller="Products" asp-action="Index">Tiếp tục mua sắm</a>
-            <a class="btn btn-outline-dark" asp-controller="Home" asp-action="Index">Về trang chủ</a>
-        </div>
-
-        <p class="text-muted small mt-3 mb-0">
-            Vui lòng lưu lại mã đơn hàng để trao đổi với cửa hàng khi cần hỗ trợ.
+        <h1 class="confirm__title">Đặt hàng thành công</h1>
+        <p class="confirm__sub">
+            Cảm ơn bạn, @Model.CustomerName! Cửa hàng sẽ gọi xác nhận trong thời gian sớm nhất.
         </p>
+
+        <div class="confirm__code">
+            <span>@Model.OrderCode</span>
+            <button type="button" data-copy="@Model.OrderCode" aria-label="Sao chép mã đơn hàng">Sao chép</button>
+        </div>
+    </div>
+
+    <section class="panel" aria-labelledby="orderInfo">
+        <h2 class="panel__title" id="orderInfo">Thông tin đơn hàng</h2>
+
+        <ul class="info-list">
+            <li>
+                <span class="label">Người nhận</span>
+                <span class="value">@Model.CustomerName</span>
+            </li>
+            <li>
+                <span class="label">Điện thoại</span>
+                <span class="value"><a href="tel:@Model.PhoneNumber">@Model.PhoneNumber</a></span>
+            </li>
+            <li>
+                <span class="label">Địa chỉ</span>
+                <span class="value">@Model.Address</span>
+            </li>
+            <li>
+                <span class="label">Thanh toán</span>
+                <span class="value">@paymentLabel</span>
+            </li>
+            <li>
+                <span class="label">Tổng tiền</span>
+                <span class="value">@Model.TotalText</span>
+            </li>
+            <li>
+                <span class="label">Trạng thái</span>
+                <span class="value"><span class="pill pill--low">@OrderStatuses.Pending</span></span>
+            </li>
+        </ul>
+    </section>
+
+    <section class="panel" aria-labelledby="nextSteps">
+        <h2 class="panel__title" id="nextSteps">Bước tiếp theo</h2>
+
+        <ol class="steps">
+            <li>
+                <strong>Cửa hàng gọi xác nhận</strong>
+                Trong giờ làm việc 8:00 – 21:00, nhân viên sẽ gọi số @Model.PhoneNumber để xác nhận đơn.
+            </li>
+            <li>
+                <strong>Đóng gói &amp; giao hàng</strong>
+                Đơn được giao trong 2–4 ngày làm việc, miễn phí vận chuyển toàn quốc.
+            </li>
+            <li>
+                <strong>Kiểm tra và thanh toán</strong>
+                @Model.PaymentHint
+            </li>
+        </ol>
+    </section>
+
+    <p class="summary__note center mt-3">
+        Vui lòng lưu lại mã đơn hàng <strong>@Model.OrderCode</strong> hoặc bấm nút tra cứu bên dưới để theo dõi trạng thái đơn hàng bất cứ lúc nào.
+    </p>
+
+    <div class="page-actions page-actions--center">
+        <a class="btn btn--ink" asp-area="" asp-controller="OrderLookup" asp-action="Index" asp-route-orderCode="@Model.OrderCode" asp-route-phoneNumber="@Model.PhoneNumber">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" x2="16.65" y1="21" y2="16.65"></line>
+            </svg>
+            <span>Tra cứu tiến trình đơn hàng</span>
+        </a>
+        <a class="btn btn--line" asp-area="" asp-controller="Products" asp-action="Index">Tiếp tục mua sắm</a>
+        <a class="btn btn--line" asp-area="" asp-controller="Home" asp-action="Index">Về trang chủ</a>
     </div>
 </div>

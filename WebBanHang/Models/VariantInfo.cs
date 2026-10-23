@@ -22,6 +22,9 @@ public class VariantInfo
 
     public string? ImageUrl { get; set; }
 
+    /// <summary>Ảnh danh mục — dùng thay thế khi sản phẩm chưa có ảnh riêng.</summary>
+    public string? CategoryImageUrl { get; set; }
+
     public bool IsAvailable => StockQuantity > 0;
 
     public CartItem ToCartItem(int quantity) => new()
@@ -33,6 +36,6 @@ public class VariantInfo
         Color = Color,
         UnitPrice = Price,
         Quantity = quantity,
-        ImageUrl = ImageUrl
+        ImageUrl = !string.IsNullOrWhiteSpace(ImageUrl) ? ImageUrl : CategoryImageUrl
     };
 }

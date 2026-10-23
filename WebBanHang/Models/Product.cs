@@ -21,6 +21,12 @@ public class Product
 
     public string CategoryName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Ảnh đại diện của danh mục (bảng Categories). Chỉ dùng để hiển thị:
+    /// nhiều sản phẩm trong CSDL chưa có ảnh riêng nên mượn ảnh danh mục cho đỡ trống.
+    /// </summary>
+    public string? CategoryImageUrl { get; set; }
+
     public bool IsFeatured { get; set; }
 
     /// <summary>Tổng tồn kho của mọi size/màu.</summary>
@@ -38,10 +44,19 @@ public class Product
         ? (int)Math.Round((OriginalPrice.Value - Price) * 100 / OriginalPrice.Value)
         : 0;
 
-    /// <summary>Ảnh hiển thị; dùng ảnh mặc định nếu sản phẩm chưa có ảnh.</summary>
-    public string DisplayImage => string.IsNullOrWhiteSpace(ImageUrl)
+    /// <summary>
+    /// Ảnh hiển thị theo thứ tự ưu tiên: ảnh sản phẩm → ảnh danh mục → ảnh mặc định.
+    /// </summary>
+    public string DisplayImage => !string.IsNullOrWhiteSpace(ImageUrl)
+        ? ImageUrl!
+        : !string.IsNullOrWhiteSpace(CategoryImageUrl)
+            ? CategoryImageUrl!
+            : "/images/no-image.svg";
+
+    /// <summary>Ảnh dự phòng khi ảnh chính bị lỗi tải (mất mạng) — dùng cho thuộc tính data-fallback.</summary>
+    public string FallbackImage => string.IsNullOrWhiteSpace(CategoryImageUrl)
         ? "/images/no-image.svg"
-        : ImageUrl;
+        : CategoryImageUrl!;
 
     /// <summary>
     /// Nhãn tình trạng hàng cho khách xem. Cố ý <b>không</b> hiển thị số lượng tồn kho

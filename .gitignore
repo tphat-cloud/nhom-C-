@@ -32,3 +32,6 @@ Thumbs.db
 ## Công cụ khác
 UpgradeLog*.htm
 Backup/
+
+## File do lường / preview tạm khi phát triển UI (không commit)
+WebBanHang/wwwroot/__*.html

@@ -2,113 +2,250 @@
 @model Product
 @{
     ViewData["Title"] = Model.Name;
+    ViewData["BodyClass"] = "pdp-page";
+    ViewData["Keyword"] = string.Empty;
+
+    IReadOnlyList<ProductVariant> variants = Model.Variants;
+    List<string> sizes = variants.Select(variant => variant.Size).Distinct().ToList();
+    List<string> colors = variants.Select(variant => variant.Color).Distinct().ToList();
+    ProductVariant? selectedVariant = variants.FirstOrDefault(variant => variant.IsAvailable) ?? variants.FirstOrDefault();
+
+    string stockPillClass = !Model.IsInStock ? "pill--out" : Model.TotalStock <= 5 ? "pill--low" : "pill--in";
+    decimal? saving = Model.OriginalPrice is decimal original && original > Model.Price ? original - Model.Price : null;
+    string currentPath = Context.Request.Path;
+
+    string description = string.IsNullOrWhiteSpace(Model.Description)
+        ? "Chất liệu mềm, thấm hút tốt và giữ form sau nhiều lần giặt. Form dáng dễ mặc, phù hợp cả đi làm lẫn đi chơi."
+        : Model.Description!;
 }
 
-<nav aria-label="breadcrumb">
-    <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-        <li class="breadcrumb-item"><a asp-controller="Products" asp-action="Index">Sản phẩm</a></li>
-        <li class="breadcrumb-item active" aria-current="page">@Model.Name</li>
+<nav aria-label="Bạn đang ở">
+    <ol class="crumbs crumbs--pdp">
+        <li><a asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+        <li><a asp-area="" asp-controller="Products" asp-action="Index">Sản phẩm</a></li>
+        <li><a asp-area="" asp-controller="Products" asp-action="Index" asp-route-categoryId="@Model.CategoryId">@Model.CategoryName</a></li>
+        <li aria-current="page">@Model.Name</li>
     </ol>
 </nav>
 
-<div class="row g-4">
-    <div class="col-12 col-md-6">
-        <img src="@Model.DisplayImage" class="img-fluid rounded border w-100" alt="@Model.Name" />
+<div class="pdp">
+    <div class="pdp__media">
+        <img src="@Model.DisplayImage" alt="@Model.Name" width="750" height="1000"
+             data-fallback="/images/no-image.svg" />
+        @if (Model.DiscountPercent > 0)
+        {
+            <span class="pdp__media-tag">Đang giảm @(Model.DiscountPercent)%</span>
+        }
     </div>
 
-    <div class="col-12 col-md-6">
-        <div class="text-uppercase text-muted small mb-1">
-            @Model.CategoryName &middot; Mã: @Model.ProductCode
-        </div>
-        <h2 class="mb-2">@Model.Name</h2>
+    <div class="pdp__info">
+        <p class="pdp__cat">@Model.CategoryName · Mã @Model.ProductCode</p>
+        <h1 class="pdp__title">@Model.Name</h1>
 
-        <div class="d-flex align-items-baseline flex-wrap gap-2 mb-3">
-            <span class="fs-4 fw-bold text-danger">@Model.Price.ToString("N0") đ</span>
+        <div class="pdp__price">
+            <span class="pdp__price-main">@Model.Price.ToString("N0") đ</span>
             @if (Model.DiscountPercent > 0)
             {
-                <span class="text-muted text-decoration-line-through">@(Model.OriginalPrice?.ToString("N0")) đ</span>
-                <span class="badge bg-danger">-@(Model.DiscountPercent)%</span>
+                <s class="price-old">@(Model.OriginalPrice?.ToString("N0")) đ</s>
+                <span class="price-off">-@(Model.DiscountPercent)%</span>
+            }
+        </div>
+        <p class="pdp__price-note">Miễn phí vận chuyển toàn quốc · Thanh toán COD hoặc chuyển khoản.</p>
+
+        <p class="pdp__desc">@description</p>
+
+        <div class="pdp__status">
+            <span class="pill @stockPillClass">@Model.StockText</span>
+            @if (saving is decimal saved && saved > 0)
+            {
+                <span class="pill">Tiết kiệm @saved.ToString("N0") đ</span>
             }
         </div>
 
-        <p class="text-muted">@Model.Description</p>
-
-        <p>
-            <span class="badge @(Model.IsInStock ? "bg-success" : "bg-secondary")">@Model.StockText</span>
-        </p>
-
-        <h6 class="mt-4">Size &amp; màu</h6>
-
-        @if (Model.Variants.Count == 0)
+        @if (variants.Count == 0)
         {
-            <div class="alert alert-warning mb-0">
-                Sản phẩm chưa có biến thể size/màu trong cơ sở dữ liệu.
+            <div class="notice mt-3">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="9"></circle>
+                    <path d="M12 8v5"></path>
+                    <path d="M12 16.5h.01"></path>
+                </svg>
+                <p>Sản phẩm này chưa có size/màu trong hệ thống nên tạm thời chưa thể đặt hàng. Vui lòng liên hệ hotline 1900 6868 để được hỗ trợ.</p>
             </div>
         }
         else
         {
-            <div class="table-responsive">
-                <table class="table table-sm table-bordered align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Size</th>
-                            <th>Màu</th>
-                            <th class="text-end">Tình trạng</th>
-                            <th class="text-end">Chọn mua</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var variant in Model.Variants)
-                        {
-                            <tr>
-                                <td>@variant.Size</td>
-                                <td>@variant.Color</td>
-                                <td class="text-end">
-                                    @* Không hiển thị số lượng tồn kho cho khách — chỉ tình trạng *@
-                                    @if (variant.IsAvailable)
-                                    {
-                                        <span class="badge bg-success">Còn hàng</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="badge bg-secondary">Hết hàng</span>
-                                    }
-                                </td>
-                                <td class="text-end">
-                                    @if (variant.IsAvailable)
-                                    {
-                                        <form method="post" asp-controller="Cart" asp-action="Add"
-                                              class="d-inline-flex gap-1 justify-content-end">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="variantId" value="@variant.ProductVariantId" />
-                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path" />
-                                            <input class="form-control form-control-sm cart-qty" type="number"
-                                                   name="quantity" value="1" min="1" max="@ICartService.MaxQuantityPerItem"
-                                                   aria-label="Số lượng size @variant.Size màu @variant.Color" />
-                                            <button type="submit" class="btn btn-sm btn-dark text-nowrap">
-                                                Thêm vào giỏ
-                                            </button>
-                                        </form>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted small">Tạm hết</span>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+            <form id="pdpAddForm" method="post" asp-area="" asp-controller="Cart" asp-action="Add"
+                  class="qty-form" data-submit-once>
+                @Html.AntiForgeryToken()
 
-            <p class="text-muted small mt-2 mb-0">
-                Số lượng tồn kho chi tiết được quản lý trong ứng dụng nội bộ của cửa hàng.
-            </p>
+                <div class="picker js-only-picker">
+                    <div class="picker__head">
+                        <p class="picker__label">Chọn size</p>
+                        <span class="picker__value" data-size-value>@selectedVariant?.Size</span>
+                    </div>
+                    <div class="chip-row" data-size-group role="radiogroup" aria-label="Chọn size">
+                        @foreach (string size in sizes)
+                        {
+                            <label class="chip">
+                                <input type="radio" name="sizePick" value="@size"
+                                       checked="@(selectedVariant?.Size == size)" aria-label="Size @size" />
+                                <span class="chip__box">@size</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="picker js-only-picker">
+                    <div class="picker__head">
+                        <p class="picker__label">Chọn màu</p>
+                        <span class="picker__value" data-color-value>@selectedVariant?.Color</span>
+                    </div>
+                    <div class="chip-row" data-color-group role="radiogroup" aria-label="Chọn màu">
+                        @foreach (string color in colors)
+                        {
+                            string? hex = ColorSwatch.GetHex(color);
+                            string dotStyle = hex is null ? string.Empty : "background-color:" + hex;
+
+                            <label class="swatch@(hex is null ? " swatch--generic" : string.Empty)" title="@color">
+                                <input type="radio" name="colorPick" value="@color"
+                                       checked="@(selectedVariant?.Color == color)" aria-label="Màu @color" />
+                                <span class="swatch__dot" style="@dotStyle" aria-hidden="true">@(hex is null ? color : string.Empty)</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <p class="picker__note js-only-picker" data-picker-note aria-live="polite"></p>
+
+                <div class="select-fallback">
+                    <label class="field__label" for="pdpVariant">Size &amp; màu</label>
+                    <select class="form-control" id="pdpVariant" name="variantId">
+                        @foreach (ProductVariant variant in variants)
+                        {
+                            <option value="@variant.ProductVariantId"
+                                    selected="@(variant.ProductVariantId == selectedVariant?.ProductVariantId)"
+                                    disabled="@(!variant.IsAvailable)">
+                                Size @variant.Size · Màu @variant.Color@(variant.IsAvailable ? string.Empty : " (hết hàng)")
+                            </option>
+                        }
+                    </select>
+                </div>
+
+                <div class="qty-form__row">
+                    <div class="qty">
+                        <button type="button" data-step="-1" aria-label="Giảm số lượng">&minus;</button>
+                        <input type="number" name="quantity" value="1" min="1"
+                               max="@ICartService.MaxQuantityPerItem" step="1" aria-label="Số lượng" />
+                        <button type="button" data-step="1" aria-label="Tăng số lượng">+</button>
+                    </div>
+                    <span class="text-muted">Tối đa @ICartService.MaxQuantityPerItem sản phẩm mỗi lần thêm</span>
+                </div>
+
+                <div class="pdp__actions">
+                    <button type="submit" name="returnUrl" value="@currentPath" class="btn btn--ink" data-add-button>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M6 8h12l-1.2 11a2 2 0 0 1-2 1.8H9.2a2 2 0 0 1-2-1.8L6 8Z"></path>
+                            <path d="M9 8V6.5a3 3 0 0 1 6 0V8"></path>
+                        </svg>
+                        Thêm vào giỏ
+                    </button>
+                    <button type="submit" name="returnUrl" value="/Checkout" class="btn btn--line" data-add-button>
+                        Mua ngay
+                    </button>
+                </div>
+                <p class="btn-note">Đổi trả trong 7 ngày · Miễn phí vận chuyển toàn quốc</p>
+            </form>
         }
 
-        <a class="btn btn-outline-dark mt-4" asp-controller="Products" asp-action="Index">
-            &larr; Tiếp tục xem sản phẩm
-        </a>
+        <ul class="perks">
+            <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M3 7h11v9H3z"></path>
+                    <path d="M14 10h4l3 3v3h-7z"></path>
+                    <circle cx="7" cy="18" r="1.6"></circle>
+                    <circle cx="17.5" cy="18" r="1.6"></circle>
+                </svg>
+                <div><strong>Giao 2–4 ngày làm việc</strong> — miễn phí toàn quốc, kiểm tra hàng trước khi thanh toán.</div>
+            </li>
+            <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 12a8 8 0 1 1-2.4-5.7"></path>
+                    <path d="M20 4v4h-4"></path>
+                </svg>
+                <div><strong>Đổi size trong 7 ngày</strong> — sản phẩm còn nguyên tem nhãn, chưa qua sử dụng.</div>
+            </li>
+            <li>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 3.5 19 6v5.5c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-2.5Z"></path>
+                    <path d="m9 12 2 2 4-4.5"></path>
+                </svg>
+                <div><strong>Hàng chính hãng từ cửa hàng</strong> — tồn kho hiển thị theo thời gian thực.</div>
+            </li>
+        </ul>
+
+        <div class="acc">
+            <details open>
+                <summary>Mô tả sản phẩm</summary>
+                <div class="acc__body">
+                    <p>@description</p>
+                    <p>
+                        Mã sản phẩm <strong>@Model.ProductCode</strong> · Danh mục <strong>@Model.CategoryName</strong>.
+                        Hình ảnh mang tính minh hoạ, màu thực tế có thể chênh lệch nhẹ theo ánh sáng màn hình.
+                    </p>
+                </div>
+            </details>
+            <details>
+                <summary>Hướng dẫn chọn size</summary>
+                <div class="acc__body">
+                    <p>
+                        Sản phẩm dùng size chuẩn châu Á. Nếu bạn đang phân vân giữa hai size,
+                        nên chọn size lớn hơn để mặc thoải mái; với quần jeans, chọn đúng số đo vòng eo.
+                    </p>
+                    <p>Cần tư vấn kỹ hơn, gọi hotline <strong>1900 6868</strong> (8:00 – 21:00).</p>
+                </div>
+            </details>
+            <details>
+                <summary>Đổi trả &amp; vận chuyển</summary>
+                <div class="acc__body">
+                    <ul>
+                        <li>Miễn phí vận chuyển toàn quốc, giao 2–4 ngày làm việc.</li>
+                        <li>Đổi size hoặc trả hàng trong 7 ngày kể từ khi nhận.</li>
+                        <li>Thanh toán khi nhận hàng (COD) hoặc chuyển khoản trước.</li>
+                    </ul>
+                    <p>Xem chi tiết tại <a asp-area="" asp-controller="Home" asp-action="Privacy" asp-fragment="doi-tra">chính sách đổi trả</a>.</p>
+                </div>
+            </details>
+            <details>
+                <summary>Bảo quản</summary>
+                <div class="acc__body">
+                    <p>
+                        Giặt máy ở nhiệt độ thường, lộn trái và giặt riêng với sản phẩm sáng màu.
+                        Không dùng chất tẩy mạnh, phơi trong bóng râm để giữ màu và form dáng.
+                    </p>
+                </div>
+            </details>
+        </div>
     </div>
 </div>
+
+@if (variants.Count > 0)
+{
+    <div class="buy-bar">
+        <div class="buy-bar__price">
+            @Model.Price.ToString("N0") đ
+            <small>@Model.StockText</small>
+        </div>
+        <button type="submit" form="pdpAddForm" name="returnUrl" value="@currentPath"
+                class="btn btn--ink" data-add-button>Thêm vào giỏ</button>
+    </div>
+
+    <script type="application/json" id="variantData">@Json.Serialize(variants.Select(variant => new
+    {
+        id = variant.ProductVariantId,
+        size = variant.Size,
+        color = variant.Color,
+        available = variant.IsAvailable,
+        low = variant.StockQuantity is > 0 and <= 5
+    }))</script>
+}

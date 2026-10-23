@@ -94,6 +94,128 @@ public sealed class SqlOrderRepository : IOrderRepository
         return OrderResult.Fail("Không tạo được đơn hàng, vui lòng thử lại sau.");
     }
 
+    public async Task<OrderLookupViewModel?> FindOrderForLookupAsync(
+        string orderCode,
+        string phoneNumber,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(orderCode) || string.IsNullOrWhiteSpace(phoneNumber))
+        {
+            return null;
+        }
+
+        string cleanOrderCode = orderCode.Trim();
+        string rawPhone = phoneNumber.Trim();
+        string digitsOnly = new string(rawPhone.Where(char.IsDigit).ToArray());
+        string last9Digits = digitsOnly.Length >= 9
+            ? digitsOnly[^9..]
+            : digitsOnly;
+
+        await using SqlConnection connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        const string orderSql = """
+            SELECT TOP 1
+                OrderId,
+                OrderCode,
+                OrderDate,
+                CustomerName,
+                CustomerPhone,
+                ShippingAddress,
+                Note,
+                TotalAmount,
+                Status,
+                PaymentMethod,
+                IsPaid
+            FROM Orders
+            WHERE UPPER(LTRIM(RTRIM(OrderCode))) = UPPER(@orderCode)
+              AND (
+                  CustomerPhone = @rawPhone
+                  OR REPLACE(REPLACE(REPLACE(REPLACE(CustomerPhone, ' ', ''), '-', ''), '.', ''), '+', '') = @digitsOnly
+                  OR RIGHT(REPLACE(REPLACE(REPLACE(REPLACE(CustomerPhone, ' ', ''), '-', ''), '.', ''), '+', ''), 9) = @last9Digits
+              )
+            """;
+
+        OrderLookupViewModel? result = null;
+
+        await using (SqlCommand command = new(orderSql, connection))
+        {
+            command.Parameters.Add("@orderCode", SqlDbType.NVarChar, 50).Value = cleanOrderCode;
+            command.Parameters.Add("@rawPhone", SqlDbType.NVarChar, 50).Value = rawPhone;
+            command.Parameters.Add("@digitsOnly", SqlDbType.NVarChar, 50).Value = digitsOnly;
+            command.Parameters.Add("@last9Digits", SqlDbType.NVarChar, 20).Value = last9Digits;
+
+            await using SqlDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleRow, cancellationToken);
+            if (await reader.ReadAsync(cancellationToken))
+            {
+                result = new OrderLookupViewModel
+                {
+                    OrderId = reader.GetInt32(reader.GetOrdinal("OrderId")),
+                    OrderCode = reader.GetString(reader.GetOrdinal("OrderCode")),
+                    OrderDate = reader.GetDateTime(reader.GetOrdinal("OrderDate")),
+                    CustomerName = reader.GetString(reader.GetOrdinal("CustomerName")),
+                    PhoneNumber = reader.GetString(reader.GetOrdinal("CustomerPhone")),
+                    ShippingAddress = reader.GetString(reader.GetOrdinal("ShippingAddress")),
+                    Note = reader.IsDBNull(reader.GetOrdinal("Note")) ? null : reader.GetString(reader.GetOrdinal("Note")),
+                    TotalAmount = reader.GetDecimal(reader.GetOrdinal("TotalAmount")),
+                    Status = reader.GetString(reader.GetOrdinal("Status")),
+                    PaymentMethod = reader.GetString(reader.GetOrdinal("PaymentMethod")),
+                    IsPaid = reader.GetBoolean(reader.GetOrdinal("IsPaid")),
+                    HasSearched = true,
+                    IsFound = true,
+                    OrderCodeInput = cleanOrderCode,
+                    PhoneNumberInput = rawPhone
+                };
+            }
+        }
+
+        if (result == null)
+        {
+            return null;
+        }
+
+        // Đọc chi tiết đơn hàng (kèm hình ảnh sản phẩm nếu có)
+        const string itemsSql = """
+            SELECT 
+                od.ProductName,
+                od.Size,
+                od.Color,
+                od.Quantity,
+                od.UnitPrice,
+                od.TotalPrice,
+                p.ImageUrl
+            FROM OrderDetails od
+            LEFT JOIN Products p ON od.ProductId = p.ProductId
+            WHERE od.OrderId = @orderId
+            ORDER BY od.OrderDetailId ASC
+            """;
+
+        List<OrderLookupItemViewModel> items = new();
+
+        await using (SqlCommand itemsCmd = new(itemsSql, connection))
+        {
+            itemsCmd.Parameters.Add("@orderId", SqlDbType.Int).Value = result.OrderId;
+
+            await using SqlDataReader itemsReader = await itemsCmd.ExecuteReaderAsync(cancellationToken);
+            while (await itemsReader.ReadAsync(cancellationToken))
+            {
+                items.Add(new OrderLookupItemViewModel
+                {
+                    ProductName = itemsReader.GetString(itemsReader.GetOrdinal("ProductName")),
+                    Size = itemsReader.IsDBNull(itemsReader.GetOrdinal("Size")) ? string.Empty : itemsReader.GetString(itemsReader.GetOrdinal("Size")),
+                    Color = itemsReader.IsDBNull(itemsReader.GetOrdinal("Color")) ? string.Empty : itemsReader.GetString(itemsReader.GetOrdinal("Color")),
+                    Quantity = itemsReader.GetInt32(itemsReader.GetOrdinal("Quantity")),
+                    UnitPrice = itemsReader.GetDecimal(itemsReader.GetOrdinal("UnitPrice")),
+                    TotalPrice = itemsReader.GetDecimal(itemsReader.GetOrdinal("TotalPrice")),
+                    ImageUrl = itemsReader.IsDBNull(itemsReader.GetOrdinal("ImageUrl")) ? null : itemsReader.GetString(itemsReader.GetOrdinal("ImageUrl"))
+                });
+            }
+        }
+
+        result.Items = items;
+        return result;
+    }
+
     /// <summary>Ghi toàn bộ đơn trong transaction hiện tại; trả về Fail nếu không đủ hàng.</summary>
     private static async Task<OrderResult> InsertOrderGraphAsync(
         SqlConnection connection,

@@ -1,17 +1,96 @@
-﻿@{
+@{
     ViewData["Title"] = "Giới thiệu";
+    ViewData["Keyword"] = string.Empty;
 }
 
-<h1>@ViewData["Title"]</h1>
+<div class="page-head">
+    <p class="eyebrow">Về chúng tôi</p>
+    <h1>Quần áo để mặc mỗi ngày</h1>
+    <p class="prose__lede">
+        Fashion Shop là cửa hàng thời trang tối giản: ít mẫu nhưng chọn kỹ từ chất liệu,
+        đường may đến form dáng — để mỗi món đồ bạn mua đều mặc được nhiều lần.
+    </p>
+</div>
 
-<p>
-    Fashion Shop là website bán quần áo thời trang xây dựng bằng ASP.NET Core MVC,
-    dùng chung cơ sở dữ liệu SQL Server với ứng dụng quản lý (WinForms) của đồ án.
-</p>
-
-<ul>
-    <li>Sản phẩm, danh mục, size/màu và tồn kho được lấy trực tiếp từ SQL Server.</li>
-    <li>Ứng dụng quản lý dùng để nhập sản phẩm, quản lý biến thể và duyệt đơn hàng.</li>
-    <li>Website dành cho khách xem sản phẩm; chức năng giỏ hàng và đặt hàng sẽ được bổ sung ở bước tiếp theo.</li>
+<ul class="value-grid section--tight">
+    <li class="value-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3.5 19 6v5.5c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-2.5Z"></path>
+            <path d="m9 12 2 2 4-4.5"></path>
+        </svg>
+        <div>
+            <strong>Chất liệu chọn lọc</strong>
+            <span>Cotton, linen, denim dày dặn — mặc thoáng và bền sau nhiều lần giặt.</span>
+        </div>
+    </li>
+    <li class="value-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4 7h16"></path>
+            <path d="M4 12h16"></path>
+            <path d="M4 17h10"></path>
+        </svg>
+        <div>
+            <strong>Form dáng dễ mặc</strong>
+            <span>Thiết kế gọn gàng, dễ phối với những món bạn đã có trong tủ.</span>
+        </div>
+    </li>
+    <li class="value-item">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20 12a8 8 0 1 1-2.4-5.7"></path>
+            <path d="M20 4v4h-4"></path>
+        </svg>
+        <div>
+            <strong>Đổi trả dễ dàng</strong>
+            <span>Đổi size trong 7 ngày nếu sản phẩm còn nguyên tem nhãn.</span>
+        </div>
+    </li>
 </ul>
 
+<div class="prose section--tight">
+    <h2 id="cau-chuyen">Câu chuyện của cửa hàng</h2>
+    <p>
+        Fashion Shop bắt đầu từ một ý tưởng đơn giản: mua sắm quần áo không cần phức tạp.
+        Thay vì chạy theo xu hướng ngắn hạn, cửa hàng tập trung vào những thiết kế cơ bản,
+        dễ mặc và đủ tốt để dùng lâu dài. Mỗi sản phẩm đều được nhập theo số lượng vừa phải,
+        kiểm tra form dáng trước khi đưa lên kệ.
+    </p>
+
+    <h2 id="doi-tra">Chính sách đổi trả</h2>
+    <ul>
+        <li>Đổi size hoặc trả hàng trong <strong>7 ngày</strong> kể từ khi nhận hàng.</li>
+        <li>Sản phẩm cần còn nguyên tem nhãn, chưa qua sử dụng và không có mùi lạ.</li>
+        <li>Liên hệ hotline <strong>1900 6868</strong> kèm mã đơn hàng để được hướng dẫn.</li>
+        <li>Chi phí vận chuyển đổi trả do lỗi sản phẩm được cửa hàng chi trả.</li>
+    </ul>
+
+    <h2 id="van-chuyen">Vận chuyển &amp; thanh toán</h2>
+    <ul>
+        <li>Miễn phí vận chuyển toàn quốc, giao trong 2–4 ngày làm việc.</li>
+        <li>Thanh toán khi nhận hàng (COD) hoặc chuyển khoản ngân hàng.</li>
+        <li>Bạn được kiểm tra hàng trước khi thanh toán với đơn COD.</li>
+        <li>Đơn hàng chỉ được giao sau khi nhân viên gọi xác nhận.</li>
+    </ul>
+
+    <h2 id="bao-mat">Bảo mật thông tin</h2>
+    <p>
+        Website chỉ thu thập những thông tin cần thiết để giao hàng: họ tên, số điện thoại,
+        địa chỉ và email (không bắt buộc). Thông tin được dùng duy nhất cho việc xác nhận
+        và giao đơn hàng, không chia sẻ cho bên thứ ba.
+    </p>
+
+    <h2>Công nghệ &amp; dữ liệu</h2>
+    <p>
+        Website xây dựng bằng ASP.NET Core MVC và dùng chung cơ sở dữ liệu SQL Server với
+        ứng dụng quản lý của cửa hàng. Sản phẩm, danh mục, size/màu và tồn kho được đọc trực
+        tiếp từ cơ sở dữ liệu; giá bán luôn được kiểm tra lại ở phía máy chủ khi đặt hàng.
+    </p>
+    <p>
+        Đây là website phục vụ đồ án môn Ngôn ngữ lập trình C# — dữ liệu và chính sách
+        mang tính minh hoạ cho việc vận hành thử nghiệm.
+    </p>
+
+    <div class="page-actions">
+        <a class="btn btn--ink" asp-area="" asp-controller="Products" asp-action="Index">Xem sản phẩm</a>
+        <a class="btn btn--line" asp-area="" asp-controller="Home" asp-action="Index">Về trang chủ</a>
+    </div>
+</div>

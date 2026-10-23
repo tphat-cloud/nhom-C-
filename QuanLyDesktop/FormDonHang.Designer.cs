@@ -49,6 +49,7 @@ namespace QuanLyDesktop
             btnDuyetDon = new Button();
             btnLamMoi = new Button();
             btnXemChiTiet = new Button();
+            btnThanhToan = new Button();
             ((System.ComponentModel.ISupportInitialize)dgvDonHang).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dgvChiTiet).BeginInit();
             SuspendLayout();
@@ -249,6 +250,22 @@ namespace QuanLyDesktop
             btnXemChiTiet.UseVisualStyleBackColor = false;
             btnXemChiTiet.Click += btnXemChiTiet_Click;
             // 
+            // btnThanhToan
+            // 
+            btnThanhToan.BackColor = Color.FromArgb(46, 125, 50);
+            btnThanhToan.Cursor = Cursors.Hand;
+            btnThanhToan.FlatAppearance.BorderSize = 0;
+            btnThanhToan.FlatStyle = FlatStyle.Flat;
+            btnThanhToan.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            btnThanhToan.ForeColor = Color.White;
+            btnThanhToan.Location = new Point(565, 430);
+            btnThanhToan.Name = "btnThanhToan";
+            btnThanhToan.Size = new Size(160, 40);
+            btnThanhToan.TabIndex = 9;
+            btnThanhToan.Text = "Xác nhận đã TT";
+            btnThanhToan.UseVisualStyleBackColor = false;
+            btnThanhToan.Click += btnThanhToan_Click;
+            // 
             // FormDonHang
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -259,6 +276,7 @@ namespace QuanLyDesktop
             StartPosition = FormStartPosition.CenterParent;
             Controls.Add(dgvChiTiet);
             Controls.Add(lblDetailSection);
+            Controls.Add(btnThanhToan);
             Controls.Add(btnXemChiTiet);
             Controls.Add(btnLamMoi);
             Controls.Add(btnDuyetDon);
@@ -285,5 +303,6 @@ namespace QuanLyDesktop
         private Button btnDuyetDon;
         private Button btnLamMoi;
         private Button btnXemChiTiet;
+        private Button btnThanhToan;
     }
 }

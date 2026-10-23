@@ -1,40 +1,196 @@
-﻿@model HomeViewModel
+@model HomeViewModel
 @{
     ViewData["Title"] = "Trang chủ";
+    ViewData["Keyword"] = string.Empty;
+    Product? heroProduct = Model.FeaturedProducts.FirstOrDefault();
+    Category? firstCategory = Model.Categories.FirstOrDefault();
 }
+<section class="hero">
+    <div class="hero__copy reveal">
+        <p class="eyebrow">Bộ sưu tập 2026</p>
+        <h1>Tối giản,<br />nhưng <em>khác biệt</em>.</h1>
+        <p class="lead">
+            Những món đồ dễ mặc, dễ phối và dùng được lâu — chọn chất liệu kỹ,
+            cắt may gọn, giá vừa phải để bạn mặc đẹp mỗi ngày.
+        </p>
 
-<section class="hero mb-4">
-    <h1 class="display-6 fw-bold mb-1">Fashion Shop</h1>
-    <p class="mb-0">Quần áo thời trang cho mọi phong cách — @Model.TotalProducts sản phẩm đang bán.</p>
-</section>
+        <div class="hero__actions">
+            <a class="btn btn--ink" asp-area="" asp-controller="Products" asp-action="Index">
+                Mua sắm ngay
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14"></path>
+                    <path d="m13 6 6 6-6 6"></path>
+                </svg>
+            </a>
+            @if (firstCategory is not null)
+            {
+                <a class="btn btn--line" asp-area="" asp-controller="Products" asp-action="Index"
+                   asp-route-categoryId="@firstCategory.CategoryId">@firstCategory.Name</a>
+            }
+        </div>
 
-<h5 class="mb-3">Danh mục</h5>
-<div class="d-flex flex-wrap gap-2 mb-4">
-    @foreach (var category in Model.Categories)
-    {
-        <a class="btn btn-outline-dark btn-sm"
-           asp-controller="Products" asp-action="Index" asp-route-categoryId="@category.CategoryId">
-            @category.Name
-        </a>
-    }
-</div>
+        <ul class="hero__stats">
+            <li>
+                <strong>@Model.TotalProducts</strong>
+                <span>Sản phẩm</span>
+            </li>
+            <li>
+                <strong>@Model.Categories.Count</strong>
+                <span>Danh mục</span>
+            </li>
+            <li>
+                <strong>7 ngày</strong>
+                <span>Đổi trả</span>
+            </li>
+        </ul>
+    </div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Sản phẩm nổi bật</h5>
-    <a class="text-decoration-none" asp-controller="Products" asp-action="Index">Xem tất cả &rarr;</a>
-</div>
-
-@if (Model.FeaturedProducts.Count == 0)
-{
-    <div class="alert alert-info">Chưa có sản phẩm nổi bật trong cơ sở dữ liệu.</div>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        @foreach (var product in Model.FeaturedProducts)
+    <div class="hero__media reveal">
+        @if (heroProduct is not null)
         {
-            <partial name="_ProductCard" model="product" />
+            <img src="@heroProduct.DisplayImage" alt="@heroProduct.Name" width="900" height="1125"
+                 data-fallback="/images/no-image.svg" />
+            <span class="hero__tag">@heroProduct.CategoryName</span>
         }
     </div>
+</section>
+
+<section class="section--tight" aria-label="Cam kết của cửa hàng">
+    <ul class="value-grid">
+        <li class="value-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 7h11v9H3z"></path>
+                <path d="M14 10h4l3 3v3h-7z"></path>
+                <circle cx="7" cy="18" r="1.6"></circle>
+                <circle cx="17.5" cy="18" r="1.6"></circle>
+            </svg>
+            <div>
+                <strong>Miễn phí vận chuyển</strong>
+                <span>Giao toàn quốc, không phụ phí</span>
+            </div>
+        </li>
+        <li class="value-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 12a8 8 0 1 1-2.4-5.7"></path>
+                <path d="M20 4v4h-4"></path>
+            </svg>
+            <div>
+                <strong>Đổi trả 7 ngày</strong>
+                <span>Chưa mặc, còn tem nhãn</span>
+            </div>
+        </li>
+        <li class="value-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3.5 19 6v5.5c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-2.5Z"></path>
+                <path d="m9 12 2 2 4-4.5"></path>
+            </svg>
+            <div>
+                <strong>Thanh toán an toàn</strong>
+                <span>COD hoặc chuyển khoản</span>
+            </div>
+        </li>
+        <li class="value-item">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 13v-1a8 8 0 0 1 16 0v1"></path>
+                <path d="M4 13h2.5v5H5a1 1 0 0 1-1-1v-4Z"></path>
+                <path d="M20 13h-2.5v5H19a1 1 0 0 0 1-1v-4Z"></path>
+                <path d="M17.5 18v1a2 2 0 0 1-2 2H13"></path>
+            </svg>
+            <div>
+                <strong>Hỗ trợ 8:00 – 21:00</strong>
+                <span>Hotline 1900 6868</span>
+            </div>
+        </li>
+    </ul>
+</section>
+
+@if (Model.Categories.Count > 0)
+{
+    <section class="section" aria-labelledby="homeCategories">
+        <div class="section-head">
+            <div>
+                <p class="eyebrow">Danh mục</p>
+                <h2 id="homeCategories">Mua theo phong cách</h2>
+            </div>
+            <a class="link-more" asp-area="" asp-controller="Products" asp-action="Index">
+                Xem tất cả
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14"></path>
+                    <path d="m13 6 6 6-6 6"></path>
+                </svg>
+            </a>
+        </div>
+
+        <div class="cat-grid">
+            @foreach (Category category in Model.Categories)
+            {
+                @if (!string.IsNullOrWhiteSpace(category.ImageUrl))
+                {
+                    <a class="cat-tile reveal" asp-area="" asp-controller="Products" asp-action="Index"
+                       asp-route-categoryId="@category.CategoryId">
+                        <img src="@category.ImageUrl" alt="@category.Name" loading="lazy" width="480" height="600"
+                             data-fallback="/images/no-image.svg" />
+                        <span class="cat-tile__label">@category.Name</span>
+                    </a>
+                }
+                else
+                {
+                    <a class="cat-tile cat-tile--text reveal" asp-area="" asp-controller="Products" asp-action="Index"
+                       asp-route-categoryId="@category.CategoryId">
+                        <span>@category.Name</span>
+                    </a>
+                }
+            }
+        </div>
+    </section>
 }
 
+<section class="section" aria-labelledby="homeFeatured">
+    <div class="section-head">
+        <div>
+            <p class="eyebrow">Gợi ý cho bạn</p>
+            <h2 id="homeFeatured">Sản phẩm nổi bật</h2>
+        </div>
+        <a class="link-more" asp-area="" asp-controller="Products" asp-action="Index">
+            Toàn bộ sản phẩm
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M5 12h14"></path>
+                <path d="m13 6 6 6-6 6"></path>
+            </svg>
+        </a>
+    </div>
+
+    @if (Model.FeaturedProducts.Count == 0)
+    {
+        <div class="empty">
+            <h2>Chưa có sản phẩm nổi bật</h2>
+            <p>Cửa hàng đang cập nhật bộ sưu tập mới. Bạn có thể xem toàn bộ sản phẩm hiện có.</p>
+            <a class="btn btn--ink" asp-area="" asp-controller="Products" asp-action="Index">Xem sản phẩm</a>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (Product product in Model.FeaturedProducts)
+            {
+                <partial name="_ProductCard" model="product" />
+            }
+        </div>
+    }
+</section>
+
+<section class="section--tight">
+    <div class="band reveal">
+        <div>
+            <p class="eyebrow">Triết lý của chúng tôi</p>
+            <h2>Chọn ít hơn, mặc nhiều hơn.</h2>
+            <p>
+                Mỗi mẫu chỉ giữ lại những chi tiết cần thiết, đường may chắc và chất liệu
+                thoải mái để bạn mặc được nhiều dịp — từ đi làm đến cuối tuần.
+            </p>
+        </div>
+        <div class="band__actions">
+            <a class="btn btn--ink" asp-area="" asp-controller="Products" asp-action="Index">Khám phá sản phẩm</a>
+        </div>
+    </div>
+</section>

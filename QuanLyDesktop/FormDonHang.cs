@@ -23,6 +23,7 @@ namespace QuanLyDesktop
             });
             cboLocTrangThai.SelectedIndex = 0;
             cboTrangThaiMoi.Enabled = false;
+            dgvDonHang.CellFormatting += DgvDonHang_CellFormatting;
             LoadDonHang();
         }
 
@@ -50,6 +51,9 @@ namespace QuanLyDesktop
                             ShippingAddress AS [Địa Chỉ Nhận],
                             TotalAmount AS [Tổng Tiền (VNĐ)],
                             Status AS [Trạng Thái],
+                            PaymentMethod AS [Phương Thức],
+                            CASE WHEN IsPaid = 1 THEN N'Đã thanh toán' ELSE N'Chưa TT' END AS [Thanh Toán],
+                            IsPaid,
                             OrderDate AS [Ngày Đặt]
                         FROM Orders
                         WHERE (@keyword = N''
@@ -70,9 +74,11 @@ namespace QuanLyDesktop
                         da.Fill(dt);
                         dgvDonHang.DataSource = dt;
 
-                        // Ẩn cột OrderId ngầm đi
+                        // Ẩn cột OrderId và IsPaid ngầm đi
                         if (dgvDonHang.Columns["OrderId"] != null)
                             dgvDonHang.Columns["OrderId"].Visible = false;
+                        if (dgvDonHang.Columns["IsPaid"] != null)
+                            dgvDonHang.Columns["IsPaid"].Visible = false;
 
                         // Định dạng tiền tệ
                         if (dgvDonHang.Columns["Tổng Tiền (VNĐ)"] != null)
@@ -143,19 +149,18 @@ namespace QuanLyDesktop
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    string sql = @"
-                        UPDATE Orders
-                        SET Status = @nextStatus
-                        WHERE OrderId = @id AND Status = @currentStatus";
 
-                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    // Đổi trạng thái và hoàn kho (khi hủy) nằm trong MỘT transaction:
+                    // hoặc cả hai cùng thành công, hoặc không thay đổi gì.
+                    using (SqlTransaction transaction = conn.BeginTransaction())
                     {
-                        cmd.Parameters.Add("@nextStatus", SqlDbType.NVarChar, 50).Value = nextStatus;
-                        cmd.Parameters.Add("@id", SqlDbType.Int).Value = orderId;
-                        cmd.Parameters.Add("@currentStatus", SqlDbType.NVarChar, 50).Value = currentStatus;
+                        int rowsAffected = UpdateOrderStatus(
+                            conn, transaction, orderId, currentStatus, nextStatus);
 
-                        if (cmd.ExecuteNonQuery() == 0)
+                        if (rowsAffected == 0)
                         {
+                            transaction.Rollback();
+
                             MessageBox.Show(
                                 "Đơn hàng đã được thay đổi ở nơi khác. Danh sách sẽ được tải lại.",
                                 "Không có thay đổi",
@@ -164,8 +169,18 @@ namespace QuanLyDesktop
                         }
                         else
                         {
+                            int restoredVariants = nextStatus == "Đã hủy"
+                                ? RestoreOrderStock(conn, transaction, orderId)
+                                : 0;
+
+                            transaction.Commit();
+
+                            string message = nextStatus == "Đã hủy"
+                                ? $"Đã hủy đơn và hoàn lại tồn kho cho {restoredVariants} biến thể sản phẩm."
+                                : $"Đã chuyển đơn sang trạng thái '{nextStatus}'.";
+
                             MessageBox.Show(
-                                $"Đã chuyển đơn sang trạng thái '{nextStatus}'.",
+                                message,
                                 "Hoàn tất",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Information);
@@ -179,6 +194,65 @@ namespace QuanLyDesktop
             {
                 MessageBox.Show("Lỗi duyệt đơn: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        /// <summary>
+        /// Đổi trạng thái đơn với điều kiện trạng thái hiện tại chưa bị nơi khác thay đổi.
+        /// Khi đơn chuyển sang "Hoàn thành", tự động cập nhật đã thanh toán (IsPaid = 1).
+        /// Trả về 0 nếu không cập nhật được dòng nào.
+        /// </summary>
+        private static int UpdateOrderStatus(
+            SqlConnection conn,
+            SqlTransaction transaction,
+            int orderId,
+            string currentStatus,
+            string nextStatus)
+        {
+            string sql = nextStatus == "Hoàn thành"
+                ? @"UPDATE Orders
+                    SET Status = @nextStatus, IsPaid = 1
+                    WHERE OrderId = @id AND Status = @currentStatus"
+                : @"UPDATE Orders
+                    SET Status = @nextStatus
+                    WHERE OrderId = @id AND Status = @currentStatus";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn, transaction);
+            cmd.Parameters.Add("@nextStatus", SqlDbType.NVarChar, 50).Value = nextStatus;
+            cmd.Parameters.Add("@id", SqlDbType.Int).Value = orderId;
+            cmd.Parameters.Add("@currentStatus", SqlDbType.NVarChar, 50).Value = currentStatus;
+
+            return cmd.ExecuteNonQuery();
+        }
+
+        /// <summary>
+        /// Hoàn lại tồn kho cho đơn bị hủy: cộng số lượng đã mua vào biến thể tương ứng.
+        /// Chỉ hoàn cho biến thể còn tồn tại và đúng sản phẩm đã đặt; số lượng được
+        /// gộp theo biến thể để không bỏ sót nếu một biến thể xuất hiện nhiều dòng.
+        /// Trả về số biến thể đã được hoàn kho.
+        /// </summary>
+        private static int RestoreOrderStock(
+            SqlConnection conn,
+            SqlTransaction transaction,
+            int orderId)
+        {
+            const string sql = @"
+                UPDATE v
+                SET v.StockQuantity = v.StockQuantity + d.TotalQuantity
+                FROM ProductVariants AS v
+                INNER JOIN (
+                    SELECT ProductVariantId, ProductId, SUM(Quantity) AS TotalQuantity
+                    FROM OrderDetails
+                    WHERE OrderId = @orderId
+                      AND ProductVariantId IS NOT NULL
+                    GROUP BY ProductVariantId, ProductId
+                ) AS d
+                    ON d.ProductVariantId = v.ProductVariantId
+                   AND d.ProductId = v.ProductId";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn, transaction);
+            cmd.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
+
+            return cmd.ExecuteNonQuery();
         }
 
         /// <summary>
@@ -273,7 +347,7 @@ namespace QuanLyDesktop
 
                     using (SqlDataAdapter da = new SqlDataAdapter(sql, conn))
                     {
-                        da.SelectCommand.Parameters.AddWithValue("@id", orderId);
+                        da.SelectCommand.Parameters.Add("@id", SqlDbType.Int).Value = orderId;
 
                         DataTable dt = new DataTable();
                         da.Fill(dt);
@@ -313,6 +387,112 @@ namespace QuanLyDesktop
             txtTimKiem.Clear();
             cboLocTrangThai.SelectedIndex = 0;
             LoadDonHang();
+        }
+
+        /// <summary>
+        /// Xác nhận thanh toán cho đơn hàng được chọn hoặc hủy đánh dấu.
+        /// Cập nhật cột IsPaid trong CSDL để Dashboard tính đúng Doanh Thu Hôm Nay.
+        /// </summary>
+        private void btnThanhToan_Click(object sender, EventArgs e)
+        {
+            if (dgvDonHang.SelectedRows.Count == 0)
+            {
+                MessageBox.Show(
+                    "Vui lòng chọn 1 đơn hàng trên bảng để cập nhật thanh toán!",
+                    "Chưa chọn đơn",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            DataGridViewRow row = dgvDonHang.SelectedRows[0];
+            int orderId = Convert.ToInt32(row.Cells["OrderId"].Value);
+            string orderCode = row.Cells["Mã Đơn"].Value?.ToString() ?? "";
+            string status = row.Cells["Trạng Thái"].Value?.ToString() ?? "";
+            bool isPaid = row.Cells["IsPaid"].Value != DBNull.Value && Convert.ToBoolean(row.Cells["IsPaid"].Value);
+            decimal total = Convert.ToDecimal(row.Cells["Tổng Tiền (VNĐ)"].Value);
+
+            if (status == "Đã hủy")
+            {
+                MessageBox.Show(
+                    "Đơn hàng này đã bị hủy, không thể cập nhật trạng thái thanh toán.",
+                    "Không thể thực hiện",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            bool newPaidStatus = !isPaid;
+            string prompt = newPaidStatus
+                ? $"Xác nhận đơn hàng '{orderCode}' đã thanh toán đủ {total:N0} đ?"
+                : $"Đơn hàng '{orderCode}' đang là [ĐÃ THANH TOÁN]. Bạn có muốn đổi lại thành [CHƯA THANH TOÁN] không?";
+
+            DialogResult confirm = MessageBox.Show(
+                prompt,
+                "Xác nhận thanh toán",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (confirm != DialogResult.Yes)
+            {
+                return;
+            }
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
+                    const string sql = "UPDATE Orders SET IsPaid = @isPaid WHERE OrderId = @id";
+                    using SqlCommand cmd = new SqlCommand(sql, conn);
+                    cmd.Parameters.Add("@isPaid", SqlDbType.Bit).Value = newPaidStatus;
+                    cmd.Parameters.Add("@id", SqlDbType.Int).Value = orderId;
+                    cmd.ExecuteNonQuery();
+                }
+
+                MessageBox.Show(
+                    newPaidStatus
+                        ? $"Đã cập nhật đơn '{orderCode}' thành ĐÃ THANH TOÁN."
+                        : $"Đã chuyển đơn '{orderCode}' về CHƯA THANH TOÁN.",
+                    "Hoàn tất",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+
+                LoadDonHang(txtTimKiem.Text.Trim(), GetSelectedFilterStatus());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    "Lỗi cập nhật trạng thái thanh toán: " + ex.Message,
+                    "Lỗi",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// Tô màu ô trạng thái thanh toán (Xanh lá: Đã thanh toán, Đỏ: Chưa TT).
+        /// </summary>
+        private void DgvDonHang_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (e.RowIndex >= 0
+                && e.ColumnIndex >= 0
+                && e.ColumnIndex < dgvDonHang.Columns.Count
+                && dgvDonHang.Columns[e.ColumnIndex].Name == "Thanh Toán"
+                && e.CellStyle != null)
+            {
+                if (e.Value?.ToString() == "Đã thanh toán")
+                {
+                    e.CellStyle.ForeColor = System.Drawing.Color.FromArgb(46, 125, 50);
+                    e.CellStyle.Font = new System.Drawing.Font(
+                        dgvDonHang.Font ?? System.Drawing.SystemFonts.DefaultFont,
+                        System.Drawing.FontStyle.Bold);
+                }
+                else
+                {
+                    e.CellStyle.ForeColor = System.Drawing.Color.FromArgb(198, 40, 40);
+                }
+            }
         }
     }
 }

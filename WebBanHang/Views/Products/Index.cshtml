@@ -1,41 +1,78 @@
 @model ProductListViewModel
 @{
     ViewData["Title"] = "Sản phẩm";
+    ViewData["Keyword"] = Model.Keyword;
+
+    Category? activeCategory = Model.Categories.FirstOrDefault(category => category.CategoryId == Model.CategoryId);
+    bool hasFilter = !string.IsNullOrWhiteSpace(Model.Keyword) || Model.CategoryId != 0;
 }
+<div class="page-head">
+    <p class="eyebrow">Cửa hàng</p>
+    <h1>@(activeCategory?.Name ?? "Tất cả sản phẩm")</h1>
+    <p>
+        @if (!string.IsNullOrWhiteSpace(Model.Keyword))
+        {
+            <text>Kết quả cho “@Model.Keyword”. </text>
+        }
+        Chọn size và màu ở trang chi tiết để thêm đúng món bạn cần.
+    </p>
+</div>
 
-<h3 class="mb-3">Sản phẩm</h3>
+<div class="filters">
+    <form class="search" method="get" asp-area="" asp-controller="Products" asp-action="Index" role="search">
+        <label class="visually-hidden" for="productSearch">Tìm sản phẩm</label>
+        <input id="productSearch" type="search" name="keyword" value="@Model.Keyword"
+               placeholder="Tìm theo tên hoặc mã sản phẩm…" autocomplete="off" />
+        @if (Model.CategoryId != 0)
+        {
+            <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+        }
+        <button type="submit" aria-label="Tìm kiếm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="7"></circle>
+                <path d="m20 20-3.5-3.5"></path>
+            </svg>
+        </button>
+    </form>
 
-<form method="get" asp-controller="Products" asp-action="Index" class="row g-2 mb-4">
-    <div class="col-12 col-md-5">
-        <input class="form-control" type="search" name="keyword" value="@Model.Keyword"
-               placeholder="Tìm theo tên hoặc mã sản phẩm..." />
+    <div class="filter-chips" role="group" aria-label="Lọc theo danh mục">
+        <a class="filter-chip@(Model.CategoryId == 0 ? " is-active" : string.Empty)"
+           asp-area="" asp-controller="Products" asp-action="Index" asp-route-keyword="@Model.Keyword"
+           asp-route-categoryId="0">Tất cả</a>
+
+        @foreach (Category category in Model.Categories)
+        {
+            <a class="filter-chip@(category.CategoryId == Model.CategoryId ? " is-active" : string.Empty)"
+               asp-area="" asp-controller="Products" asp-action="Index" asp-route-keyword="@Model.Keyword"
+               asp-route-categoryId="@category.CategoryId">@category.Name</a>
+        }
     </div>
-    <div class="col-8 col-md-4">
-        <select class="form-select" name="categoryId">
-            <option value="0" selected="@(Model.CategoryId == 0)">Tất cả danh mục</option>
-            @foreach (var category in Model.Categories)
-            {
-                <option value="@category.CategoryId" selected="@(category.CategoryId == Model.CategoryId)">@category.Name</option>
-            }
-        </select>
-    </div>
-    <div class="col-4 col-md-3 d-flex gap-2">
-        <button type="submit" class="btn btn-dark flex-fill">Tìm</button>
-        <a class="btn btn-outline-secondary" asp-controller="Products" asp-action="Index">Bỏ lọc</a>
-    </div>
-</form>
+</div>
+
+<div class="result-bar">
+    <span>Tìm thấy <strong>@Model.TotalCount</strong> sản phẩm@(activeCategory is not null ? $" trong {activeCategory.Name}" : string.Empty)</span>
+    @if (hasFilter)
+    {
+        <a class="link-danger" asp-area="" asp-controller="Products" asp-action="Index">Xóa bộ lọc</a>
+    }
+</div>
 
 @if (Model.TotalCount == 0)
 {
-    <div class="alert alert-warning">
-        Không tìm thấy sản phẩm phù hợp. Hãy thử từ khóa khác hoặc bỏ lọc danh mục.
+    <div class="empty">
+        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.5-3.5"></path>
+        </svg>
+        <h2>Không tìm thấy sản phẩm phù hợp</h2>
+        <p>Thử từ khóa ngắn hơn, kiểm tra chính tả hoặc bỏ lọc danh mục để xem toàn bộ sản phẩm.</p>
+        <a class="btn btn--ink" asp-area="" asp-controller="Products" asp-action="Index">Xem tất cả sản phẩm</a>
     </div>
 }
 else
 {
-    <p class="text-muted">Tìm thấy <strong>@Model.TotalCount</strong> sản phẩm.</p>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
-        @foreach (var product in Model.Products)
+    <div class="product-grid">
+        @foreach (Product product in Model.Products)
         {
             <partial name="_ProductCard" model="product" />
         }
