@@ -1,0 +1,61 @@
+%% Hinh 3.5 - Use Case chi tiet phan he WinForms
+flowchart LR
+    NV["Nhân viên bán hàng"]
+    QT["Quản trị viên"]
+
+    subgraph WF["Ứng dụng QuanLyDesktop (C# WinForms)"]
+        direction TB
+        subgraph AUTH["Nhóm xác thực"]
+            U0(["Đăng nhập bằng tài khoản nội bộ"])
+        end
+        subgraph CAT["Nhóm danh mục"]
+            U1(["Xem danh sách danh mục"])
+            U2(["Thêm danh mục"])
+            U3(["Cập nhật danh mục"])
+            U4(["Ngừng hoạt động hoặc kích hoạt lại"])
+            U5(["Tìm kiếm danh mục theo tên"])
+        end
+        subgraph PRO["Nhóm sản phẩm"]
+            U6(["Xem và tìm kiếm sản phẩm"])
+            U7(["Thêm sản phẩm mới"])
+            U8(["Cập nhật thông tin sản phẩm"])
+            U9(["Ngừng bán sản phẩm - xóa mềm"])
+            U10(["Quản lý biến thể size, màu, tồn kho"])
+        end
+        subgraph ORD["Nhóm đơn hàng"]
+            U11(["Xem danh sách đơn theo từ khóa và trạng thái"])
+            U12(["Xem chi tiết các mặt hàng của đơn"])
+            U13(["Chuyển trạng thái đơn theo luồng hợp lệ"])
+            U14(["Hủy đơn và hoàn tồn kho"])
+            U15(["Xác nhận hoặc hủy xác nhận thanh toán"])
+        end
+        subgraph DASH["Nhóm tổng quan"]
+            U16(["Xem số sản phẩm đang bán"])
+            U17(["Xem số đơn phát sinh trong ngày"])
+            U18(["Xem doanh thu đã thu trong ngày"])
+        end
+    end
+
+    QT --> U0
+    NV --> U0
+    QT --> U2
+    QT --> U3
+    QT --> U4
+    QT --> U7
+    QT --> U8
+    QT --> U9
+    QT --> U10
+    NV --> U1
+    NV --> U5
+    NV --> U6
+    NV --> U11
+    NV --> U12
+    NV --> U13
+    NV --> U14
+    NV --> U15
+    NV --> U16
+    NV --> U17
+    NV --> U18
+    U10 -.->|"extend - cập nhật tồn kho"| U8
+    U14 -.->|"include - RestoreOrderStock"| U13
+    U4 -.->|"include - kiểm tra IsActive"| U1

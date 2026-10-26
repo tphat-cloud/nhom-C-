@@ -1,0 +1,16 @@
+%% Hinh 3.9 - Screen Flow phan he WinForms
+flowchart TD
+    LOGIN["Form1 — Đăng nhập<br/>tên đăng nhập + mật khẩu"] -->|"Sai tài khoản"| LOGIN
+    LOGIN -->|"Đúng tài khoản"| MAIN["FormMain<br/>Dashboard tổng quan"]
+    MAIN -->|"btnSanPham"| PROD["FormMain — Quản lý sản phẩm<br/>lưới + form nhập liệu"]
+    PROD -->|"btnBienThe"| VAR["FormBienTheSanPham<br/>size, màu, tồn kho"]
+    VAR -->|"Đóng form"| PROD
+    MAIN -->|"button1"| ORDER["FormDonHang<br/>danh sách + chi tiết + duyệt"]
+    ORDER -->|"Đóng form"| MAIN
+    MAIN -->|"btnDanhMuc"| CAT["FormDanhMuc<br/>danh mục sản phẩm"]
+    CAT -->|"Đóng form"| MAIN
+    MAIN -->|"btnTrangChu"| MAIN
+    MAIN -->|"btnDangXuat"| LOGIN
+    PROD -->|"Ngừng bán"| PROD
+    ORDER -->|"Xem chi tiết"| ORDER
+    ORDER -->|"Chuyển trạng thái / hoàn kho"| ORDER

@@ -1,0 +1,46 @@
+%% Hinh 3.6 - Use Case chi tiet phan he WebBanHang
+flowchart LR
+    KH["Khách hàng"]
+
+    subgraph WEB["Website WebBanHang (ASP.NET Core MVC)"]
+        direction TB
+        subgraph BROWSE["Nhóm duyệt sản phẩm"]
+            W1(["Xem trang chủ với danh mục và sản phẩm nổi bật"])
+            W2(["Xem danh sách sản phẩm"])
+            W3(["Tìm kiếm theo tên hoặc mã sản phẩm"])
+            W4(["Lọc theo danh mục"])
+            W5(["Xem chi tiết sản phẩm và tình trạng hàng"])
+        end
+        subgraph BUY["Nhóm mua hàng"]
+            W6(["Chọn size và màu còn hàng"])
+            W7(["Thêm biến thể vào giỏ hàng"])
+            W8(["Cập nhật số lượng hoặc xóa dòng trong giỏ"])
+            W9(["Nhập thông tin nhận hàng và chọn thanh toán"])
+            W10(["Đặt hàng và nhận mã đơn"])
+        end
+        subgraph AFTER["Nhóm sau bán hàng"]
+            W11(["Xem trang xác nhận đặt hàng thành công"])
+            W12(["Tra cứu đơn bằng mã đơn và số điện thoại"])
+            W13(["Theo dõi tiến trình 4 bước của đơn"])
+            W14(["Xem chính sách đổi trả, vận chuyển, bảo mật"])
+        end
+    end
+
+    KH --> W1
+    KH --> W2
+    KH --> W3
+    KH --> W4
+    KH --> W5
+    KH --> W6
+    KH --> W7
+    KH --> W8
+    KH --> W9
+    KH --> W10
+    KH --> W11
+    KH --> W12
+    KH --> W13
+    KH --> W14
+    W5 -.->|"include - hiển thị biến thể"| W6
+    W7 -.->|"include - kiểm tra tồn kho"| W6
+    W10 -.->|"include - ghi đơn trong transaction"| W9
+    W13 -.->|"extend - chỉ khi tìm thấy đơn"| W12

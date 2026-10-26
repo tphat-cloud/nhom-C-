@@ -1,0 +1,34 @@
+%% Hinh 3.2 - Activity Diagram: khach hang dat hang truc tuyen tren Website
+flowchart TD
+    S(["Bắt đầu"]) --> A1["Khách truy cập trang chủ hoặc trang sản phẩm"]
+    A1 --> A2["Tìm theo từ khóa hoặc lọc theo danh mục"]
+    A2 --> A3["Mở trang chi tiết sản phẩm"]
+    A3 --> A4["Chọn size, chọn màu, nhập số lượng"]
+    A4 --> A5["POST /Cart/Add kèm anti-forgery token"]
+    A5 --> D1{"Biến thể còn hàng?"}
+    D1 -->|"Hết hàng"| W1["TempData Error: sản phẩm đã hết hàng"]
+    W1 --> A3
+    D1 -->|"Còn hàng"| D2{"Số lượng trong giỏ cộng thêm có vượt tồn kho?"}
+    D2 -->|"Vượt"| W2["Từ chối, không tiết lộ tồn kho thật"]
+    W2 --> A4
+    D2 -->|"Không vượt"| A6["CartService ghi giỏ hàng dạng JSON vào Session"]
+    A6 --> A7["Mở trang giỏ hàng, chỉnh số lượng hoặc xóa dòng"]
+    A7 --> A8["Bấm Thanh toán, mở form thông tin nhận hàng"]
+    A8 --> D3{"Dữ liệu form hợp lệ?"}
+    D3 -->|"Không"| W3["ModelState lỗi: họ tên, số điện thoại 10-11 số, địa chỉ"]
+    W3 --> A8
+    D3 -->|"Hợp lệ"| A9["SqlOrderRepository: mở SqlTransaction"]
+    A9 --> A10["Tìm khách theo số điện thoại hoặc INSERT Customers"]
+    A10 --> A11["INSERT Orders với trạng thái Chờ xử lý"]
+    A11 --> A12["Đọc lại giá và tên từ CSDL cho từng biến thể"]
+    A12 --> A13["UPDATE ProductVariants trừ kho có điều kiện StockQuantity >= @quantity"]
+    A13 --> D4{"Số dòng cập nhật bằng 0?"}
+    D4 -->|"Đúng - không đủ hàng"| W4["Rollback toàn bộ, giữ nguyên giỏ để khách sửa"]
+    W4 --> A8
+    D4 -->|"Sai - trừ kho thành công"| A14["INSERT OrderDetails với đơn giá lấy từ CSDL"]
+    A14 --> A15{"Còn dòng hàng nào?"}
+    A15 -->|"Còn"| A12
+    A15 -->|"Hết"| A16["UPDATE Orders.TotalAmount = tổng thực tế"]
+    A16 --> A17["COMMIT transaction"]
+    A17 --> A18["Xóa giỏ hàng, chuyển tới trang xác nhận kèm mã đơn DH..."]
+    A18 --> E(["Kết thúc"])

@@ -1,0 +1,19 @@
+%% Hinh 3.8 - Screen Flow phan he Web
+flowchart TD
+    HOME["/ — Trang chủ<br/>danh mục + sản phẩm nổi bật"] --> LIST["/Products — Danh sách sản phẩm<br/>tìm theo keyword + lọc categoryId"]
+    LIST -->|"Không có kết quả"| EMPTY["Trạng thái rỗng<br/>gợi ý xóa bộ lọc"]
+    EMPTY --> LIST
+    LIST --> DETAIL["/Products/Detail/{id}<br/>chi tiết, size, màu, tồn kho"]
+    HOME --> DETAIL
+    DETAIL -->|"Thêm vào giỏ"| CART["/Cart — Giỏ hàng<br/>cập nhật số lượng, xóa dòng"]
+    DETAIL -->|"Mua ngay"| CHECKOUT["/Checkout — Thông tin đặt hàng"]
+    CART --> CHECKOUT
+    CHECKOUT -->|"ModelState không hợp lệ"| CHECKOUT
+    CHECKOUT -->|"Transaction thất bại"| CHECKOUT
+    CHECKOUT -->|"Đặt hàng thành công"| SUCCESS["/Checkout/Success<br/>mã đơn DH..."]
+    SUCCESS --> HOME
+    SUCCESS --> LOOKUP["/tra-cuu-don-hang<br/>mã đơn + số điện thoại"]
+    HOME --> LOOKUP
+    LOOKUP -->|"Tìm thấy"| TRACK["Hiển thị tiến trình 4 bước<br/>và chi tiết mặt hàng"]
+    LOOKUP -->|"Không tìm thấy"| LOOKUP
+    TRACK --> HOME

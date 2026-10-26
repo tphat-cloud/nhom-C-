@@ -1,0 +1,29 @@
+%% Hinh 3.3 - Activity Diagram: xu ly va cap nhat trang thai don hang tren Desktop
+flowchart TD
+    S(["Bắt đầu"]) --> A1["Nhân viên mở FormDonHang"]
+    A1 --> A2["LoadDonHang lọc theo từ khóa và trạng thái"]
+    A2 --> A3["Chọn một đơn trên lưới dữ liệu"]
+    A3 --> A4["Xem chi tiết các mặt hàng của đơn"]
+    A4 --> A5["Chọn trạng thái mới trong ComboBox"]
+    A5 --> D1{"Trạng thái mới có nằm trong danh sách cho phép?"}
+    D1 -->|"Không"| W1["Cảnh báo: chuyển trạng thái không hợp lệ"]
+    W1 --> A5
+    D1 -->|"Có"| A6["Xác nhận hộp thoại Yes/No"]
+    A6 --> A7["Mở SqlTransaction"]
+    A7 --> A8["UPDATE Orders SET Status = @next WHERE OrderId = @id AND Status = @current"]
+    A8 --> D2{"Số dòng ảnh hưởng bằng 0?"}
+    D2 -->|"Đúng - đơn đã bị nơi khác đổi"| W2["Rollback, cảnh báo và tải lại danh sách"]
+    W2 --> A2
+    D2 -->|"Sai"| D3{"Trạng thái mới là Đã hủy?"}
+    D3 -->|"Có"| A9["RestoreOrderStock: cộng lại tồn kho theo từng biến thể"]
+    D3 -->|"Không"| A10["Giữ nguyên tồn kho"]
+    A9 --> A11["COMMIT transaction"]
+    A10 --> A11
+    A11 --> D4{"Trạng thái mới là Hoàn thành?"}
+    D4 -->|"Có"| A12["UPDATE Orders SET IsPaid = 1"]
+    D4 -->|"Không"| A13["Giữ nguyên cờ thanh toán"]
+    A12 --> A14["Thông báo kết quả và tải lại danh sách"]
+    A13 --> A14
+    A14 --> D5{"Còn đơn cần xử lý?"}
+    D5 -->|"Còn"| A3
+    D5 -->|"Không"| E(["Kết thúc"])

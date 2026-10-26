@@ -1,0 +1,38 @@
+%% Hinh 2.2 - Kien truc phan tang (N-Tier) va huong su kien cua phan he WinForms
+flowchart TB
+    subgraph PRES["Tầng trình diễn — Presentation Tier"]
+        direction LR
+        F1["Form1<br/>Đăng nhập"]
+        F2["FormMain<br/>Dashboard · CRUD sản phẩm"]
+        F3["FormDanhMuc<br/>CRUD danh mục"]
+        F4["FormBienTheSanPham<br/>Size · Màu · Tồn kho"]
+        F5["FormDonHang<br/>Duyệt đơn · Thanh toán"]
+    end
+
+    subgraph EVT["Tầng xử lý sự kiện — Event Handlers"]
+        E1["btnDangNhap_Click<br/>xác thực tài khoản"]
+        E2["btnThem_Click · btnSua_Click<br/>btnXoa_Click · KiemTraQuyenAdmin"]
+        E3["btnThem_Click · btnSua_Click<br/>VariantAlreadyExists"]
+        E4["btnDuyetDon_Click<br/>GetAllowedNextStatuses · RestoreOrderStock"]
+    end
+
+    subgraph INFRA["Tầng hạ tầng dữ liệu — Data Access Tier"]
+        C1["DatabaseConfig<br/>SqlConnectionStringBuilder<br/>đọc FASHIONSHOP_SQL_PASSWORD"]
+        C2["Microsoft.Data.SqlClient<br/>SqlConnection · SqlCommand · SqlDataAdapter"]
+        C3["SqlTransaction<br/>đổi trạng thái + hoàn kho nguyên tử"]
+    end
+
+    DB[("SQL Server 2022<br/>FashionShopDb")]
+
+    F1 --> E1
+    F2 --> E2
+    F3 --> E2
+    F4 --> E3
+    F5 --> E4
+    E1 --> C1
+    E2 --> C1
+    E3 --> C1
+    E4 --> C3
+    C1 --> C2
+    C3 --> C2
+    C2 -->|"TDS 1433"| DB

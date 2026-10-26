@@ -35,3 +35,8 @@ Backup/
 
 ## File do lường / preview tạm khi phát triển UI (không commit)
 WebBanHang/wwwroot/__*.html
+
+## Công cụ sinh báo cáo (Python) – thư viện tạm và bytecode, không commit
+.pylibs/
+__pycache__/
+*.pyc
