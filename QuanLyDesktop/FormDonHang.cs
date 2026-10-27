@@ -52,7 +52,9 @@ namespace QuanLyDesktop
                             TotalAmount AS [Tổng Tiền (VNĐ)],
                             Status AS [Trạng Thái],
                             PaymentMethod AS [Phương Thức],
-                            CASE WHEN IsPaid = 1 THEN N'Đã thanh toán' ELSE N'Chưa TT' END AS [Thanh Toán],
+                            CASE WHEN IsPaid = 1 AND Status <> N'Đã hủy'
+                                 THEN N'Đã thanh toán'
+                                 ELSE N'Chưa TT' END AS [Thanh Toán],
                             IsPaid,
                             OrderDate AS [Ngày Đặt]
                         FROM Orders
@@ -108,8 +110,11 @@ namespace QuanLyDesktop
                 return;
             }
 
-            int orderId = Convert.ToInt32(dgvDonHang.SelectedRows[0].Cells["OrderId"].Value);
-            string currentStatus = dgvDonHang.SelectedRows[0].Cells["Trạng Thái"].Value?.ToString() ?? "";
+            DataGridViewRow selectedRow = dgvDonHang.SelectedRows[0];
+            int orderId = Convert.ToInt32(selectedRow.Cells["OrderId"].Value);
+            string currentStatus = selectedRow.Cells["Trạng Thái"].Value?.ToString() ?? "";
+            bool wasPaid = selectedRow.Cells["IsPaid"].Value != DBNull.Value
+                && Convert.ToBoolean(selectedRow.Cells["IsPaid"].Value);
             string nextStatus = cboTrangThaiMoi.SelectedItem?.ToString() ?? "";
 
             if (string.IsNullOrWhiteSpace(nextStatus))
@@ -150,8 +155,8 @@ namespace QuanLyDesktop
                 {
                     conn.Open();
 
-                    // Đổi trạng thái và hoàn kho (khi hủy) nằm trong MỘT transaction:
-                    // hoặc cả hai cùng thành công, hoặc không thay đổi gì.
+                    // Đổi trạng thái, xóa cờ thanh toán (khi hủy) và hoàn kho nằm trong MỘT
+                    // transaction: hoặc cả ba cùng thành công, hoặc không thay đổi gì.
                     using (SqlTransaction transaction = conn.BeginTransaction())
                     {
                         int rowsAffected = UpdateOrderStatus(
@@ -177,6 +182,10 @@ namespace QuanLyDesktop
 
                             string message = nextStatus == "Đã hủy"
                                 ? $"Đã hủy đơn và hoàn lại tồn kho cho {restoredVariants} biến thể sản phẩm."
+                                  + (wasPaid
+                                      ? Environment.NewLine
+                                        + "Đơn đã được chuyển về CHƯA THANH TOÁN nên không còn được tính vào doanh thu."
+                                      : string.Empty)
                                 : $"Đã chuyển đơn sang trạng thái '{nextStatus}'.";
 
                             MessageBox.Show(
@@ -199,6 +208,8 @@ namespace QuanLyDesktop
         /// <summary>
         /// Đổi trạng thái đơn với điều kiện trạng thái hiện tại chưa bị nơi khác thay đổi.
         /// Khi đơn chuyển sang "Hoàn thành", tự động cập nhật đã thanh toán (IsPaid = 1).
+        /// Khi đơn chuyển sang "Đã hủy", đồng thời xóa cờ thanh toán (IsPaid = 0) trong cùng
+        /// câu lệnh để đơn đã hủy không bao giờ bị cộng vào doanh thu trên Dashboard.
         /// Trả về 0 nếu không cập nhật được dòng nào.
         /// </summary>
         private static int UpdateOrderStatus(
@@ -208,13 +219,20 @@ namespace QuanLyDesktop
             string currentStatus,
             string nextStatus)
         {
-            string sql = nextStatus == "Hoàn thành"
-                ? @"UPDATE Orders
+            string sql = nextStatus switch
+            {
+                "Hoàn thành" => @"UPDATE Orders
                     SET Status = @nextStatus, IsPaid = 1
-                    WHERE OrderId = @id AND Status = @currentStatus"
-                : @"UPDATE Orders
+                    WHERE OrderId = @id AND Status = @currentStatus",
+
+                "Đã hủy" => @"UPDATE Orders
+                    SET Status = @nextStatus, IsPaid = 0
+                    WHERE OrderId = @id AND Status = @currentStatus",
+
+                _ => @"UPDATE Orders
                     SET Status = @nextStatus
-                    WHERE OrderId = @id AND Status = @currentStatus";
+                    WHERE OrderId = @id AND Status = @currentStatus"
+            };
 
             using SqlCommand cmd = new SqlCommand(sql, conn, transaction);
             cmd.Parameters.Add("@nextStatus", SqlDbType.NVarChar, 50).Value = nextStatus;
@@ -443,11 +461,27 @@ namespace QuanLyDesktop
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-                    const string sql = "UPDATE Orders SET IsPaid = @isPaid WHERE OrderId = @id";
+                    // Điều kiện trạng thái nằm ngay trong câu lệnh UPDATE: nếu đơn vừa bị hủy ở nơi khác
+                    // thì không được đánh dấu thanh toán, tránh cộng tiền cho đơn đã hủy.
+                    const string sql = @"
+                        UPDATE Orders
+                        SET IsPaid = @isPaid
+                        WHERE OrderId = @id
+                          AND Status <> N'Đã hủy'";
                     using SqlCommand cmd = new SqlCommand(sql, conn);
                     cmd.Parameters.Add("@isPaid", SqlDbType.Bit).Value = newPaidStatus;
                     cmd.Parameters.Add("@id", SqlDbType.Int).Value = orderId;
-                    cmd.ExecuteNonQuery();
+
+                    if (cmd.ExecuteNonQuery() == 0)
+                    {
+                        MessageBox.Show(
+                            $"Đơn '{orderCode}' không còn ở trạng thái có thể thu tiền (có thể vừa bị hủy). Danh sách sẽ được tải lại.",
+                            "Không có thay đổi",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Warning);
+                        LoadDonHang(txtTimKiem.Text.Trim(), GetSelectedFilterStatus());
+                        return;
+                    }
                 }
 
                 MessageBox.Show(

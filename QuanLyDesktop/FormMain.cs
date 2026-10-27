@@ -75,9 +75,10 @@ public partial class FormMain : Form
                        AND OrderDate < DATEADD(DAY, 1, @today)) AS OrdersToday,
                     (SELECT COALESCE(SUM(TotalAmount), 0)
                      FROM Orders
-                     WHERE IsPaid = 1
+                     WHERE (Status = N'Hoàn thành'
+                            OR (IsPaid = 1 AND Status <> N'Đã hủy'))
                        AND OrderDate >= @today
-                       AND OrderDate < DATEADD(DAY, 1, @today)) AS PaidToday";
+                       AND OrderDate < DATEADD(DAY, 1, @today)) AS RevenueToday";
 
             using SqlCommand cmd = new SqlCommand(sql, conn);
             using SqlDataReader reader = cmd.ExecuteReader();
@@ -86,7 +87,7 @@ public partial class FormMain : Form
             {
                 lblStatProductsValue.Text = Convert.ToInt32(reader["ActiveProductCount"]).ToString("N0");
                 lblStatOrdersValue.Text = Convert.ToInt32(reader["OrdersToday"]).ToString("N0");
-                lblStatRevenueValue.Text = Convert.ToDecimal(reader["PaidToday"]).ToString("N0") + " đ";
+                lblStatRevenueValue.Text = Convert.ToDecimal(reader["RevenueToday"]).ToString("N0") + " đ";
             }
         }
         catch
@@ -510,9 +511,12 @@ public partial class FormMain : Form
 
     private void button1_Click(object sender, EventArgs e)
     {
-        FormDonHang f = new FormDonHang();
+        using FormDonHang f = new FormDonHang();
         f.ShowDialog(); // Mở cửa sổ đơn hàng lên
 
+        // Đơn hàng có thể vừa được đổi trạng thái hoặc đánh dấu thanh toán,
+        // nên doanh thu và số đơn phải được tính lại ngay khi quay về dashboard.
+        LoadDashboardSummary();
     }
 
     private void button2_Click(object sender, EventArgs e)

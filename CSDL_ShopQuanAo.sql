@@ -104,7 +104,9 @@ CREATE TABLE Orders (
     CONSTRAINT CK_Orders_TotalAmount CHECK (TotalAmount >= 0),
     -- Chỉ nhận các trạng thái thuộc luồng nghiệp vụ của hệ thống
     CONSTRAINT CK_Orders_Status CHECK (Status IN (N'Chờ xử lý', N'Đã duyệt', N'Đang giao', N'Hoàn thành', N'Đã hủy')),
-    CONSTRAINT CK_Orders_PaymentMethod CHECK (PaymentMethod IN (N'COD', N'Tiền mặt', N'Chuyển khoản'))
+    CONSTRAINT CK_Orders_PaymentMethod CHECK (PaymentMethod IN (N'COD', N'Tiền mặt', N'Chuyển khoản')),
+    -- Đơn đã hủy không được mang cờ đã thanh toán (tránh cộng nhầm vào doanh thu)
+    CONSTRAINT CK_Orders_CancelledNotPaid CHECK (Status <> N'Đã hủy' OR IsPaid = 0)
 );
 GO
 
