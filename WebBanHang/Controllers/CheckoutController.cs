@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using WebBanHang.Data;
 using WebBanHang.Models;
@@ -87,6 +88,9 @@ public class CheckoutController : Controller
 
         TempData["OrderCode"] = result.OrderCode;
         TempData["OrderTotal"] = result.TotalAmount.ToString("N0") + " đ";
+        // Giá trị thô (không định dạng) để trang xác nhận lưu "đơn hàng gần đây" vào LocalStorage
+        TempData["OrderTotalRaw"] = result.TotalAmount.ToString(CultureInfo.InvariantCulture);
+        TempData["OrderDateIso"] = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
         TempData["OrderCustomer"] = model.CustomerName.Trim();
         TempData["OrderPhone"] = model.PhoneNumber.Trim();
         TempData["OrderAddress"] = model.Address.Trim();
@@ -108,6 +112,8 @@ public class CheckoutController : Controller
         {
             OrderCode = orderCode,
             TotalText = TempData["OrderTotal"] as string ?? string.Empty,
+            TotalAmount = ParseOrderTotal(TempData["OrderTotalRaw"] as string),
+            OrderDate = ParseOrderDate(TempData["OrderDateIso"] as string),
             CustomerName = TempData["OrderCustomer"] as string ?? string.Empty,
             PhoneNumber = TempData["OrderPhone"] as string ?? string.Empty,
             Address = TempData["OrderAddress"] as string ?? string.Empty,
@@ -116,4 +122,20 @@ public class CheckoutController : Controller
 
         return View(success);
     }
+
+    /// <summary>Tổng tiền lưu trong TempData dạng chuỗi invariant (an toàn với mọi culture).</summary>
+    private static decimal ParseOrderTotal(string? value)
+        => decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out decimal total)
+            ? total
+            : 0m;
+
+    private static DateTime ParseOrderDate(string? value)
+        => DateTime.TryParseExact(
+            value,
+            "yyyy-MM-ddTHH:mm:ss",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out DateTime orderDate)
+            ? orderDate
+            : DateTime.Now;
 }

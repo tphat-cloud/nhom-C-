@@ -1,3 +1,4 @@
+@using System.Globalization
 @model OrderSuccessViewModel
 @{
     ViewData["Title"] = "Đặt hàng thành công";
@@ -77,6 +78,7 @@
 
     <p class="summary__note center mt-3">
         Vui lòng lưu lại mã đơn hàng <strong>@Model.OrderCode</strong> hoặc bấm nút tra cứu bên dưới để theo dõi trạng thái đơn hàng bất cứ lúc nào.
+        Đơn này cũng đã được lưu trên <strong>thiết bị này</strong> để lần sau tra cứu chỉ với một cú bấm.
     </p>
 
     <div class="page-actions page-actions--center">
@@ -91,3 +93,12 @@
         <a class="btn btn--line" asp-area="" asp-controller="Home" asp-action="Index">Về trang chủ</a>
     </div>
 </div>
+
+@* Dữ liệu cho site.js: lưu đơn vừa đặt vào LocalStorage ("Đơn hàng gần đây của bạn", tối đa 5 đơn) *@
+<script type="application/json" id="recentOrderData">@(Json.Serialize(new
+    {
+        orderCode = Model.OrderCode,
+        phone = Model.PhoneNumber,
+        orderDate = Model.OrderDate.ToString("s", CultureInfo.InvariantCulture),
+        totalAmount = Model.TotalAmount
+    }))</script>

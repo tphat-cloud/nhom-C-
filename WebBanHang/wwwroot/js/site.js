@@ -373,6 +373,237 @@
 
     refresh();
   });
+
+  /* ---------- "Đơn hàng gần đây của bạn" (LocalStorage) ----------
+     - Trang "Đặt hàng thành công" và trang kết quả tra cứu đẩy cặp
+       { orderCode, phone, orderDate, totalAmount } xuống qua
+       <script type="application/json" id="recentOrderData">.
+     - Trang tra cứu dựng lại danh sách để khách bấm "Xem nhanh" tra cứu 1 cú bấm.
+     - Lịch sử chỉ nằm trên trình duyệt của khách, tối đa 5 đơn gần nhất.
+  ------------------------------------------------------------------ */
+
+  var RecentOrders = (function () {
+    var STORAGE_KEY = 'fashionshop.recentOrders';
+    var MAX_ORDERS = 5;
+
+    function storage() {
+      try {
+        // Truy cập localStorage có thể ném lỗi (chế độ riêng tư của một số trình duyệt)
+        return window.localStorage || null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    // Chuẩn hóa 1 bản ghi: loại bỏ dữ liệu rác do khách sửa tay trong DevTools
+    function normalize(entry) {
+      if (!entry || typeof entry !== 'object') return null;
+
+      var orderCode = typeof entry.orderCode === 'string' ? entry.orderCode.trim() : '';
+      var phone = typeof entry.phone === 'string' ? entry.phone.trim() : '';
+      if (!orderCode || !phone) return null;
+
+      var totalAmount = Number(entry.totalAmount);
+
+      return {
+        orderCode: orderCode,
+        phone: phone,
+        orderDate: typeof entry.orderDate === 'string' ? entry.orderDate : '',
+        totalAmount: isFinite(totalAmount) ? totalAmount : 0
+      };
+    }
+
+    function read() {
+      var store = storage();
+      if (!store) return [];
+
+      try {
+        var raw = store.getItem(STORAGE_KEY);
+        if (!raw) return [];
+
+        var parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+
+        var list = [];
+        parsed.forEach(function (entry) {
+          var order = normalize(entry);
+          if (order) list.push(order);
+        });
+
+        return list.slice(0, MAX_ORDERS);
+      } catch (error) {
+        // Dữ liệu hỏng (phiên bản cũ, khách sửa tay) -> bỏ qua, không làm sập trang
+        return [];
+      }
+    }
+
+    function write(list) {
+      var store = storage();
+      if (!store) return;
+
+      try {
+        store.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, MAX_ORDERS)));
+      } catch (error) {
+        // Hết dung lượng hoặc bị chặn: đây chỉ là tiện ích, không cần báo lỗi
+      }
+    }
+
+    // Lưu đơn mới lên đầu; đơn đã có (cùng mã) thì cập nhật và đẩy lên đầu
+    function save(order) {
+      var entry = normalize(order);
+      if (!entry) return;
+
+      var code = entry.orderCode.toLowerCase();
+      var list = read().filter(function (item) {
+        return item.orderCode.toLowerCase() !== code;
+      });
+
+      list.unshift(entry);
+      write(list);
+    }
+
+    function formatDate(value) {
+      var date = new Date(value);
+      if (isNaN(date.getTime())) return '';
+
+      function pad(number) {
+        return number < 10 ? '0' + number : String(number);
+      }
+
+      return pad(date.getDate()) + '/' + pad(date.getMonth() + 1) + '/' + date.getFullYear();
+    }
+
+    function formatAmount(value) {
+      var amount = Number(value);
+      if (!isFinite(amount) || amount <= 0) return '';
+
+      try {
+        return amount.toLocaleString('vi-VN') + ' đ';
+      } catch (error) {
+        return String(amount) + ' đ';
+      }
+    }
+
+    // Chỉ hiển thị 3 số đầu/cuối để lộ trình duyệt chung không thấy toàn bộ SĐT
+    function maskPhone(phone) {
+      var digits = phone.replace(/\D/g, '');
+      if (digits.length < 7) return phone;
+      return digits.slice(0, 3) + '***' + digits.slice(-3);
+    }
+
+    // Điền sẵn Mã đơn + SĐT rồi gửi form tra cứu (khách không phải gõ gì)
+    function quickLookup(order) {
+      var codeInput = document.getElementById('orderCode');
+      var phoneInput = document.getElementById('phoneNumber');
+      if (!codeInput || !phoneInput) return;
+
+      var form = codeInput.form || phoneInput.form;
+      if (!form) return;
+
+      codeInput.value = order.orderCode;
+      phoneInput.value = order.phone;
+
+      // Báo cho các listener khác biết giá trị vừa đổi (đồng bộ với thao tác gõ tay)
+      codeInput.dispatchEvent(new Event('input', { bubbles: true }));
+      phoneInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+      if (typeof form.requestSubmit === 'function') {
+        form.requestSubmit();
+      } else {
+        form.submit();
+      }
+    }
+
+    function render() {
+      var container = document.querySelector('[data-recent-orders]');
+      if (!container) return;
+
+      var listElement = container.querySelector('[data-recent-orders-list]');
+      var template = document.getElementById('recentOrderTemplate');
+      if (!listElement || !template) return;
+
+      var orders = read();
+      listElement.textContent = '';
+
+      if (orders.length === 0) {
+        container.hidden = true;
+        return;
+      }
+
+      orders.forEach(function (order) {
+        var fragment = template.content.cloneNode(true);
+        var row = fragment.querySelector('.recent-order');
+        if (!row) return;
+
+        row.querySelector('[data-field="orderCode"]').textContent = order.orderCode;
+
+        var meta = [];
+        var date = formatDate(order.orderDate);
+        if (date) meta.push(date);
+
+        var amount = formatAmount(order.totalAmount);
+        if (amount) meta.push(amount);
+
+        meta.push('SĐT ' + maskPhone(order.phone));
+        row.querySelector('[data-field="meta"]').textContent = meta.join(' · ');
+
+        var button = row.querySelector('[data-quick-lookup]');
+        if (button) {
+          button.setAttribute('aria-label', 'Xem nhanh đơn hàng ' + order.orderCode);
+          button.addEventListener('click', function () {
+            quickLookup(order);
+          });
+        }
+
+        listElement.appendChild(fragment);
+      });
+
+      container.hidden = false;
+    }
+
+    function clear() {
+      var store = storage();
+      if (store) {
+        try {
+          store.removeItem(STORAGE_KEY);
+        } catch (error) {
+          /* bị chặn: bỏ qua */
+        }
+      }
+
+      render();
+    }
+
+    // Đọc dữ liệu server đẩy xuống (trang đặt hàng thành công / kết quả tra cứu)
+    function saveFromPage() {
+      var dataElement = document.getElementById('recentOrderData');
+      if (!dataElement) return;
+
+      try {
+        save(JSON.parse(dataElement.textContent || '{}'));
+      } catch (error) {
+        /* JSON hỏng: bỏ qua */
+      }
+    }
+
+    return { saveFromPage: saveFromPage, render: render, clear: clear };
+  })();
+
+  ready(function () {
+    // Trang xác nhận đặt hàng / trang có kết quả tra cứu: ghi lại cặp Mã đơn + SĐT
+    RecentOrders.saveFromPage();
+
+    // Trang tra cứu: dựng danh sách "Lịch sử đơn hàng trên thiết bị này"
+    RecentOrders.render();
+
+    var clearButton = document.querySelector('[data-recent-orders-clear]');
+    if (clearButton) {
+      clearButton.addEventListener('click', function () {
+        if (!window.confirm('Xóa toàn bộ lịch sử đơn hàng đã lưu trên thiết bị này?')) return;
+        RecentOrders.clear();
+      });
+    }
+  });
 })();
 
 

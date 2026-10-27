@@ -2651,12 +2651,82 @@ html.js .reveal.is-visible { opacity: 1; transform: none; }
   border-radius: 2px;
 }
 
+/* Lịch sử đơn hàng lưu trên thiết bị (LocalStorage) */
+.recent-orders[hidden] {
+  display: none !important;
+}
+
+.recent-orders__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: .9rem;
+}
+
+.recent-orders__desc {
+  margin: .4rem 0 0;
+  font-size: .82rem;
+  color: var(--muted);
+  line-height: 1.6;
+  max-width: 54ch;
+}
+
+.recent-orders__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.recent-order {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .9rem;
+  flex-wrap: wrap;
+  padding: .85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.recent-order:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.recent-order__body {
+  display: flex;
+  flex-direction: column;
+  gap: .18rem;
+  min-width: 0;
+}
+
+.recent-order__code {
+  font-family: var(--font-mono);
+  font-size: .86rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: var(--ink);
+  word-break: break-all;
+}
+
+.recent-order__meta {
+  font-size: .78rem;
+  color: var(--muted);
+}
+
+.recent-order__action {
+  flex-shrink: 0;
+}
+
 /* Print */
 @media print {
   .site-header,
   .site-footer,
   .announce,
   .lookup-box,
+  .recent-orders,
   .lookup-faq-grid,
   .lookup-bottom-actions,
   .skip-link {

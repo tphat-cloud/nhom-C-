@@ -1,3 +1,4 @@
+@using System.Globalization
 @model OrderLookupViewModel
 @{
     ViewData["Title"] = "Tra cứu đơn hàng";
@@ -12,6 +13,33 @@
             Nhập <strong>Mã đơn hàng</strong> và <strong>Số điện thoại</strong> bạn đã dùng khi đặt hàng để theo dõi tiến trình giao hàng theo thời gian thực.
         </p>
     </header>
+
+    <!-- LỊCH SỬ ĐƠN HÀNG LƯU TRÊN THIẾT BỊ (LocalStorage — site.js dựng nội dung) -->
+    <section class="recent-orders lookup-card" data-recent-orders hidden aria-labelledby="recentOrdersTitle">
+        <div class="recent-orders__head">
+            <div>
+                <h2 class="panel__title" id="recentOrdersTitle">Lịch sử đơn hàng trên thiết bị này</h2>
+                <p class="recent-orders__desc">
+                    Các đơn bạn đã đặt trên trình duyệt này. Bấm <strong>Xem nhanh</strong> để tra cứu lại
+                    mà không cần gõ lại Mã đơn và Số điện thoại.
+                </p>
+            </div>
+            <button type="button" class="link-danger" data-recent-orders-clear>Xóa lịch sử</button>
+        </div>
+
+        <ul class="recent-orders__list" data-recent-orders-list></ul>
+    </section>
+
+    <!-- Mẫu một dòng lịch sử: site.js nhân bản rồi điền dữ liệu bằng textContent -->
+    <template id="recentOrderTemplate">
+        <li class="recent-order">
+            <div class="recent-order__body">
+                <span class="recent-order__code" data-field="orderCode"></span>
+                <span class="recent-order__meta" data-field="meta"></span>
+            </div>
+            <button type="button" class="btn btn--line btn--sm recent-order__action" data-quick-lookup>Xem nhanh</button>
+        </li>
+    </template>
 
     <!-- Khung tìm kiếm đơn hàng -->
     <section class="lookup-box" aria-labelledby="lookupBoxTitle">
@@ -108,6 +136,15 @@
     <!-- KẾT QUẢ TRA CỨU KHI TÌM THẤY ĐƠN HÀNG -->
     @if (Model.HasSearched && Model.IsFound)
     {
+        @* Cặp Mã đơn + SĐT vừa tra cứu thành công: site.js lưu/cập nhật vào LocalStorage *@
+        <script type="application/json" id="recentOrderData">@(Json.Serialize(new
+            {
+                orderCode = Model.OrderCode,
+                phone = Model.PhoneNumber,
+                orderDate = Model.OrderDate.ToString("s", CultureInfo.InvariantCulture),
+                totalAmount = Model.TotalAmount
+            }))</script>
+
         <div class="lookup-result">
             <!-- Thẻ tóm tắt mã đơn & trạng thái -->
             <div class="lookup-card lookup-summary">

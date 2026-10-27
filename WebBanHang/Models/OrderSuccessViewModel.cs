@@ -8,6 +8,12 @@ public class OrderSuccessViewModel
     /// <summary>Tổng tiền đã định dạng sẵn (VD: "567.000 đ") — lấy từ kết quả tạo đơn.</summary>
     public string TotalText { get; set; } = string.Empty;
 
+    /// <summary>Tổng tiền dạng số (chưa định dạng) — trang xác nhận đẩy xuống JS để lưu vào LocalStorage.</summary>
+    public decimal TotalAmount { get; set; }
+
+    /// <summary>Thời điểm đơn được ghi nhận (giờ máy chủ) — dùng cho danh sách "Đơn hàng gần đây".</summary>
+    public DateTime OrderDate { get; set; } = DateTime.Now;
+
     public string CustomerName { get; set; } = string.Empty;
 
     public string PhoneNumber { get; set; } = string.Empty;
