@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="QuanLyDesktop/QuanLyDesktop.csproj" />
+  <Project Path="WebBanHang/WebBanHang.csproj" />
+</Solution>
