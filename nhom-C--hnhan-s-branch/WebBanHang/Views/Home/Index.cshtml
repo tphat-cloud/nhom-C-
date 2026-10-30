@@ -1,0 +1,40 @@
+﻿@model HomeViewModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<section class="hero mb-4">
+    <h1 class="display-6 fw-bold mb-1">Fashion Shop</h1>
+    <p class="mb-0">Quần áo thời trang cho mọi phong cách — @Model.TotalProducts sản phẩm đang bán.</p>
+</section>
+
+<h5 class="mb-3">Danh mục</h5>
+<div class="d-flex flex-wrap gap-2 mb-4">
+    @foreach (var category in Model.Categories)
+    {
+        <a class="btn btn-outline-dark btn-sm"
+           asp-controller="Products" asp-action="Index" asp-route-categoryId="@category.CategoryId">
+            @category.Name
+        </a>
+    }
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Sản phẩm nổi bật</h5>
+    <a class="text-decoration-none" asp-controller="Products" asp-action="Index">Xem tất cả &rarr;</a>
+</div>
+
+@if (Model.FeaturedProducts.Count == 0)
+{
+    <div class="alert alert-info">Chưa có sản phẩm nổi bật trong cơ sở dữ liệu.</div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var product in Model.FeaturedProducts)
+        {
+            <partial name="_ProductCard" model="product" />
+        }
+    </div>
+}
+
