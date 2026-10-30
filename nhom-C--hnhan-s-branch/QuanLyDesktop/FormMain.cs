@@ -158,7 +158,7 @@ public partial class FormMain : Form
                         DataTable dt = new DataTable();
                         da.Fill(dt);
 
-                        cboDanhMuc.DataSource = dt;
+                        cboDanhMuc.DataSource = dt;              // Dữ liệu nguồn và tài nguyên của code
                         cboDanhMuc.DisplayMember = "Name";       // Tên hiển thị cho người xem
                         cboDanhMuc.ValueMember = "CategoryId";   // Giá trị mã danh mục ngầm
                     }
