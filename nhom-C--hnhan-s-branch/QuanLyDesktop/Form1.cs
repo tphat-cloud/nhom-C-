@@ -84,7 +84,7 @@ public partial class Form1 : Form
         }
     }
 
-    // Sự kiện khi bấm nút "Thoát"
+    // Sự kiện khi bấm nút "Thoát" và hỏi lại để xác nhận "Thoát"
     private void btnThoat_Click(object sender, EventArgs e)
     {
         DialogResult result = MessageBox.Show("Bạn có chắc chắn muốn thoát chương trình?", "Xác nhận", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
