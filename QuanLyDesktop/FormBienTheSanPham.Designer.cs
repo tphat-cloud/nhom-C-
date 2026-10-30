@@ -11,6 +11,7 @@ partial class FormBienTheSanPham
     private Label lblColor;
     private TextBox txtColor;
     private Label lblStock;
+    private Label lblStockHint;
     private NumericUpDown nudStock;
     private Button btnThem;
     private Button btnSua;
@@ -38,6 +39,7 @@ partial class FormBienTheSanPham
         lblColor = new Label();
         txtColor = new TextBox();
         lblStock = new Label();
+        lblStockHint = new Label();
         nudStock = new NumericUpDown();
         btnThem = new Button();
         btnSua = new Button();
@@ -69,7 +71,7 @@ partial class FormBienTheSanPham
         lblTitle.Name = "lblTitle";
         lblTitle.Size = new Size(415, 36);
         lblTitle.TabIndex = 0;
-        lblTitle.Text = "QUẢN LÝ SIZE, MÀU VÀ TỒN KHO";
+        lblTitle.Text = "QUẢN LÝ SIZE VÀ MÀU BIẾN THỂ";
         // 
         // lblProductName
         // 
@@ -131,16 +133,31 @@ partial class FormBienTheSanPham
         lblStock.Name = "lblStock";
         lblStock.Size = new Size(65, 17);
         lblStock.TabIndex = 3;
-        lblStock.Text = "Tồn kho";
+        lblStock.Text = "Tồn kho (chỉ đọc)";
+        // 
+        // lblStockHint
+        // 
+        lblStockHint.AutoSize = true;
+        lblStockHint.Font = new Font("Segoe UI", 8F, FontStyle.Italic, GraphicsUnit.Point, 0);
+        lblStockHint.ForeColor = Color.FromArgb(110, 122, 138);
+        lblStockHint.Location = new Point(440, 195);
+        lblStockHint.Name = "lblStockHint";
+        lblStockHint.Size = new Size(300, 13);
+        lblStockHint.TabIndex = 7;
+        lblStockHint.Text = "Tồn kho chỉ đọc. Thay đổi bằng phiếu nhập kho hoặc đơn hàng.";
         // 
         // nudStock
         // 
+        nudStock.BackColor = Color.FromArgb(238, 242, 247);
         nudStock.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        nudStock.Increment = new decimal(new int[] { 0, 0, 0, 0 });
         nudStock.Location = new Point(440, 164);
         nudStock.Maximum = new decimal(new int[] { 1000000, 0, 0, 0 });
         nudStock.Name = "nudStock";
+        nudStock.ReadOnly = true;
         nudStock.Size = new Size(150, 25);
         nudStock.TabIndex = 2;
+        nudStock.TabStop = false;
         // 
         // btnThem
         // 
@@ -246,6 +263,7 @@ partial class FormBienTheSanPham
         Controls.Add(btnThem);
         Controls.Add(nudStock);
         Controls.Add(lblStock);
+        Controls.Add(lblStockHint);
         Controls.Add(txtColor);
         Controls.Add(lblColor);
         Controls.Add(cboSize);

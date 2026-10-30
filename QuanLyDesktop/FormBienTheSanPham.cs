@@ -79,7 +79,7 @@ public partial class FormBienTheSanPham : Form
     }
 
     /// <summary>
-    /// Chọn một dòng để nạp size, màu và số lượng tồn lên các ô chỉnh sửa.
+    /// Chọn một dòng để nạp size, màu lên các ô chỉnh sửa và hiển thị tồn kho hiện tại.
     /// </summary>
     private void dgvVariants_CellClick(object sender, DataGridViewCellEventArgs e)
     {
@@ -98,7 +98,10 @@ public partial class FormBienTheSanPham : Form
         string size = row.Cells["Size"].Value?.ToString() ?? "";
         cboSize.SelectedItem = size;
         txtColor.Text = row.Cells["Color"].Value?.ToString() ?? "";
-        nudStock.Value = Convert.ToInt32(row.Cells["StockQuantity"].Value);
+
+        // Ô tồn kho chỉ để xem: kẹp về Maximum để không ném lỗi khi dữ liệu lớn hơn giới hạn hiển thị.
+        decimal stock = Convert.ToDecimal(row.Cells["StockQuantity"].Value);
+        nudStock.Value = Math.Min(stock, nudStock.Maximum);
     }
 
     /// <summary>
@@ -125,12 +128,12 @@ public partial class FormBienTheSanPham : Form
 
     /// <summary>
     /// Kiểm tra trường nhập và trả về size/màu đã chuẩn hóa.
+    /// Tồn kho không nhập tay mà chỉ do phiếu nhập kho, đơn hàng và hủy đơn làm thay đổi.
     /// </summary>
-    private bool TryReadVariantInput(out string size, out string color, out int stockQuantity)
+    private bool TryReadVariantInput(out string size, out string color)
     {
         size = cboSize.SelectedItem?.ToString() ?? "";
         color = txtColor.Text.Trim();
-        stockQuantity = Convert.ToInt32(nudStock.Value);
 
         if (string.IsNullOrWhiteSpace(size) || string.IsNullOrWhiteSpace(color))
         {
@@ -156,11 +159,11 @@ public partial class FormBienTheSanPham : Form
     }
 
     /// <summary>
-    /// Thêm một biến thể mới cho sản phẩm hiện tại.
+    /// Thêm một biến thể mới cho sản phẩm hiện tại. Tồn kho để CSDL tự gán 0.
     /// </summary>
     private void btnThem_Click(object sender, EventArgs e)
     {
-        if (!TryReadVariantInput(out string size, out string color, out int stockQuantity))
+        if (!TryReadVariantInput(out string size, out string color))
         {
             return;
         }
@@ -181,18 +184,18 @@ public partial class FormBienTheSanPham : Form
             }
 
             const string sql = @"
-                INSERT INTO ProductVariants (ProductId, Size, Color, StockQuantity)
-                VALUES (@productId, @size, @color, @stockQuantity)";
+                INSERT INTO ProductVariants (ProductId, Size, Color)
+                VALUES (@productId, @size, @color)";
 
             using SqlCommand command = new SqlCommand(sql, conn);
             command.Parameters.Add("@productId", SqlDbType.Int).Value = _productId;
             command.Parameters.Add("@size", SqlDbType.NVarChar, 20).Value = size;
             command.Parameters.Add("@color", SqlDbType.NVarChar, 50).Value = color;
-            command.Parameters.Add("@stockQuantity", SqlDbType.Int).Value = stockQuantity;
             command.ExecuteNonQuery();
 
             MessageBox.Show(
-                "Đã thêm biến thể sản phẩm.",
+                "Đã thêm biến thể sản phẩm với tồn kho = 0.\n" +
+                "Muốn nhập hàng, hãy lập phiếu nhập kho cho biến thể này.",
                 "Hoàn tất",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information);
@@ -211,7 +214,7 @@ public partial class FormBienTheSanPham : Form
     }
 
     /// <summary>
-    /// Cập nhật size, màu hoặc số lượng tồn của biến thể đang chọn.
+    /// Cập nhật size hoặc màu của biến thể đang chọn. Tồn kho không sửa trực tiếp.
     /// </summary>
     private void btnSua_Click(object sender, EventArgs e)
     {
@@ -225,7 +228,7 @@ public partial class FormBienTheSanPham : Form
             return;
         }
 
-        if (!TryReadVariantInput(out string size, out string color, out int stockQuantity))
+        if (!TryReadVariantInput(out string size, out string color))
         {
             return;
         }
@@ -247,13 +250,12 @@ public partial class FormBienTheSanPham : Form
 
             const string sql = @"
                 UPDATE ProductVariants
-                SET Size = @size, Color = @color, StockQuantity = @stockQuantity
+                SET Size = @size, Color = @color
                 WHERE ProductVariantId = @variantId AND ProductId = @productId";
 
             using SqlCommand command = new SqlCommand(sql, conn);
             command.Parameters.Add("@size", SqlDbType.NVarChar, 20).Value = size;
             command.Parameters.Add("@color", SqlDbType.NVarChar, 50).Value = color;
-            command.Parameters.Add("@stockQuantity", SqlDbType.Int).Value = stockQuantity;
             command.Parameters.Add("@variantId", SqlDbType.Int).Value = _selectedVariantId;
             command.Parameters.Add("@productId", SqlDbType.Int).Value = _productId;
 

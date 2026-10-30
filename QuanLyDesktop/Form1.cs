@@ -33,7 +33,7 @@ public partial class Form1 : Form
 
                 // Câu truy vấn kiểm tra tài khoản trong bảng Users
                 string query = @"
-    SELECT u.FullName, u.RoleId, r.RoleName
+    SELECT u.UserId, u.FullName, u.RoleId, r.RoleName
     FROM Users AS u
     INNER JOIN Roles AS r ON r.RoleId = u.RoleId
     WHERE u.Username = @u
@@ -50,6 +50,7 @@ public partial class Form1 : Form
                         if (reader.Read())
                         {
                             // Đăng nhập thành công!
+                            int userId = Convert.ToInt32(reader["UserId"]);
                             string fullName = reader["FullName"].ToString() ?? "Người dùng";
                             string roleName = reader["RoleName"].ToString() ?? "";
 
@@ -57,7 +58,7 @@ public partial class Form1 : Form
                                             "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                             // Mở Form quản lý chính (FormMain) và ẩn Form đăng nhập
-                            FormMain fMain = new FormMain(fullName, roleName);
+                            FormMain fMain = new FormMain(userId, fullName, roleName);
                             this.Hide();
                             fMain.ShowDialog();
 

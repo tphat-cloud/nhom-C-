@@ -8,6 +8,7 @@ public partial class FormMain : Form
     private string connectionString => DatabaseConfig.ConnectionString;
     private string _fullName;
     private string _roleName;
+    private int _userId;
     private int _selectedProductId = -1; // Lưu mã sản phẩm đang được chọn để Sửa hoặc Xóa
 
     /// <summary>
@@ -31,8 +32,9 @@ public partial class FormMain : Form
         return false;
     }
 
-    public FormMain(string fullName, string roleName)
+    public FormMain(int userId, string fullName, string roleName)
     {
+        _userId = userId;
         _fullName = fullName;
         _roleName = roleName;
         InitializeComponent();
@@ -516,6 +518,19 @@ public partial class FormMain : Form
 
         // Đơn hàng có thể vừa được đổi trạng thái hoặc đánh dấu thanh toán,
         // nên doanh thu và số đơn phải được tính lại ngay khi quay về dashboard.
+        LoadDashboardSummary();
+    }
+
+    /// <summary>
+    /// Mở màn hình phiếu nhập kho. Nhân viên được lập phiếu,
+    /// chỉ Admin được hủy phiếu (kiểm tra bên trong FormNhapKho).
+    /// </summary>
+    private void btnNhapKho_Click(object sender, EventArgs e)
+    {
+        using FormNhapKho formNhapKho = new FormNhapKho(_userId, _roleName);
+        formNhapKho.ShowDialog(this);
+
+        // Nhập kho làm thay đổi tồn kho nên số liệu tổng quan cần được tính lại.
         LoadDashboardSummary();
     }
 

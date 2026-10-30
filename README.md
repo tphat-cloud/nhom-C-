@@ -6,7 +6,7 @@ Hệ thống gồm **2 ứng dụng dùng chung 1 cơ sở dữ liệu**:
 
 | Thành phần | Công nghệ | Vai trò |
 | --- | --- | --- |
-| `QuanLyDesktop` | WinForms (.NET 8, ADO.NET) | Admin/nhân viên: quản lý sản phẩm, danh mục, size/màu, duyệt đơn, dashboard |
+| `QuanLyDesktop` | WinForms (.NET 8, ADO.NET) | Admin/nhân viên: quản lý sản phẩm, danh mục, size/màu, phiếu nhập kho, duyệt đơn, dashboard |
 | `WebBanHang` | ASP.NET Core MVC (.NET 8) | Khách hàng: xem sản phẩm, giỏ hàng, đặt hàng |
 | `mssql2022` | SQL Server 2022 trong Docker | Database `FashionShopDb` dùng chung cho cả 2 app |
 
@@ -67,6 +67,8 @@ Nếu bạn đã có `FashionShopDb` từ phiên bản cũ (chưa có ràng bu�
 
 ```powershell
 docker exec -i mssql2022 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$p" -C -f 65001 -i /migrations/01_harden_database.sql
+docker exec -i mssql2022 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$p" -C -f 65001 -i /migrations/02_fix_order_revenue.sql
+docker exec -i mssql2022 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$p" -C -f 65001 -i /migrations/03_stock_receipts.sql
 ```
 
 Migration `01_harden_database.sql` sẽ:
@@ -77,6 +79,15 @@ Migration `01_harden_database.sql` sẽ:
 - Nạp **30 biến thể size/màu + tồn kho** mẫu (chỉ khi bảng còn trống)
 
 Script **idempotent** — chạy lại nhiều lần không lỗi, không nhân đôi dữ liệu.
+
+Migration `03_stock_receipts.sql` (phiếu nhập kho) sẽ:
+- Tạo **2 bảng** `StockReceipts` (đầu phiếu) và `StockReceiptDetails` (dòng hàng kèm giá nhập)
+- Thêm **3 index** tra cứu + **1 UNIQUE index** `(StockReceiptId, ProductVariantId)` — không thể nhập trùng biến thể trong cùng phiếu
+- Thêm **7 CHECK constraint** (tổng tiền/lượng ≥ 0, trạng thái phiếu, số lượng > 0, giá nhập > 0...)
+- Nạp **2 phiếu nhập mẫu** minh họa tồn kho seed sẵn có nguồn gốc rõ ràng (chỉ khi bảng còn trống)
+- Đồng bộ lại `TotalQuantity`/`TotalAmount` của mọi phiếu theo chi tiết thực tế (chạy mỗi lần, an toàn)
+
+> Phiếu nhập **không tự động cộng tồn kho** khi chạy migration — dữ liệu mẫu mô tả đúng số tồn đã có, tránh cộng đôi.
 
 ### Bước 4 — Cấu hình mật khẩu cho app Desktop & Web
 
@@ -217,6 +228,33 @@ Chống lỗi / lạm dụng:
 | Thêm vào giỏ nhưng chưa đặt | Tồn kho **không** đổi |
 | Đặt thành công | Giỏ được xóa, badge "Giỏ hàng" trên menu về 0 |
 
+### 3.2. Phiếu nhập kho (desktop)
+
+| Thành phần | Vai trò |
+| --- | --- |
+| `QuanLyDesktop/FormNhapKho.cs`, `.Designer.cs` | Lập phiếu nhập, xem phiếu cũ, xem chi tiết phiếu, hủy phiếu |
+| Bảng `StockReceipts` | Đầu phiếu: mã `NK...`, nhà cung cấp, người lập, tổng lượng, tổng tiền, trạng thái |
+| Bảng `StockReceiptDetails` | Dòng hàng: biến thể, tên/size/màu tại thời điểm nhập, số lượng, giá nhập |
+
+Lưu phiếu — **hoặc ghi đủ đầu phiếu + chi tiết + tồn kho, hoặc không ghi gì**:
+
+1. Kiểm tra phiếu nháp: phải có ít nhất một dòng, mỗi biến thể chỉ xuất hiện một lần.
+2. `INSERT StockReceipts` với `ReceiptCode = NK + yyMMddHHmmss + 3 số`, `Status = N'Đã nhập'`; mã trùng thì sinh lại, thử tối đa 3 lần.
+3. Từng dòng: `INSERT StockReceiptDetails` và cộng tồn kho ngay trong cùng transaction:
+
+   ```sql
+   UPDATE ProductVariants
+   SET StockQuantity = StockQuantity + @quantity
+   WHERE ProductVariantId = @variantId;
+   ```
+
+4. Cập nhật `TotalQuantity`/`TotalAmount` của đầu phiếu theo chi tiết thực tế rồi `COMMIT`.
+
+Hủy phiếu — chỉ vai trò **Admin**, và chỉ khi hàng của phiếu vẫn còn trong kho:
+
+- Đọc từng dòng, kiểm tra `StockQuantity >= Quantity` trước khi trừ; thiếu hàng thì dừng và báo rõ dòng nào không đủ.
+- Trừ kho và đổi `Status = N'Đã hủy'` trong cùng transaction; phiếu đã hủy không hủy lại được.
+
 ---
 
 ## 4. Chuyển từ container tạo tay (`docker run`) sang Docker Compose
@@ -253,6 +291,7 @@ docker compose up -d
 | `A network-related or instance-specific error` | Container chưa chạy/ chưa healthy → `docker compose ps`, `docker compose logs sqlserver` |
 | `Login failed for user 'sa'` | `FASHIONSHOP_SQL_PASSWORD` không khớp `MSSQL_SA_PASSWORD` trong `.env` |
 | `Invalid object name 'Products'` | Chưa chạy `CSDL_ShopQuanAo.sql` (Bước 3) hoặc volume bị xóa |
+| `Invalid object name 'StockReceipts'` | Database cũ chưa nâng cấp → chạy `/migrations/03_stock_receipts.sql` (Bước 3b) |
 | `Conflict. The container name "/mssql2022" is already in use` | Còn container cũ → `docker rm -f mssql2022` rồi `docker compose up -d` |
 | Cổng 1433 bị chiếm | Tắt SQL Server service trên Windows (`services.msc` → SQL Server (MSSQLSERVER)) |
 | Cảnh báo `volume "mssql_data" already exists but was not created by Docker Compose` | **Vô hại** — compose đang dùng lại volume tạo trước đó để giữ dữ liệu. Có thể bỏ qua. |
@@ -269,7 +308,9 @@ Do An C#/
 ├─ .env / .env.example       # Mật khẩu SA (file .env không commit)
 ├─ CSDL_ShopQuanAo.sql       # Script tạo DB + dữ liệu mẫu (máy mới)
 ├─ Scripts/migrations/       # Migration nâng cấp DB đang có (không mất dữ liệu)
-│  └─ 01_harden_database.sql # Ràng buộc + index + view tồn kho + seed biến thể
+│  ├─ 01_harden_database.sql # Ràng buộc + index + view tồn kho + seed biến thể
+│  ├─ 02_fix_order_revenue.sql # Sửa doanh thu: chỉ tính đơn hoàn thành, không tính đơn hủy
+│  └─ 03_stock_receipts.sql  # Phiếu nhập kho: 2 bảng + index + 2 phiếu mẫu
 ├─ QuanLyShopQuanAo.slnx     # Solution gồm 2 project
 ├─ QuanLyDesktop/            # WinForms (admin)
 │  ├─ Form1.cs               # Đăng nhập
@@ -277,6 +318,7 @@ Do An C#/
 │  ├─ FormDanhMuc.cs         # CRUD danh mục
 │  ├─ FormBienTheSanPham.cs  # Size / màu / tồn kho
 │  ├─ FormDonHang.cs         # Duyệt đơn hàng
+│  ├─ FormNhapKho.cs         # Phiếu nhập kho (cộng tồn / hủy phiếu hoàn tồn)
 │  └─ DatabaseConfig.cs      # Chuỗi kết nối (đọc từ biến môi trường)
 └─ WebBanHang/               # ASP.NET Core MVC (khách hàng)
    ├─ Program.cs             # DI: SqlConnectionFactory + SqlProductRepository

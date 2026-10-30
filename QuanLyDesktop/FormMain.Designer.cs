@@ -121,6 +121,7 @@ partial class FormMain
         btnDangXuat = new Button();
         button1 = new Button();
         btnDanhMuc = new Button();
+        btnNhapKho = new Button();
         grpThongTin.SuspendLayout();
         grpDanhSach.SuspendLayout();
         layoutRoot.SuspendLayout();
@@ -157,6 +158,7 @@ partial class FormMain
         // 
         panelSidebar.BackColor = Color.FromArgb(17, 43, 72);
         panelSidebar.Controls.Add(btnDanhMuc);
+        panelSidebar.Controls.Add(btnNhapKho);
         panelSidebar.Controls.Add(button1);
         panelSidebar.Controls.Add(btnSanPham);
         panelSidebar.Controls.Add(btnTrangChu);
@@ -842,6 +844,24 @@ partial class FormMain
         btnDanhMuc.UseVisualStyleBackColor = false;
         btnDanhMuc.Click += button2_Click;
         // 
+        // btnNhapKho
+        // 
+        btnNhapKho.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnNhapKho.BackColor = Color.FromArgb(17, 43, 72);
+        btnNhapKho.Cursor = Cursors.Hand;
+        btnNhapKho.FlatAppearance.BorderSize = 0;
+        btnNhapKho.FlatStyle = FlatStyle.Flat;
+        btnNhapKho.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        btnNhapKho.ForeColor = Color.FromArgb(223, 232, 243);
+        btnNhapKho.Location = new Point(12, 334);
+        btnNhapKho.Name = "btnNhapKho";
+        btnNhapKho.Size = new Size(202, 44);
+        btnNhapKho.TabIndex = 4;
+        btnNhapKho.Text = "   Phiếu nhập kho";
+        btnNhapKho.TextAlign = ContentAlignment.MiddleLeft;
+        btnNhapKho.UseVisualStyleBackColor = false;
+        btnNhapKho.Click += btnNhapKho_Click;
+        // 
         // FormMain
         // 
         AutoScaleDimensions = new SizeF(10F, 25F);
@@ -888,4 +908,5 @@ partial class FormMain
 
     private Button button1;
     private Button btnDanhMuc;
+    private Button btnNhapKho;
 }

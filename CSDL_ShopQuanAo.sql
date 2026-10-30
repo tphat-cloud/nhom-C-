@@ -130,6 +130,49 @@ CREATE TABLE OrderDetails (
 );
 GO
 
+-- 9. BẢNG PHIẾU NHẬP KHO (StockReceipts)
+-- Mỗi lần nhận hàng từ nhà cung cấp là một dòng: biết nhập ngày nào, ai lập,
+-- tổng bao nhiêu món và bao nhiêu tiền. Nhờ bảng này, số tồn trong
+-- ProductVariants không còn là con số không rõ nguồn gốc.
+CREATE TABLE StockReceipts (
+    StockReceiptId INT IDENTITY(1,1) PRIMARY KEY,
+    ReceiptCode NVARCHAR(30) NOT NULL UNIQUE,     -- NK + yyMMddHHmmss + 3 số
+    ReceiptDate DATETIME NOT NULL DEFAULT GETDATE(),
+    SupplierName NVARCHAR(150) NULL,              -- nhà cung cấp (chưa tách bảng riêng)
+    SupplierPhone NVARCHAR(20) NULL,
+    Note NVARCHAR(500) NULL,
+    TotalQuantity INT NOT NULL DEFAULT 0,         -- tổng số lượng của cả phiếu
+    TotalAmount DECIMAL(18,2) NOT NULL DEFAULT 0, -- tổng tiền nhập (giá vốn)
+    Status NVARCHAR(30) NOT NULL DEFAULT N'Đã nhập',
+    CreatedByUserId INT NULL,                     -- nhân viên lập phiếu
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (CreatedByUserId) REFERENCES Users(UserId),
+    CONSTRAINT CK_StockReceipts_TotalQuantity CHECK (TotalQuantity >= 0),
+    CONSTRAINT CK_StockReceipts_TotalAmount CHECK (TotalAmount >= 0),
+    CONSTRAINT CK_StockReceipts_Status CHECK (Status IN (N'Đã nhập', N'Đã hủy'))
+);
+GO
+
+-- 10. BẢNG CHI TIẾT PHIẾU NHẬP (StockReceiptDetails)
+-- Mỗi dòng là một biến thể size/màu được nhập, kèm giá nhập để tính giá vốn.
+CREATE TABLE StockReceiptDetails (
+    StockReceiptDetailId INT IDENTITY(1,1) PRIMARY KEY,
+    StockReceiptId INT NOT NULL,
+    ProductVariantId INT NOT NULL,
+    ProductName NVARCHAR(200) NOT NULL,   -- ảnh chụp tên SP tại thời điểm nhập
+    Size NVARCHAR(20) NULL,
+    Color NVARCHAR(50) NULL,
+    Quantity INT NOT NULL,
+    ImportPrice DECIMAL(18,2) NOT NULL,   -- giá nhập / 1 đơn vị
+    TotalPrice DECIMAL(18,2) NOT NULL,    -- Quantity * ImportPrice
+    FOREIGN KEY (StockReceiptId) REFERENCES StockReceipts(StockReceiptId) ON DELETE CASCADE,
+    FOREIGN KEY (ProductVariantId) REFERENCES ProductVariants(ProductVariantId),
+    CONSTRAINT CK_StockReceiptDetails_Quantity CHECK (Quantity > 0),
+    CONSTRAINT CK_StockReceiptDetails_ImportPrice CHECK (ImportPrice > 0),
+    CONSTRAINT CK_StockReceiptDetails_TotalPrice CHECK (TotalPrice >= 0)
+);
+GO
+
 -- ==============================================================
 -- CHỈ MỤC (INDEX) PHỤC VỤ TRA CỨU NHANH
 -- ==============================================================
@@ -142,6 +185,14 @@ CREATE INDEX IX_Products_CategoryId ON Products (CategoryId) INCLUDE (IsActive);
 CREATE INDEX IX_Orders_Status_OrderDate ON Orders (Status, OrderDate DESC);
 CREATE INDEX IX_Orders_CustomerPhone ON Orders (CustomerPhone);
 CREATE INDEX IX_OrderDetails_OrderId ON OrderDetails (OrderId) INCLUDE (ProductId, Quantity);
+
+-- Mỗi biến thể chỉ xuất hiện 1 lần trong một phiếu nhập
+CREATE UNIQUE INDEX UQ_StockReceiptDetails_Receipt_Variant
+    ON StockReceiptDetails (StockReceiptId, ProductVariantId);
+CREATE INDEX IX_StockReceipts_ReceiptDate ON StockReceipts (ReceiptDate DESC);
+CREATE INDEX IX_StockReceiptDetails_StockReceiptId
+    ON StockReceiptDetails (StockReceiptId) INCLUDE (ProductVariantId, Quantity);
+CREATE INDEX IX_StockReceiptDetails_ProductVariantId ON StockReceiptDetails (ProductVariantId);
 GO
 
 -- View tổng hợp tồn kho theo sản phẩm (dùng cho lưới sản phẩm & kiểm tra còn hàng)
@@ -218,4 +269,49 @@ FROM (VALUES
     (N'VD-005', N'M',  N'Đen',  7), (N'VD-005', N'L', N'Đen',   3)
 ) AS v (ProductCode, Size, Color, StockQuantity)
 JOIN Products p ON p.ProductCode = v.ProductCode;
+GO
+
+-- ==============================================================
+-- LỊCH SỬ NHẬP KHO BAN ĐẦU
+-- Toàn bộ tồn kho seed ở trên được nhập qua 2 phiếu dưới đây, nên Quantity
+-- của mỗi dòng đúng bằng StockQuantity hiện có (không cộng dồn thêm).
+-- Giá nhập lấy bằng 60% giá bán để minh họa cách tính giá vốn.
+-- ==============================================================
+INSERT INTO StockReceipts (ReceiptCode, ReceiptDate, SupplierName, SupplierPhone, Note, CreatedByUserId)
+VALUES
+(N'NK261020090000001', DATEADD(DAY, -10, GETDATE()), N'Công ty May mặc Sài Gòn', N'02838123456', N'Nhập đợt 1: áo thun và sơ mi', 1),
+(N'NK261027140000002', DATEADD(DAY, -3,  GETDATE()), N'Xưởng may Bình Dương',    N'02743876543', N'Nhập đợt 2: jeans, áo khoác, đầm', 1);
+
+-- Chi tiết phiếu 1: áo thun (AT-001) và sơ mi (SM-002)
+INSERT INTO StockReceiptDetails (StockReceiptId, ProductVariantId, ProductName, Size, Color, Quantity, ImportPrice, TotalPrice)
+SELECT r.StockReceiptId, v.ProductVariantId, p.Name, v.Size, v.Color, v.StockQuantity,
+       CAST(ROUND(p.Price * 0.6, -3) AS DECIMAL(18,2)),
+       v.StockQuantity * CAST(ROUND(p.Price * 0.6, -3) AS DECIMAL(18,2))
+FROM ProductVariants v
+JOIN Products p ON p.ProductId = v.ProductId
+JOIN StockReceipts r ON r.ReceiptCode = N'NK261020090000001'
+WHERE p.ProductCode IN (N'AT-001', N'SM-002');
+
+-- Chi tiết phiếu 2: jeans (QJ-003), áo khoác (AK-004), đầm (VD-005)
+INSERT INTO StockReceiptDetails (StockReceiptId, ProductVariantId, ProductName, Size, Color, Quantity, ImportPrice, TotalPrice)
+SELECT r.StockReceiptId, v.ProductVariantId, p.Name, v.Size, v.Color, v.StockQuantity,
+       CAST(ROUND(p.Price * 0.6, -3) AS DECIMAL(18,2)),
+       v.StockQuantity * CAST(ROUND(p.Price * 0.6, -3) AS DECIMAL(18,2))
+FROM ProductVariants v
+JOIN Products p ON p.ProductId = v.ProductId
+JOIN StockReceipts r ON r.ReceiptCode = N'NK261027140000002'
+WHERE p.ProductCode IN (N'QJ-003', N'AK-004', N'VD-005');
+
+-- Cập nhật tổng lượng / tổng tiền cho từng đầu phiếu (giống Orders.TotalAmount)
+UPDATE r
+SET TotalQuantity = t.TotalQty,
+    TotalAmount   = t.TotalAmt
+FROM StockReceipts r
+JOIN (
+    SELECT StockReceiptId,
+           SUM(Quantity)   AS TotalQty,
+           SUM(TotalPrice) AS TotalAmt
+    FROM StockReceiptDetails
+    GROUP BY StockReceiptId
+) t ON t.StockReceiptId = r.StockReceiptId;
 GO
