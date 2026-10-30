@@ -40,3 +40,28 @@ WebBanHang/wwwroot/__*.html
 .pylibs/
 __pycache__/
 *.pyc
+
+## Tài liệu đồ án: báo cáo, slide, bảng đặc tả (sinh lại bằng script, không commit)
+*.docx
+*.pptx
+*.xlsx
+BaoCao_*/
+PhanTichYeuCauNghiepVu*/
+nopbai/
+
+## Script sinh báo cáo / slide / sơ đồ (công cụ riêng của nhóm, không commit)
+content_chuong*.py
+generate_doc.py
+generate_ppt.py
+pptx_builder.py
+generate_screen_design.py
+insert_screen_images.py
+verify_screen_design.py
+_dump_*.py
+_export_preview.ps1
+
+## Sơ đồ và ảnh chụp màn hình: nguồn của tài liệu, không commit
+diagrams/
+screenshots/
+_preview/
+_debug_ppt/
