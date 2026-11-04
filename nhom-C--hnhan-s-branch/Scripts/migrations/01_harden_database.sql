@@ -126,7 +126,7 @@ GROUP BY p.ProductId, p.ProductCode, p.Name, p.Price, p.CategoryId, p.IsActive;
 GO
 
 /* ------------------------------------------------------------
-   5. DỮ LIỆU TỒN KHO MẪU (30 biến thể cho 5 sản phẩm seed)
+   5. DỮ LIỆU TỒN KHO MẪU (30 biến thể cho 5 (hoặc hơn) sản phẩm seed)
    Chỉ nạp khi bảng ProductVariants còn trống để không ghi đè dữ liệu thật.
    ------------------------------------------------------------ */
 IF NOT EXISTS (SELECT 1 FROM ProductVariants)
