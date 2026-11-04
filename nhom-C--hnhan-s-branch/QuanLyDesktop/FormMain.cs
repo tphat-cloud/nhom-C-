@@ -160,7 +160,7 @@ public partial class FormMain : Form
 
                         cboDanhMuc.DataSource = dt;              // Dữ liệu nguồn và tài nguyên của code
                         cboDanhMuc.DisplayMember = "Name";       // Tên hiển thị cho người xem
-                        cboDanhMuc.ValueMember = "CategoryId";   // Giá trị mã danh mục ngầm
+                        cboDanhMuc.ValueMember = "CategoryId";   // Giá trị mã danh mục ngầm của người dùng
                     }
                 }
             }
