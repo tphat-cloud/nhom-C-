@@ -195,9 +195,6 @@ namespace QuanLyDesktop
             };
         }
 
-        /// <summary>
-        /// Đưa các trạng thái hợp lệ vào danh sách khi người dùng chọn một đơn.
-        /// </summary>
         private void dgvDonHang_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex < 0)
