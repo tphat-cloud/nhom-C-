@@ -68,7 +68,7 @@ public partial class Form1 : Form
                         }
                         else
                         {
-                            // Sai tài khoản hoặc mật khẩu
+                            // Sai tài khoản hoặc mật khẩu. Hiện lên "Lỗi đăng nhập"
                             MessageBox.Show("Tên đăng nhập hoặc mật khẩu không chính xác!",
                                             "Lỗi đăng nhập", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             txtMatKhau.Clear();
