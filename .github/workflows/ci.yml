@@ -1,0 +1,42 @@
+name: CI
+
+# Chạy khi push vào main hoặc mở/cập nhật Pull Request vào main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build (WinForms + Web)
+    # QuanLyDesktop đích win (net8.0-windows) => cần runner Windows.
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore
+        run: |
+          dotnet restore WebBanHang/WebBanHang.csproj
+          dotnet restore QuanLyDesktop/QuanLyDesktop.csproj
+
+      - name: Build Web (Release)
+        run: >
+          dotnet build WebBanHang/WebBanHang.csproj
+          --configuration Release --no-restore
+
+      - name: Build Desktop (Release)
+        run: >
+          dotnet build QuanLyDesktop/QuanLyDesktop.csproj
+          --configuration Release --no-restore
+
+      # QA-01: bỏ comment bước này sau khi thêm project test (*.Tests).
+      # - name: Test
+      #   run: dotnet test --configuration Release --no-build
