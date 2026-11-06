@@ -162,6 +162,23 @@ Phụ trách `WebBanHang/` và một form desktop mới (không đụng `FormMai
 - **QA-02** chạy xong, mọi "Cần kiểm tra thêm" về "Đã hoàn thành".
 - **DOC-01, DOC-02** chốt bản cuối cho thuyết trình.
 
+### Chiến lược merge (áp dụng cho cả nhóm)
+**Nguyên tắc: merge sớm, merge nhỏ theo từng tính năng — KHÔNG đợi xong hết mới gộp.**
+Lý do: tránh xung đột tích tụ, bắt lỗi tích hợp sớm, và giữ `main` luôn chạy được để demo/nghiệm thu.
+
+Một PR chỉ được merge khi đủ 5 điều kiện:
+1. `dotnet build QuanLyShopQuanAo.slnx` sạch (0 warning / 0 error).
+2. Đã **chạy thử tính năng đó thật** (xem AGENTS.md mục 5), không đánh dấu xong chỉ vì đã viết code.
+3. Không phá tính năng cũ (web đặt hàng, desktop duyệt đơn, tồn kho vẫn chạy).
+4. Đúng phạm vi file của task, không "tiện tay" sửa file người khác.
+5. Được trưởng nhóm (Phát) hoặc chủ module review.
+
+Ngoại lệ — feature **liên thông 2 app hoặc bảo mật** thì gom thành 1 PR trọn vẹn rồi merge:
+- **SEC-01**: code băm + migration băm lại seed + cập nhật `CSDL_ShopQuanAo.sql` merge **cùng một lần** (không merge lửng gây hỏng đăng nhập). Sau khi vào `main`, **mọi người pull ngay** rồi mới làm DES-04/SEC-02.
+- **DES-01**: Nhân làm desktop xong, **Nam Anh xác nhận web hiển thị đúng Ảnh/Giá gốc/Nổi bật** rồi mới merge trọn feature.
+
+Nhịp độ thường ngày: unit nhỏ tách được thì tách và merge liền (vd DES-01 chia: "Nổi bật" → merge, rồi "Ảnh + Giá gốc" → merge). Sau mỗi merge, Phát báo cả nhóm `git pull` `main` để rebase branch, không bị lệch.
+
 ---
 
 ## E. CHECKLIST NGHIỆM THU CUỐI CÙNG
