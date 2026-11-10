@@ -280,6 +280,23 @@ public partial class FormMain : Form
         }
 
         int maDanhMuc = Convert.ToInt32(cboDanhMuc.SelectedValue);
+        // Lấy thông tin bổ sung
+        string imageUrl = txtImageUrl.Text.Trim();
+        bool isFeatured = chkIsFeatured.Checked;
+
+        decimal? giaGoc = null;
+
+        if (!string.IsNullOrWhiteSpace(txtGiaGoc.Text))
+        {
+            if (!decimal.TryParse(txtGiaGoc.Text.Trim(), out decimal giaGocValue) || giaGocValue <= 0)
+            {
+                MessageBox.Show("Giá gốc phải là số hợp lệ lớn hơn 0!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            giaGoc = giaGocValue;
+        }
 
         try
         {
@@ -287,8 +304,7 @@ public partial class FormMain : Form
             {
                 conn.Open();
                 string sql = @"
-                    INSERT INTO Products (ProductCode, Name, CategoryId, Price, Description, IsActive, IsFeatured, CreatedAt)
-                    VALUES (@code, @name, @catId, @price, @desc, 1, 0, GETDATE())";
+                    INSERT INTO Products (ProductCode, Name, CategoryId, Price, OriginalPrice, ImageUrl, Description, IsActive, IsFeatured, CreatedAt), VALUES, (@code, @name, @catId, @price, @originalPrice, @imageUrl, @desc, 1, @isFeatured, GETDATE())";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -351,7 +367,23 @@ public partial class FormMain : Form
         }
 
         int maDanhMuc = Convert.ToInt32(cboDanhMuc.SelectedValue);
+        // Lấy thông tin bổ sung
+        string imageUrl = txtImageUrl.Text.Trim();
+        bool isFeatured = chkIsFeatured.Checked;
 
+        decimal? giaGoc = null;
+
+        if (!string.IsNullOrWhiteSpace(txtGiaGoc.Text))
+        {
+            if (!decimal.TryParse(txtGiaGoc.Text.Trim(), out decimal giaGocValue) || giaGocValue <= 0)
+            {
+                MessageBox.Show("Giá gốc phải là số hợp lệ lớn hơn 0!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            giaGoc = giaGocValue;
+        }
         try
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -359,7 +391,7 @@ public partial class FormMain : Form
                 conn.Open();
                 string sql = @"
                     UPDATE Products 
-                    SET ProductCode = @code, Name = @name, CategoryId = @catId, Price = @price, Description = @desc
+                    SET ProductCode = @code, Name = @name, CategoryId = @catId, Price = @price, OriginalPrice = @originalPrice, ImageURL = @imageURL, IsFeatured = @isFeatured, Description = @desc
                     WHERE ProductId = @id";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -368,6 +400,13 @@ public partial class FormMain : Form
                     cmd.Parameters.AddWithValue("@name", tenSP);
                     cmd.Parameters.AddWithValue("@catId", maDanhMuc);
                     cmd.Parameters.AddWithValue("@price", giaBan);
+                    cmd.Parameters.AddWithValue("@originalPrice",
+                        giaGoc.HasValue ? (object)giaGoc.Value : DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("@imageUrl",
+                        string.IsNullOrWhiteSpace(imageUrl) ? (object)DBNull.Value : imageUrl);
+
+                    cmd.Parameters.AddWithValue("@isFeatured", isFeatured);
                     cmd.Parameters.AddWithValue("@desc", moTa);
                     cmd.Parameters.AddWithValue("@id", _selectedProductId);
 
