@@ -189,6 +189,9 @@ public partial class FormMain : Form
                         p.Name AS [Tên Sản Phẩm],
                         c.Name AS [Danh Mục],
                         p.Price AS [Giá Bán (VNĐ)],
+                        p.OriginalPrice AS [Giá Gốc (VNĐ)],
+                        p.ImageUrl AS [Đường Dẫn Ảnh],
+                        p.IsFeatured AS [Nổi Bật],
                         p.Description AS [Mô Tả],
                         p.CategoryId
                     FROM Products p
@@ -216,6 +219,8 @@ public partial class FormMain : Form
                         // Định dạng hiển thị tiền tệ cho cột Giá
                         if (dgvSanPham.Columns["Giá Bán (VNĐ)"] != null)
                             dgvSanPham.Columns["Giá Bán (VNĐ)"].DefaultCellStyle.Format = "N0";
+                        if (dgvSanPham.Columns["Giá Gốc (VNĐ)"] != null)
+                            dgvSanPham.Columns["Giá Gốc (VNĐ)"].DefaultCellStyle.Format = "N0";
                     }
                 }
             }
