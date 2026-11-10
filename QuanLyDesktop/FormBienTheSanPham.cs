@@ -24,7 +24,7 @@ public partial class FormBienTheSanPham : Form
     }
 
     /// <summary>
-    /// Tải các biến thể size/màu của sản phẩm hiện tại và ẩn khóa chính nội bộ.
+    /// Tải các biến thể size/màu sắc của sản phẩm hiện tại và ẩn khóa chính nội bộ.
     /// </summary>
     private void LoadVariants()
     {
