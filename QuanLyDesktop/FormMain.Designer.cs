@@ -507,6 +507,11 @@ partial class FormMain
         grpThongTin.Controls.Add(lblMoTa);
         grpThongTin.Controls.Add(txtGiaBan);
         grpThongTin.Controls.Add(lblGiaBan);
+        grpThongTin.Controls.Add(txtGiaGoc);
+        grpThongTin.Controls.Add(lblGiaGoc);
+        grpThongTin.Controls.Add(txtImageUrl);
+        grpThongTin.Controls.Add(lblImageUrl);
+        grpThongTin.Controls.Add(chkIsFeatured);
         grpThongTin.Controls.Add(cboDanhMuc);
         grpThongTin.Controls.Add(lblDanhMuc);
         grpThongTin.Controls.Add(txtTenSP);
@@ -519,7 +524,7 @@ partial class FormMain
         grpThongTin.Margin = new Padding(4);
         grpThongTin.Name = "grpThongTin";
         grpThongTin.Padding = new Padding(4);
-        grpThongTin.Size = new Size(1000, 228);
+        grpThongTin.Size = new Size(1000, 280);
         grpThongTin.TabIndex = 2;
         grpThongTin.TabStop = false;
         grpThongTin.Text = "THÔNG TIN SẢN PHẨM";
@@ -648,6 +653,48 @@ partial class FormMain
         lblGiaBan.Size = new Size(137, 25);
         lblGiaBan.TabIndex = 6;
         lblGiaBan.Text = "Giá bán (VNĐ):";
+        // txtGiaGoc
+        txtGiaGoc.Font = new Font("Segoe UI", 9.5F);
+        txtGiaGoc.Location = new Point(130, 140);
+        txtGiaGoc.Margin = new Padding(4);
+        txtGiaGoc.Name = "txtGiaGoc";
+        txtGiaGoc.PlaceholderText = "VD: 300000";
+        txtGiaGoc.Size = new Size(190, 33);
+        txtGiaGoc.TabIndex = 8;
+
+        // lblGiaGoc
+        lblGiaGoc.AutoSize = true;
+        lblGiaGoc.Font = new Font("Segoe UI", 9.5F);
+        lblGiaGoc.ForeColor = Color.Black;
+        lblGiaGoc.Location = new Point(24, 144);
+        lblGiaGoc.Name = "lblGiaGoc";
+        lblGiaGoc.Text = "Giá gốc (VNĐ):";
+
+        // txtImageUrl
+        txtImageUrl.Font = new Font("Segoe UI", 9.5F);
+        txtImageUrl.Location = new Point(480, 96);
+        txtImageUrl.Margin = new Padding(4);
+        txtImageUrl.Name = "txtImageUrl";
+        txtImageUrl.PlaceholderText = "Nhập đường dẫn ảnh";
+        txtImageUrl.Size = new Size(300, 33);
+        txtImageUrl.TabIndex = 9;
+
+        // lblImageUrl
+        lblImageUrl.AutoSize = true;
+        lblImageUrl.Font = new Font("Segoe UI", 9.5F);
+        lblImageUrl.ForeColor = Color.Black;
+        lblImageUrl.Location = new Point(350, 100);
+        lblImageUrl.Name = "lblImageUrl";
+        lblImageUrl.Text = "Đường dẫn ảnh:";
+
+        // chkIsFeatured
+        chkIsFeatured.AutoSize = true;
+        chkIsFeatured.Font = new Font("Segoe UI", 9.5F);
+        chkIsFeatured.Location = new Point(480, 144);
+        chkIsFeatured.Name = "chkIsFeatured";
+        chkIsFeatured.TabIndex = 10;
+        chkIsFeatured.Text = "Sản phẩm nổi bật";
+        chkIsFeatured.UseVisualStyleBackColor = true;
         // 
         // cboDanhMuc
         // 
