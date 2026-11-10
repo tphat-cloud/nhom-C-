@@ -107,6 +107,11 @@ partial class FormMain
         lblMoTa = new Label();
         txtGiaBan = new TextBox();
         lblGiaBan = new Label();
+        txtGiaGoc = new TextBox();
+        lblGiaGoc = new Label();
+        txtImageUrl = new TextBox();
+        lblImageUrl = new Label();
+        chkIsFeatured = new CheckBox();
         cboDanhMuc = new ComboBox();
         lblDanhMuc = new Label();
         txtTenSP = new TextBox();
@@ -909,4 +914,11 @@ partial class FormMain
     private Button button1;
     private Button btnDanhMuc;
     private Button btnNhapKho;
+    private TextBox txtGiaGoc;
+    private Label lblGiaGoc;
+
+    private TextBox txtImageUrl;
+    private Label lblImageUrl;
+
+    private CheckBox chkIsFeatured;
 }
