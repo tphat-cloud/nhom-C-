@@ -304,7 +304,11 @@ public partial class FormMain : Form
             {
                 conn.Open();
                 string sql = @"
-                    INSERT INTO Products (ProductCode, Name, CategoryId, Price, OriginalPrice, ImageUrl, Description, IsActive, IsFeatured, CreatedAt), VALUES, (@code, @name, @catId, @price, @originalPrice, @imageUrl, @desc, 1, @isFeatured, GETDATE())";
+                    INSERT INTO Products (ProductCode, Name, CategoryId, Price, OriginalPrice, ImageUrl,
+     Description, IsActive, IsFeatured, CreatedAt)
+    VALUES
+    (@code, @name, @catId, @price, @originalPrice, @imageUrl,
+     @desc, 1, @isFeatured, GETDATE())";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
@@ -312,6 +316,13 @@ public partial class FormMain : Form
                     cmd.Parameters.AddWithValue("@name", tenSP);
                     cmd.Parameters.AddWithValue("@catId", maDanhMuc);
                     cmd.Parameters.AddWithValue("@price", giaBan);
+                    cmd.Parameters.AddWithValue("@originalPrice",
+                        giaGoc.HasValue ? (object)giaGoc.Value : DBNull.Value);
+
+                    cmd.Parameters.AddWithValue("@imageUrl",
+                        string.IsNullOrWhiteSpace(imageUrl) ? (object)DBNull.Value : imageUrl);
+
+                    cmd.Parameters.AddWithValue("@isFeatured", isFeatured);
                     cmd.Parameters.AddWithValue("@desc", moTa);
 
                     cmd.ExecuteNonQuery();
