@@ -244,16 +244,21 @@ public partial class FormMain : Form
             txtGiaBan.Text = Convert.ToDecimal(row.Cells["Giá Bán (VNĐ)"].Value).ToString("0");
             txtMoTa.Text = row.Cells["Mô Tả"].Value?.ToString();
             // Hiển thị giá gốc
-            txtGiaGoc.Text = row.Cells["Giá Gốc (VNĐ)"].Value == DBNull.Value
+            object giaGocValue = row.Cells["Giá Gốc (VNĐ)"].Value;
+
+            txtGiaGoc.Text = giaGocValue == null || giaGocValue == DBNull.Value
                 ? ""
-                : Convert.ToDecimal(row.Cells["Giá Gốc (VNĐ)"].Value).ToString("0");
+                : Convert.ToDecimal(giaGocValue).ToString("0");
 
             // Hiển thị đường dẫn ảnh
             txtImageUrl.Text = row.Cells["Đường Dẫn Ảnh"].Value?.ToString();
 
             // Hiển thị trạng thái nổi bật
-            chkIsFeatured.Checked = row.Cells["Nổi Bật"].Value != DBNull.Value
-                && Convert.ToBoolean(row.Cells["Nổi Bật"].Value);
+            object featuredValue = row.Cells["Nổi Bật"].Value;
+
+            chkIsFeatured.Checked = featuredValue != null
+                && featuredValue != DBNull.Value
+                && Convert.ToBoolean(featuredValue);
 
             if (row.Cells["CategoryId"].Value != null)
             {
