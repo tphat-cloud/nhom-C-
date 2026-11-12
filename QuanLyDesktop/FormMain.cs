@@ -572,6 +572,9 @@ public partial class FormMain : Form
         txtTenSP.Clear();
         txtGiaBan.Clear();
         txtMoTa.Clear();
+        txtGiaGoc.Clear();
+        txtImageUrl.Clear();
+        chkIsFeatured.Checked = false;
         if (cboDanhMuc.Items.Count > 0)
             cboDanhMuc.SelectedIndex = 0;
         txtMaSP.Focus();
