@@ -31,23 +31,25 @@ public partial class Form1 : Form
             {
                 conn.Open();
 
-                // Câu truy vấn kiểm tra tài khoản trong bảng Users
+                // Chỉ lấy tài khoản theo tên đăng nhập; mật khẩu được kiểm tra
+                // bằng PasswordHasher.Verify ở tầng ứng dụng, không so sánh trong SQL.
                 string query = @"
-    SELECT u.UserId, u.FullName, u.RoleId, r.RoleName
+    SELECT u.UserId, u.FullName, u.RoleId, r.RoleName, u.PasswordHash
     FROM Users AS u
     INNER JOIN Roles AS r ON r.RoleId = u.RoleId
     WHERE u.Username = @u
-      AND u.PasswordHash = @p
       AND u.IsActive = 1";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@u", username);
-                    cmd.Parameters.AddWithValue("@p", password);
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        if (reader.Read())
+                        bool authenticated = reader.Read()
+                            && PasswordHasher.Verify(password, reader["PasswordHash"]?.ToString());
+
+                        if (authenticated)
                         {
                             // Đăng nhập thành công!
                             int userId = Convert.ToInt32(reader["UserId"]);
