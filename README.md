@@ -238,6 +238,16 @@ Chống lỗi / lạm dụng:
 | Thêm vào giỏ nhưng chưa đặt | Tồn kho **không** đổi |
 | Đặt thành công | Giỏ được xóa, badge "Giỏ hàng" trên menu về 0 |
 
+Kiểm thử bổ sung WEB-02 trên SQL Server local bằng HTTP client (13/11/2026; POST gửi kèm anti-forgery token):
+
+| Kịch bản | Kết quả |
+| --- | --- |
+| Mở `/Checkout` bằng GET và POST khi giỏ trống | Cả hai chuyển về `/Cart`; trang giỏ trả HTTP 200 và hiển thị thông báo thân thiện |
+| Cập nhật số lượng giỏ thành `0` | Sản phẩm được xóa, trang giỏ báo thành công và hiển thị trạng thái giỏ trống |
+| Thêm sản phẩm với số lượng `100` | Quay lại trang sản phẩm, báo số lượng hợp lệ (1–99), không trả lỗi 500 |
+| Gửi `returnUrl=https://evil.example` khi thêm biến thể không hợp lệ | Chuyển về `/Cart`, không chuyển hướng ra host bên ngoài |
+| Tra cứu với mã đơn dài 51 ký tự | HTTP 200 và thông báo mã đơn/số điện thoại không được dài quá 50 ký tự |
+
 ### 3.2. Phiếu nhập kho (desktop)
 
 | Thành phần | Vai trò |
