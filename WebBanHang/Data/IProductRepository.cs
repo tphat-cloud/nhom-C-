@@ -14,9 +14,16 @@ public interface IProductRepository
 
     Task<IReadOnlyList<Product>> GetFeaturedProductsAsync(int take = 8, CancellationToken cancellationToken = default);
 
+    Task<int> CountProductsAsync(
+        string? keyword,
+        int categoryId,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<Product>> GetProductsAsync(
         string? keyword,
         int categoryId,
+        int page = 1,
+        int pageSize = ProductListViewModel.DefaultPageSize,
         CancellationToken cancellationToken = default);
 
     Task<Product?> GetProductByIdAsync(int productId, CancellationToken cancellationToken = default);
