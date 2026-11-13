@@ -524,7 +524,8 @@ partial class FormMain
         grpThongTin.Margin = new Padding(4);
         grpThongTin.Name = "grpThongTin";
         grpThongTin.Padding = new Padding(4);
-        grpThongTin.Size = new Size(1000, 280);
+        // Cao hơn để chứa thêm hàng Giá gốc / Ảnh / Nổi bật, không đè danh sách SP.
+        grpThongTin.Size = new Size(1000, 300);
         grpThongTin.TabIndex = 2;
         grpThongTin.TabStop = false;
         grpThongTin.Text = "THÔNG TIN SẢN PHẨM";
@@ -537,11 +538,11 @@ partial class FormMain
         btnLamMoi.FlatStyle = FlatStyle.Flat;
         btnLamMoi.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnLamMoi.ForeColor = Color.White;
-        btnLamMoi.Location = new Point(720, 162);
+        btnLamMoi.Location = new Point(720, 220);
         btnLamMoi.Margin = new Padding(4);
         btnLamMoi.Name = "btnLamMoi";
         btnLamMoi.Size = new Size(145, 42);
-        btnLamMoi.TabIndex = 13;
+        btnLamMoi.TabIndex = 14;
         btnLamMoi.Text = "🔄 Làm Mới";
         btnLamMoi.UseVisualStyleBackColor = false;
         btnLamMoi.Click += btnLamMoi_Click;
@@ -554,10 +555,10 @@ partial class FormMain
         btnBienThe.FlatStyle = FlatStyle.Flat;
         btnBienThe.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
         btnBienThe.ForeColor = Color.FromArgb(13, 71, 161);
-        btnBienThe.Location = new Point(875, 162);
+        btnBienThe.Location = new Point(875, 220);
         btnBienThe.Name = "btnBienThe";
         btnBienThe.Size = new Size(105, 42);
-        btnBienThe.TabIndex = 14;
+        btnBienThe.TabIndex = 15;
         btnBienThe.Text = "Size / tồn kho";
         btnBienThe.UseVisualStyleBackColor = false;
         btnBienThe.Click += btnBienThe_Click;
@@ -569,11 +570,11 @@ partial class FormMain
         btnXoa.FlatStyle = FlatStyle.Flat;
         btnXoa.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnXoa.ForeColor = Color.White;
-        btnXoa.Location = new Point(555, 162);
+        btnXoa.Location = new Point(555, 220);
         btnXoa.Margin = new Padding(4);
         btnXoa.Name = "btnXoa";
         btnXoa.Size = new Size(145, 42);
-        btnXoa.TabIndex = 12;
+        btnXoa.TabIndex = 13;
         btnXoa.Text = "Ngừng bán";
         btnXoa.UseVisualStyleBackColor = false;
         btnXoa.Click += btnXoa_Click;
@@ -585,11 +586,11 @@ partial class FormMain
         btnSua.FlatStyle = FlatStyle.Flat;
         btnSua.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnSua.ForeColor = Color.White;
-        btnSua.Location = new Point(390, 162);
+        btnSua.Location = new Point(390, 220);
         btnSua.Margin = new Padding(4);
         btnSua.Name = "btnSua";
         btnSua.Size = new Size(145, 42);
-        btnSua.TabIndex = 11;
+        btnSua.TabIndex = 12;
         btnSua.Text = "✏️ Cập Nhật";
         btnSua.UseVisualStyleBackColor = false;
         btnSua.Click += btnSua_Click;
@@ -601,38 +602,38 @@ partial class FormMain
         btnThem.FlatStyle = FlatStyle.Flat;
         btnThem.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold);
         btnThem.ForeColor = Color.White;
-        btnThem.Location = new Point(225, 162);
+        btnThem.Location = new Point(225, 220);
         btnThem.Margin = new Padding(4);
         btnThem.Name = "btnThem";
         btnThem.Size = new Size(145, 42);
-        btnThem.TabIndex = 10;
+        btnThem.TabIndex = 11;
         btnThem.Text = "➕ Thêm Mới";
         btnThem.UseVisualStyleBackColor = false;
         btnThem.Click += btnThem_Click;
         // 
-        // txtMoTa
+        // txtMoTa — hàng 3, bên phải (không chồng ImageUrl)
         // 
         txtMoTa.Font = new Font("Segoe UI", 9.5F);
-        txtMoTa.Location = new Point(470, 96);
+        txtMoTa.Location = new Point(470, 152);
         txtMoTa.Margin = new Padding(4);
         txtMoTa.Name = "txtMoTa";
         txtMoTa.PlaceholderText = "Chất liệu cotton, thoáng mát...";
         txtMoTa.Size = new Size(490, 33);
-        txtMoTa.TabIndex = 9;
+        txtMoTa.TabIndex = 10;
         // 
         // lblMoTa
         // 
         lblMoTa.AutoSize = true;
         lblMoTa.Font = new Font("Segoe UI", 9.5F);
         lblMoTa.ForeColor = Color.Black;
-        lblMoTa.Location = new Point(340, 100);
+        lblMoTa.Location = new Point(340, 156);
         lblMoTa.Margin = new Padding(4, 0, 4, 0);
         lblMoTa.Name = "lblMoTa";
         lblMoTa.Size = new Size(65, 25);
-        lblMoTa.TabIndex = 8;
+        lblMoTa.TabIndex = 10;
         lblMoTa.Text = "Mô tả:";
         // 
-        // txtGiaBan
+        // txtGiaBan — hàng 2 trái
         // 
         txtGiaBan.Font = new Font("Segoe UI", 9.5F);
         txtGiaBan.Location = new Point(130, 96);
@@ -640,7 +641,7 @@ partial class FormMain
         txtGiaBan.Name = "txtGiaBan";
         txtGiaBan.PlaceholderText = "VD: 250000";
         txtGiaBan.Size = new Size(190, 33);
-        txtGiaBan.TabIndex = 7;
+        txtGiaBan.TabIndex = 6;
         // 
         // lblGiaBan
         // 
@@ -651,48 +652,54 @@ partial class FormMain
         lblGiaBan.Margin = new Padding(4, 0, 4, 0);
         lblGiaBan.Name = "lblGiaBan";
         lblGiaBan.Size = new Size(137, 25);
-        lblGiaBan.TabIndex = 6;
+        lblGiaBan.TabIndex = 5;
         lblGiaBan.Text = "Giá bán (VNĐ):";
-        // txtGiaGoc
+        // 
+        // txtGiaGoc — hàng 2 giữa
+        // 
         txtGiaGoc.Font = new Font("Segoe UI", 9.5F);
-        txtGiaGoc.Location = new Point(130, 140);
+        txtGiaGoc.Location = new Point(475, 96);
         txtGiaGoc.Margin = new Padding(4);
         txtGiaGoc.Name = "txtGiaGoc";
         txtGiaGoc.PlaceholderText = "VD: 300000";
         txtGiaGoc.Size = new Size(190, 33);
-        txtGiaGoc.TabIndex = 8;
-
+        txtGiaGoc.TabIndex = 7;
+        // 
         // lblGiaGoc
+        // 
         lblGiaGoc.AutoSize = true;
         lblGiaGoc.Font = new Font("Segoe UI", 9.5F);
         lblGiaGoc.ForeColor = Color.Black;
-        lblGiaGoc.Location = new Point(24, 144);
+        lblGiaGoc.Location = new Point(340, 100);
         lblGiaGoc.Name = "lblGiaGoc";
         lblGiaGoc.Text = "Giá gốc (VNĐ):";
-
-        // txtImageUrl
+        // 
+        // txtImageUrl — hàng 3 trái
+        // 
         txtImageUrl.Font = new Font("Segoe UI", 9.5F);
-        txtImageUrl.Location = new Point(480, 96);
+        txtImageUrl.Location = new Point(130, 152);
         txtImageUrl.Margin = new Padding(4);
         txtImageUrl.Name = "txtImageUrl";
-        txtImageUrl.PlaceholderText = "Nhập đường dẫn ảnh";
-        txtImageUrl.Size = new Size(300, 33);
+        txtImageUrl.PlaceholderText = "/images/ao-thun.jpg hoặc URL";
+        txtImageUrl.Size = new Size(190, 33);
         txtImageUrl.TabIndex = 9;
-
+        // 
         // lblImageUrl
+        // 
         lblImageUrl.AutoSize = true;
         lblImageUrl.Font = new Font("Segoe UI", 9.5F);
         lblImageUrl.ForeColor = Color.Black;
-        lblImageUrl.Location = new Point(350, 100);
+        lblImageUrl.Location = new Point(24, 156);
         lblImageUrl.Name = "lblImageUrl";
-        lblImageUrl.Text = "Đường dẫn ảnh:";
-
-        // chkIsFeatured
+        lblImageUrl.Text = "URL ảnh:";
+        // 
+        // chkIsFeatured — hàng 2 phải
+        // 
         chkIsFeatured.AutoSize = true;
         chkIsFeatured.Font = new Font("Segoe UI", 9.5F);
-        chkIsFeatured.Location = new Point(480, 144);
+        chkIsFeatured.Location = new Point(710, 100);
         chkIsFeatured.Name = "chkIsFeatured";
-        chkIsFeatured.TabIndex = 10;
+        chkIsFeatured.TabIndex = 8;
         chkIsFeatured.Text = "Sản phẩm nổi bật";
         chkIsFeatured.UseVisualStyleBackColor = true;
         // 
@@ -773,11 +780,13 @@ partial class FormMain
         grpDanhSach.Controls.Add(txtTimKiem);
         grpDanhSach.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
         grpDanhSach.ForeColor = Color.FromArgb(13, 71, 161);
-        grpDanhSach.Location = new Point(24, 274);
+        // Đẩy xuống dưới grpThongTin (Y=24, cao 300) để không chồng vùng nhập liệu.
+        grpDanhSach.Location = new Point(24, 340);
         grpDanhSach.Margin = new Padding(4);
         grpDanhSach.Name = "grpDanhSach";
         grpDanhSach.Padding = new Padding(4);
-        grpDanhSach.Size = new Size(1000, 500);
+        // Giữ chừa 24px đáy của panelContent; anchor Bottom sẽ tự co giãn theo cửa sổ.
+        grpDanhSach.Size = new Size(1000, 450);
         grpDanhSach.TabIndex = 3;
         grpDanhSach.TabStop = false;
         grpDanhSach.Text = "DANH SÁCH SẢN PHẨM";
@@ -798,7 +807,7 @@ partial class FormMain
         dgvSanPham.ReadOnly = true;
         dgvSanPham.RowHeadersWidth = 51;
         dgvSanPham.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dgvSanPham.Size = new Size(950, 370);
+        dgvSanPham.Size = new Size(950, 320);
         dgvSanPham.TabIndex = 3;
         dgvSanPham.CellClick += dgvSanPham_CellClick;
         // 

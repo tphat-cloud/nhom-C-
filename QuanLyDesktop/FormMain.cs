@@ -243,17 +243,18 @@ public partial class FormMain : Form
             txtTenSP.Text = row.Cells["Tên Sản Phẩm"].Value?.ToString();
             txtGiaBan.Text = Convert.ToDecimal(row.Cells["Giá Bán (VNĐ)"].Value).ToString("0");
             txtMoTa.Text = row.Cells["Mô Tả"].Value?.ToString();
-            // Hiển thị giá gốc
-            txtGiaGoc.Text = row.Cells["Giá Gốc (VNĐ)"].Value == DBNull.Value
-                ? ""
-                : Convert.ToDecimal(row.Cells["Giá Gốc (VNĐ)"].Value).ToString("0");
 
-            // Hiển thị đường dẫn ảnh
+            object giaGocValue = row.Cells["Giá Gốc (VNĐ)"].Value;
+            txtGiaGoc.Text = giaGocValue == null || giaGocValue == DBNull.Value
+                ? ""
+                : Convert.ToDecimal(giaGocValue).ToString("0");
+
             txtImageUrl.Text = row.Cells["Đường Dẫn Ảnh"].Value?.ToString();
 
-            // Hiển thị trạng thái nổi bật
-            chkIsFeatured.Checked = row.Cells["Nổi Bật"].Value != DBNull.Value
-                && Convert.ToBoolean(row.Cells["Nổi Bật"].Value);
+            object featuredValue = row.Cells["Nổi Bật"].Value;
+            chkIsFeatured.Checked = featuredValue != null
+                && featuredValue != DBNull.Value
+                && Convert.ToBoolean(featuredValue);
 
             if (row.Cells["CategoryId"].Value != null)
             {
@@ -413,7 +414,8 @@ public partial class FormMain : Form
                 conn.Open();
                 string sql = @"
                     UPDATE Products 
-                    SET ProductCode = @code, Name = @name, CategoryId = @catId, Price = @price, OriginalPrice = @originalPrice, ImageURL = @imageURL, IsFeatured = @isFeatured, Description = @desc
+                    SET ProductCode = @code, Name = @name, CategoryId = @catId, Price = @price,
+                        OriginalPrice = @originalPrice, ImageUrl = @imageUrl, IsFeatured = @isFeatured, Description = @desc
                     WHERE ProductId = @id";
 
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
@@ -571,7 +573,10 @@ public partial class FormMain : Form
         txtMaSP.Clear();
         txtTenSP.Clear();
         txtGiaBan.Clear();
+        txtGiaGoc.Clear();
+        txtImageUrl.Clear();
         txtMoTa.Clear();
+        chkIsFeatured.Checked = false;
         if (cboDanhMuc.Items.Count > 0)
             cboDanhMuc.SelectedIndex = 0;
         txtMaSP.Focus();
