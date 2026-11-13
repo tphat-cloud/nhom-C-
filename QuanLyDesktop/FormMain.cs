@@ -291,6 +291,13 @@ public partial class FormMain : Form
             return;
         }
 
+        if (cboDanhMuc.SelectedValue == null)
+        {
+            MessageBox.Show("Vui lòng chọn danh mục sản phẩm!",
+                "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
         int maDanhMuc = Convert.ToInt32(cboDanhMuc.SelectedValue);
         // Lấy thông tin bổ sung
         string imageUrl = txtImageUrl.Text.Trim();
@@ -386,6 +393,13 @@ public partial class FormMain : Form
             giaBan <= 0)
         {
             MessageBox.Show("Vui lòng nhập mã, tên và giá bán lớn hơn 0.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        if (cboDanhMuc.SelectedValue == null)
+        {
+            MessageBox.Show("Vui lòng chọn danh mục sản phẩm!",
+                "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 
