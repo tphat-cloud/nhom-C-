@@ -42,9 +42,9 @@ partial class FormMain
     private Label lblDashboardGreeting;
     private Label lblDashboardDescription;
     private TableLayoutPanel layoutStats;
-    private Panel panelStatProducts;
-    private Panel panelStatOrders;
-    private Panel panelStatRevenue;
+    private DashboardStatCard panelStatProducts;
+    private DashboardStatCard panelStatOrders;
+    private DashboardStatCard panelStatRevenue;
     private Label lblStatProductsTitle;
     private Label lblStatProductsValue;
     private Label lblStatOrdersTitle;
@@ -55,6 +55,11 @@ partial class FormMain
     private Label lblOverviewTitle;
     private Label lblOverviewBody;
     private Label lblDashboardStatus;
+    private FlowLayoutPanel layoutQuickActions;
+    private Button btnQuickProducts;
+    private Button btnQuickOrders;
+    private Button btnQuickInventory;
+    private Button btnQuickCategories;
 
     protected override void Dispose(bool disposing)
     {
@@ -82,9 +87,9 @@ partial class FormMain
         lblDashboardGreeting = new Label();
         lblDashboardDescription = new Label();
         layoutStats = new TableLayoutPanel();
-        panelStatProducts = new Panel();
-        panelStatOrders = new Panel();
-        panelStatRevenue = new Panel();
+        panelStatProducts = new DashboardStatCard();
+        panelStatOrders = new DashboardStatCard();
+        panelStatRevenue = new DashboardStatCard();
         lblStatProductsTitle = new Label();
         lblStatProductsValue = new Label();
         lblStatOrdersTitle = new Label();
@@ -95,6 +100,11 @@ partial class FormMain
         lblOverviewTitle = new Label();
         lblOverviewBody = new Label();
         lblDashboardStatus = new Label();
+        layoutQuickActions = new FlowLayoutPanel();
+        btnQuickProducts = new Button();
+        btnQuickOrders = new Button();
+        btnQuickInventory = new Button();
+        btnQuickCategories = new Button();
         lblTitle = new Label();
         lblXinChao = new Label();
         grpThongTin = new GroupBox();
@@ -142,6 +152,7 @@ partial class FormMain
         panelStatOrders.SuspendLayout();
         panelStatRevenue.SuspendLayout();
         panelOverview.SuspendLayout();
+        layoutQuickActions.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)dgvSanPham).BeginInit();
         SuspendLayout();
         // 
@@ -174,25 +185,25 @@ partial class FormMain
         // 
         // lblBrand
         // 
-        lblBrand.AutoSize = true;
+        lblBrand.AutoSize = false;
         lblBrand.Font = new Font("Segoe UI", 15F, FontStyle.Bold, GraphicsUnit.Point, 0);
         lblBrand.ForeColor = Color.White;
         lblBrand.Location = new Point(20, 28);
         lblBrand.Name = "lblBrand";
-        lblBrand.Size = new Size(144, 28);
+        lblBrand.Size = new Size(194, 28);
         lblBrand.TabIndex = 0;
         lblBrand.Text = "FASHION STORE";
         // 
         // lblBrandSubtitle
         // 
-        lblBrandSubtitle.AutoSize = true;
-        lblBrandSubtitle.Font = new Font("Segoe UI", 8.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        lblBrandSubtitle.AutoSize = false;
+        lblBrandSubtitle.Font = new Font("Segoe UI", 7.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
         lblBrandSubtitle.ForeColor = Color.FromArgb(171, 193, 218);
-        lblBrandSubtitle.Location = new Point(22, 59);
+        lblBrandSubtitle.Location = new Point(20, 59);
         lblBrandSubtitle.Name = "lblBrandSubtitle";
-        lblBrandSubtitle.Size = new Size(158, 15);
+        lblBrandSubtitle.Size = new Size(194, 34);
         lblBrandSubtitle.TabIndex = 1;
-        lblBrandSubtitle.Text = "QUẢN TRỊ CỬA HÀNG THỜI TRANG";
+        lblBrandSubtitle.Text = "QUẢN TRỊ CỬA HÀNG\r\nTHỜI TRANG";
         // 
         // btnTrangChu
         // 
@@ -278,8 +289,8 @@ partial class FormMain
         layoutDashboard.Dock = DockStyle.Fill;
         layoutDashboard.Padding = new Padding(0, 0, 0, 4);
         layoutDashboard.RowCount = 3;
-        layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 118F));
-        layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 174F));
+        layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 110F));
+        layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 158F));
         layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         layoutDashboard.TabIndex = 0;
         // 
@@ -333,6 +344,7 @@ partial class FormMain
         // panelStatProducts
         // 
         panelStatProducts.BackColor = Color.White;
+        panelStatProducts.AccentColor = Color.FromArgb(24, 105, 213);
         panelStatProducts.Controls.Add(lblStatProductsValue);
         panelStatProducts.Controls.Add(lblStatProductsTitle);
         panelStatProducts.Dock = DockStyle.Fill;
@@ -343,20 +355,20 @@ partial class FormMain
         // lblStatProductsTitle
         // 
         lblStatProductsTitle.AutoSize = true;
-        lblStatProductsTitle.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        lblStatProductsTitle.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
         lblStatProductsTitle.ForeColor = Color.FromArgb(99, 112, 129);
-        lblStatProductsTitle.Location = new Point(20, 20);
+        lblStatProductsTitle.Location = new Point(43, 20);
         lblStatProductsTitle.Name = "lblStatProductsTitle";
-        lblStatProductsTitle.Size = new Size(155, 17);
+        lblStatProductsTitle.Size = new Size(245, 17);
         lblStatProductsTitle.TabIndex = 0;
-        lblStatProductsTitle.Text = "Sản phẩm đang kinh doanh";
+        lblStatProductsTitle.Text = "SẢN PHẨM ĐANG KINH DOANH";
         // 
         // lblStatProductsValue
         // 
         lblStatProductsValue.AutoSize = true;
-        lblStatProductsValue.Font = new Font("Segoe UI", 27F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        lblStatProductsValue.Font = new Font("Segoe UI", 20F, FontStyle.Bold, GraphicsUnit.Point, 0);
         lblStatProductsValue.ForeColor = Color.FromArgb(24, 105, 213);
-        lblStatProductsValue.Location = new Point(17, 54);
+        lblStatProductsValue.Location = new Point(42, 55);
         lblStatProductsValue.Name = "lblStatProductsValue";
         lblStatProductsValue.Size = new Size(47, 48);
         lblStatProductsValue.TabIndex = 1;
@@ -365,6 +377,7 @@ partial class FormMain
         // panelStatOrders
         // 
         panelStatOrders.BackColor = Color.White;
+        panelStatOrders.AccentColor = Color.FromArgb(20, 151, 116);
         panelStatOrders.Controls.Add(lblStatOrdersValue);
         panelStatOrders.Controls.Add(lblStatOrdersTitle);
         panelStatOrders.Dock = DockStyle.Fill;
@@ -375,20 +388,20 @@ partial class FormMain
         // lblStatOrdersTitle
         // 
         lblStatOrdersTitle.AutoSize = true;
-        lblStatOrdersTitle.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        lblStatOrdersTitle.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
         lblStatOrdersTitle.ForeColor = Color.FromArgb(99, 112, 129);
-        lblStatOrdersTitle.Location = new Point(20, 20);
+        lblStatOrdersTitle.Location = new Point(43, 20);
         lblStatOrdersTitle.Name = "lblStatOrdersTitle";
-        lblStatOrdersTitle.Size = new Size(118, 17);
+        lblStatOrdersTitle.Size = new Size(230, 17);
         lblStatOrdersTitle.TabIndex = 0;
-        lblStatOrdersTitle.Text = "Đơn hàng hôm nay";
+        lblStatOrdersTitle.Text = "ĐƠN HÀNG HÔM NAY";
         // 
         // lblStatOrdersValue
         // 
         lblStatOrdersValue.AutoSize = true;
-        lblStatOrdersValue.Font = new Font("Segoe UI", 27F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        lblStatOrdersValue.Font = new Font("Segoe UI", 20F, FontStyle.Bold, GraphicsUnit.Point, 0);
         lblStatOrdersValue.ForeColor = Color.FromArgb(20, 151, 116);
-        lblStatOrdersValue.Location = new Point(17, 54);
+        lblStatOrdersValue.Location = new Point(42, 55);
         lblStatOrdersValue.Name = "lblStatOrdersValue";
         lblStatOrdersValue.Size = new Size(47, 48);
         lblStatOrdersValue.TabIndex = 1;
@@ -397,6 +410,7 @@ partial class FormMain
         // panelStatRevenue
         // 
         panelStatRevenue.BackColor = Color.White;
+        panelStatRevenue.AccentColor = Color.FromArgb(192, 117, 29);
         panelStatRevenue.Controls.Add(lblStatRevenueValue);
         panelStatRevenue.Controls.Add(lblStatRevenueTitle);
         panelStatRevenue.Dock = DockStyle.Fill;
@@ -407,20 +421,20 @@ partial class FormMain
         // lblStatRevenueTitle
         // 
         lblStatRevenueTitle.AutoSize = true;
-        lblStatRevenueTitle.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        lblStatRevenueTitle.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
         lblStatRevenueTitle.ForeColor = Color.FromArgb(99, 112, 129);
-        lblStatRevenueTitle.Location = new Point(20, 20);
+        lblStatRevenueTitle.Location = new Point(43, 20);
         lblStatRevenueTitle.Name = "lblStatRevenueTitle";
-        lblStatRevenueTitle.Size = new Size(126, 17);
+        lblStatRevenueTitle.Size = new Size(235, 17);
         lblStatRevenueTitle.TabIndex = 0;
-        lblStatRevenueTitle.Text = "Đã thu hôm nay (VNĐ)";
+        lblStatRevenueTitle.Text = "DOANH THU HÔM NAY";
         // 
         // lblStatRevenueValue
         // 
         lblStatRevenueValue.AutoSize = true;
-        lblStatRevenueValue.Font = new Font("Segoe UI", 23F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        lblStatRevenueValue.Font = new Font("Segoe UI", 20F, FontStyle.Bold, GraphicsUnit.Point, 0);
         lblStatRevenueValue.ForeColor = Color.FromArgb(192, 117, 29);
-        lblStatRevenueValue.Location = new Point(17, 59);
+        lblStatRevenueValue.Location = new Point(42, 55);
         lblStatRevenueValue.Name = "lblStatRevenueValue";
         lblStatRevenueValue.Size = new Size(42, 42);
         lblStatRevenueValue.TabIndex = 1;
@@ -430,12 +444,14 @@ partial class FormMain
         // 
         panelOverview.BackColor = Color.White;
         panelOverview.Controls.Add(lblDashboardStatus);
+        panelOverview.Controls.Add(layoutQuickActions);
         panelOverview.Controls.Add(lblOverviewBody);
         panelOverview.Controls.Add(lblOverviewTitle);
-        panelOverview.Dock = DockStyle.Fill;
-        panelOverview.Padding = new Padding(22);
+        panelOverview.Dock = DockStyle.Top;
+        panelOverview.Height = 204;
+        panelOverview.Padding = new Padding(22, 16, 22, 16);
         panelOverview.TabIndex = 2;
-        // 
+        //
         // lblOverviewTitle
         // 
         lblOverviewTitle.AutoSize = true;
@@ -445,30 +461,109 @@ partial class FormMain
         lblOverviewTitle.Name = "lblOverviewTitle";
         lblOverviewTitle.Size = new Size(144, 21);
         lblOverviewTitle.TabIndex = 0;
-        lblOverviewTitle.Text = "Truy cập nghiệp vụ";
-        // 
+        lblOverviewTitle.Text = "Thao tác nhanh";
+        //
         // lblOverviewBody
         // 
         lblOverviewBody.AutoSize = true;
-        lblOverviewBody.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        lblOverviewBody.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
         lblOverviewBody.ForeColor = Color.FromArgb(99, 112, 129);
-        lblOverviewBody.Location = new Point(25, 57);
+        lblOverviewBody.Location = new Point(22, 49);
         lblOverviewBody.Name = "lblOverviewBody";
         lblOverviewBody.Size = new Size(642, 19);
         lblOverviewBody.TabIndex = 1;
-        lblOverviewBody.Text = "Dùng menu bên trái để quản lý sản phẩm, danh mục và đơn hàng theo quyền tài khoản của bạn.";
-        // 
+        lblOverviewBody.Text = "Mở nhanh khu vực quản lý cần dùng.";
+        //
         // lblDashboardStatus
-        // 
-        lblDashboardStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
-        lblDashboardStatus.AutoSize = true;
+        //
+        lblDashboardStatus.AutoSize = false;
+        lblDashboardStatus.Dock = DockStyle.Bottom;
         lblDashboardStatus.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
         lblDashboardStatus.ForeColor = Color.FromArgb(99, 112, 129);
-        lblDashboardStatus.Location = new Point(25, 128);
+        lblDashboardStatus.Height = 24;
         lblDashboardStatus.Name = "lblDashboardStatus";
-        lblDashboardStatus.Size = new Size(188, 15);
         lblDashboardStatus.TabIndex = 2;
+        lblDashboardStatus.TextAlign = ContentAlignment.MiddleLeft;
         lblDashboardStatus.Text = "Số liệu được lấy từ cơ sở dữ liệu.";
+        //
+        // layoutQuickActions
+        //
+        layoutQuickActions.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+        layoutQuickActions.Controls.Add(btnQuickProducts);
+        layoutQuickActions.Controls.Add(btnQuickOrders);
+        layoutQuickActions.Controls.Add(btnQuickInventory);
+        layoutQuickActions.Controls.Add(btnQuickCategories);
+        layoutQuickActions.Location = new Point(22, 78);
+        layoutQuickActions.Name = "layoutQuickActions";
+        layoutQuickActions.Size = new Size(930, 48);
+        layoutQuickActions.TabIndex = 3;
+        layoutQuickActions.WrapContents = false;
+        //
+        // btnQuickProducts
+        //
+        btnQuickProducts.BackColor = Color.FromArgb(13, 71, 161);
+        btnQuickProducts.Cursor = Cursors.Hand;
+        btnQuickProducts.FlatAppearance.BorderColor = Color.FromArgb(13, 71, 161);
+        btnQuickProducts.FlatStyle = FlatStyle.Flat;
+        btnQuickProducts.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        btnQuickProducts.ForeColor = Color.White;
+        btnQuickProducts.Margin = new Padding(0, 0, 12, 0);
+        btnQuickProducts.Name = "btnQuickProducts";
+        btnQuickProducts.Size = new Size(210, 44);
+        btnQuickProducts.TabIndex = 0;
+        btnQuickProducts.Text = "Sản phẩm";
+        btnQuickProducts.UseVisualStyleBackColor = false;
+        btnQuickProducts.Click += btnSanPham_Click;
+        //
+        // btnQuickOrders
+        //
+        btnQuickOrders.BackColor = Color.FromArgb(244, 247, 251);
+        btnQuickOrders.Cursor = Cursors.Hand;
+        btnQuickOrders.FlatAppearance.BorderColor = Color.FromArgb(227, 232, 240);
+        btnQuickOrders.FlatAppearance.MouseOverBackColor = Color.FromArgb(230, 239, 250);
+        btnQuickOrders.FlatStyle = FlatStyle.Flat;
+        btnQuickOrders.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        btnQuickOrders.ForeColor = Color.FromArgb(13, 71, 161);
+        btnQuickOrders.Margin = new Padding(0, 0, 12, 0);
+        btnQuickOrders.Name = "btnQuickOrders";
+        btnQuickOrders.Size = new Size(210, 44);
+        btnQuickOrders.TabIndex = 1;
+        btnQuickOrders.Text = "Đơn hàng";
+        btnQuickOrders.UseVisualStyleBackColor = false;
+        btnQuickOrders.Click += button1_Click;
+        //
+        // btnQuickInventory
+        //
+        btnQuickInventory.BackColor = Color.FromArgb(244, 247, 251);
+        btnQuickInventory.Cursor = Cursors.Hand;
+        btnQuickInventory.FlatAppearance.BorderColor = Color.FromArgb(227, 232, 240);
+        btnQuickInventory.FlatAppearance.MouseOverBackColor = Color.FromArgb(230, 239, 250);
+        btnQuickInventory.FlatStyle = FlatStyle.Flat;
+        btnQuickInventory.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        btnQuickInventory.ForeColor = Color.FromArgb(13, 71, 161);
+        btnQuickInventory.Margin = new Padding(0, 0, 12, 0);
+        btnQuickInventory.Name = "btnQuickInventory";
+        btnQuickInventory.Size = new Size(210, 44);
+        btnQuickInventory.TabIndex = 2;
+        btnQuickInventory.Text = "Nhập kho";
+        btnQuickInventory.UseVisualStyleBackColor = false;
+        btnQuickInventory.Click += btnNhapKho_Click;
+        //
+        // btnQuickCategories
+        //
+        btnQuickCategories.BackColor = Color.FromArgb(244, 247, 251);
+        btnQuickCategories.Cursor = Cursors.Hand;
+        btnQuickCategories.FlatAppearance.BorderColor = Color.FromArgb(227, 232, 240);
+        btnQuickCategories.FlatAppearance.MouseOverBackColor = Color.FromArgb(230, 239, 250);
+        btnQuickCategories.FlatStyle = FlatStyle.Flat;
+        btnQuickCategories.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        btnQuickCategories.ForeColor = Color.FromArgb(13, 71, 161);
+        btnQuickCategories.Name = "btnQuickCategories";
+        btnQuickCategories.Size = new Size(210, 44);
+        btnQuickCategories.TabIndex = 3;
+        btnQuickCategories.Text = "Danh mục";
+        btnQuickCategories.UseVisualStyleBackColor = false;
+        btnQuickCategories.Click += button2_Click;
         // 
         // lblTitle
         // 
@@ -889,7 +984,7 @@ partial class FormMain
         // 
         // btnDanhMuc
         // 
-        btnDanhMuc.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnDanhMuc.Anchor = AnchorStyles.Top | AnchorStyles.Left;
         btnDanhMuc.BackColor = Color.FromArgb(17, 43, 72);
         btnDanhMuc.Cursor = Cursors.Hand;
         btnDanhMuc.FlatAppearance.BorderSize = 0;
@@ -907,7 +1002,7 @@ partial class FormMain
         // 
         // btnNhapKho
         // 
-        btnNhapKho.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnNhapKho.Anchor = AnchorStyles.Top | AnchorStyles.Left;
         btnNhapKho.BackColor = Color.FromArgb(17, 43, 72);
         btnNhapKho.Cursor = Cursors.Hand;
         btnNhapKho.FlatAppearance.BorderSize = 0;
@@ -925,8 +1020,8 @@ partial class FormMain
         // 
         // FormMain
         // 
-        AutoScaleDimensions = new SizeF(10F, 25F);
-        AutoScaleMode = AutoScaleMode.Font;
+        AutoScaleDimensions = new SizeF(96F, 96F);
+        AutoScaleMode = AutoScaleMode.Dpi;
         BackColor = Color.WhiteSmoke;
         ClientSize = new Size(1440, 900);
         Controls.Add(layoutRoot);
@@ -951,6 +1046,7 @@ partial class FormMain
         panelStatRevenue.PerformLayout();
         panelOverview.ResumeLayout(false);
         panelOverview.PerformLayout();
+        layoutQuickActions.ResumeLayout(false);
         layoutStats.ResumeLayout(false);
         panelWelcome.ResumeLayout(false);
         panelWelcome.PerformLayout();
