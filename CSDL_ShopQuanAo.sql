@@ -221,10 +221,10 @@ INSERT INTO Roles (RoleName, Description) VALUES
 (N'Admin', N'Quản trị viên toàn quyền hệ thống'),
 (N'Staff', N'Nhân viên bán hàng và xử lý đơn');
 
--- Tài khoản (Mật khẩu: 123456)
+-- Tài khoản (mật khẩu demo: 123456, đã băm PBKDF2-HMAC-SHA256)
 INSERT INTO Users (Username, PasswordHash, FullName, Email, PhoneNumber, RoleId, IsActive) VALUES 
-(N'admin', N'123456', N'Quản Trị Viên', N'admin@shop.vn', N'0901234567', 1, 1),
-(N'nhanvien', N'123456', N'Nguyễn Văn Bán Hàng', N'staff@shop.vn', N'0912345678', 2, 1);
+(N'admin', N'PBKDF2-SHA256$100000$CNieVO3w+2kisep0K/cqQg==$UBqTPbq/t/7Bi8e8oQGyC8I/4KwMk5Ps9Vst4v0e3HA=', N'Quản Trị Viên', N'admin@shop.vn', N'0901234567', 1, 1),
+(N'nhanvien', N'PBKDF2-SHA256$100000$YJGwr8Cu82zdu+NKzOBuDg==$sYuW50fZtvsTLp/9BxG9RNrmUOh3msZhsYRd6fYlwcI=', N'Nguyễn Văn Bán Hàng', N'staff@shop.vn', N'0912345678', 2, 1);
 
 -- Danh mục
 INSERT INTO Categories (Name, Description, ImageUrl, IsActive) VALUES 
