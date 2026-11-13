@@ -26,6 +26,48 @@ QuanLyDesktop (admin duyệt)  ──┘
 
 ---
 
+## 1.1. Chạy bằng VS Code trên Windows
+
+Cấu hình mặc định trong Git dùng SQL Server tại `127.0.0.1,1433`. Mở **thư mục gốc của repo** trong VS Code, bảo đảm Docker Desktop và .NET 8 đã sẵn sàng, rồi làm theo [các bước cài đặt](#2-cài-đặt-lần-đầu-máy-mới-clone-repo).
+
+Sau khi đã tạo `.env`, khởi động database trong Terminal tích hợp:
+
+```powershell
+docker compose up -d
+docker compose ps
+```
+
+Khi service `sqlserver` là `healthy`, chọn **Terminal → Run Task → Chạy web (FashionShop)**. Task này được Git theo dõi trong `.vscode/tasks.json`, gọi `run-web.cmd`, nạp biến môi trường từ `.env` và mở web tại `http://localhost:5193`.
+
+Để chạy WinForms từ Terminal tích hợp, nạp mật khẩu vào biến môi trường của **cửa sổ PowerShell hiện tại** mà không in giá trị ra màn hình, rồi chạy:
+
+```powershell
+$line = Get-Content .env | Where-Object { $_ -match '^MSSQL_SA_PASSWORD=' } | Select-Object -First 1
+$env:FASHIONSHOP_SQL_PASSWORD = ($line -split '=', 2)[1]
+dotnet run --project QuanLyDesktop
+```
+
+## 1.2. Tùy chọn khi SQL Express đang chiếm cổng 1433
+
+Không dừng hoặc thay đổi dịch vụ SQL Express đang dùng cho dự án khác. Nếu cổng host `1433` bận, đổi sang `14330` ở **đầy đủ bốn chỗ** sau:
+
+1. `docker-compose.yml`: đổi ánh xạ thành `127.0.0.1:14330:1433`.
+2. `QuanLyDesktop/DatabaseConfig.cs`: đổi `DataSource` thành `127.0.0.1,14330`.
+3. `WebBanHang/appsettings.json`: đổi `Database:Server` thành `127.0.0.1,14330`.
+4. `WebBanHang/Data/SqlConnectionFactory.cs`: đổi `DefaultServer` thành `127.0.0.1,14330`.
+
+Sau đó chạy lại `docker compose up -d` và kiểm tra:
+
+```powershell
+Test-NetConnection 127.0.0.1 -Port 14330
+docker compose config
+docker compose ps
+```
+
+Volume `mssql_data` được đặt tên cố định và không bị xóa khi Compose tạo lại container. Không dùng `docker compose down -v` hoặc `docker volume rm mssql_data` nếu muốn giữ dữ liệu.
+
+---
+
 ## 2. Cài đặt lần đầu (máy mới clone repo)
 
 ### Bước 1 — Tạo file biến môi trường
@@ -254,7 +296,7 @@ docker compose up -d
 | `Login failed for user 'sa'` | `FASHIONSHOP_SQL_PASSWORD` không khớp `MSSQL_SA_PASSWORD` trong `.env` |
 | `Invalid object name 'Products'` | Chưa chạy `CSDL_ShopQuanAo.sql` (Bước 3) hoặc volume bị xóa |
 | `Conflict. The container name "/mssql2022" is already in use` | Còn container cũ → `docker rm -f mssql2022` rồi `docker compose up -d` |
-| Cổng 1433 bị chiếm | Tắt SQL Server service trên Windows (`services.msc` → SQL Server (MSSQLSERVER)) |
+| Cổng 1433 bị chiếm | Không dừng SQL Express; dùng ánh xạ `127.0.0.1:14330:1433` như [mục 1.2](#12-khi-sql-express-đang-chiếm-cổng-1433), rồi chạy `docker compose up -d` |
 | Cảnh báo `volume "mssql_data" already exists but was not created by Docker Compose` | **Vô hại** — compose đang dùng lại volume tạo trước đó để giữ dữ liệu. Có thể bỏ qua. |
 
 > 🔴 **Cảnh báo:** `docker compose down -v` hoặc `docker volume rm mssql_data` sẽ **xóa sạch database**. Muốn reset dữ liệu thì dùng lệnh đó rồi chạy lại Bước 3.
