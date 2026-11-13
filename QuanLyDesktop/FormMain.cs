@@ -230,6 +230,10 @@ public partial class FormMain : Form
             MessageBox.Show("Lỗi khi tải danh sách sản phẩm: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
+    private void txtTimKiem_TextChanged(object sender, EventArgs e)
+    {
+        LoadSanPham(txtTimKiem.Text.Trim());
+    }
 
     // 3. Khi click chuột vào 1 dòng trên bảng -> Tự động điền dữ liệu lên các ô TextBox
     private void dgvSanPham_CellClick(object sender, DataGridViewCellEventArgs e)

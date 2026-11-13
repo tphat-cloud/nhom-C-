@@ -134,6 +134,7 @@ partial class FormMain
         btnHienTatCa = new Button();
         btnTimKiem = new Button();
         txtTimKiem = new TextBox();
+        txtTimKiem.TextChanged += txtTimKiem_TextChanged;
         btnDangXuat = new Button();
         btnDoiMatKhau = new Button();
         button1 = new Button();
