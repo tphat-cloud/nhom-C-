@@ -7,7 +7,7 @@ using WebBanHang.Services;
 namespace WebBanHang.Controllers;
 
 /// <summary>
-/// Trang đặt hàng: hiển thị form thông tin nhận hàng + tóm tắt giỏ,
+/// Trang đặt hàng: hiển thị các form thông tin nhận hàng + tóm tắt giỏ,
 /// sau đó gọi IOrderRepository để ghi đơn trong một transaction.
 /// </summary>
 public class CheckoutController : Controller
