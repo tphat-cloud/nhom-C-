@@ -69,7 +69,12 @@ Nếu bạn đã có `FashionShopDb` từ phiên bản cũ (chưa có ràng bu�
 docker exec -i mssql2022 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$p" -C -f 65001 -i /migrations/01_harden_database.sql
 docker exec -i mssql2022 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$p" -C -f 65001 -i /migrations/02_fix_order_revenue.sql
 docker exec -i mssql2022 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$p" -C -f 65001 -i /migrations/03_stock_receipts.sql
+docker exec -i mssql2022 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$p" -C -f 65001 -i /migrations/04_hash_passwords.sql
 ```
+
+> **Bắt buộc từ bản SEC-01**: database cũ lưu mật khẩu dạng chuỗi thuần sẽ
+> không đăng nhập được cho tới khi chạy `04_hash_passwords.sql`. Mật khẩu demo
+> của `admin` và `nhanvien` vẫn là `123456`.
 
 Migration `01_harden_database.sql` sẽ:
 - Thêm **9 CHECK constraint** (giá > 0, tồn kho ≥ 0, trạng thái đơn hợp lệ, số lượng > 0...)
@@ -88,6 +93,11 @@ Migration `03_stock_receipts.sql` (phiếu nhập kho) sẽ:
 - Đồng bộ lại `TotalQuantity`/`TotalAmount` của mọi phiếu theo chi tiết thực tế (chạy mỗi lần, an toàn)
 
 > Phiếu nhập **không tự động cộng tồn kho** khi chạy migration — dữ liệu mẫu mô tả đúng số tồn đã có, tránh cộng đôi.
+
+Migration `04_hash_passwords.sql` (bảo mật) sẽ:
+- Băm mật khẩu các tài khoản mẫu bằng **PBKDF2-HMAC-SHA256** (100.000 vòng, salt riêng cho từng tài khoản)
+- Chỉ cập nhật dòng còn lưu chuỗi thuần → chạy lại nhiều lần vẫn an toàn
+- Giữ nguyên mật khẩu demo `admin/123456` và `nhanvien/123456`
 
 ### Bước 4 — Cấu hình mật khẩu cho app Desktop & Web
 
@@ -310,7 +320,8 @@ Do An C#/
 ├─ Scripts/migrations/       # Migration nâng cấp DB đang có (không mất dữ liệu)
 │  ├─ 01_harden_database.sql # Ràng buộc + index + view tồn kho + seed biến thể
 │  ├─ 02_fix_order_revenue.sql # Sửa doanh thu: chỉ tính đơn hoàn thành, không tính đơn hủy
-│  └─ 03_stock_receipts.sql  # Phiếu nhập kho: 2 bảng + index + 2 phiếu mẫu
+│  ├─ 03_stock_receipts.sql  # Phiếu nhập kho: 2 bảng + index + 2 phiếu mẫu
+│  └─ 04_hash_passwords.sql  # Băm mật khẩu tài khoản mẫu bằng PBKDF2
 ├─ QuanLyShopQuanAo.slnx     # Solution gồm 2 project
 ├─ QuanLyDesktop/            # WinForms (admin)
 │  ├─ Form1.cs               # Đăng nhập
