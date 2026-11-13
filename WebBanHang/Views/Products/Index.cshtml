@@ -77,4 +77,42 @@ else
             <partial name="_ProductCard" model="product" />
         }
     </div>
+
+    <nav aria-label="Phân trang sản phẩm" class="mt-4">
+        <ul class="pagination justify-content-center align-items-center">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-area="" asp-controller="Products" asp-action="Index"
+                       asp-route-keyword="@Model.Keyword" asp-route-categoryId="@Model.CategoryId"
+                       asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">Trước</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link" aria-disabled="true">Trước</span>
+                </li>
+            }
+
+            <li class="page-item disabled">
+                <span class="page-link" aria-current="page">Trang @Model.Page / @Model.TotalPages</span>
+            </li>
+
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-area="" asp-controller="Products" asp-action="Index"
+                       asp-route-keyword="@Model.Keyword" asp-route-categoryId="@Model.CategoryId"
+                       asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">Tiếp</a>
+                </li>
+            }
+            else
+            {
+                <li class="page-item disabled">
+                    <span class="page-link" aria-disabled="true">Tiếp</span>
+                </li>
+            }
+        </ul>
+    </nav>
 }

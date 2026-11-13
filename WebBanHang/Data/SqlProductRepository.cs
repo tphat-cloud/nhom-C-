@@ -31,6 +31,15 @@ public sealed class SqlProductRepository : IProductRepository
         INNER JOIN Categories c ON c.CategoryId = p.CategoryId
         """;
 
+    private const string ProductFilterClause = """
+        WHERE p.IsActive = 1
+          AND c.IsActive = 1
+          AND (@keyword = N''
+               OR p.Name COLLATE Vietnamese_CI_AI LIKE @keyword ESCAPE '\'
+               OR p.ProductCode COLLATE Vietnamese_CI_AI LIKE @keyword ESCAPE '\')
+          AND (@categoryId = 0 OR p.CategoryId = @categoryId)
+        """;
+
     private readonly ISqlConnectionFactory _connectionFactory;
 
     public SqlProductRepository(ISqlConnectionFactory connectionFactory)
@@ -111,29 +120,50 @@ public sealed class SqlProductRepository : IProductRepository
     public async Task<IReadOnlyList<Product>> GetProductsAsync(
         string? keyword,
         int categoryId,
+        int page = 1,
+        int pageSize = ProductListViewModel.DefaultPageSize,
         CancellationToken cancellationToken = default)
     {
-        // COLLATE Vietnamese_CI_AI: khách gõ không dấu ("ao") vẫn tìm được "Áo" —
-        // collation mặc định của CSDL phân biệt dấu nên sẽ không khớp.
-        const string sql = ProductSelect + """
+        const string sql = ProductSelect + "\n" + ProductFilterClause + """
 
-            WHERE p.IsActive = 1
-              AND c.IsActive = 1
-              AND (@keyword = N''
-                   OR p.Name COLLATE Vietnamese_CI_AI LIKE @keyword ESCAPE '\'
-                   OR p.ProductCode COLLATE Vietnamese_CI_AI LIKE @keyword ESCAPE '\')
-              AND (@categoryId = 0 OR p.CategoryId = @categoryId)
-            ORDER BY p.IsFeatured DESC, p.Name
+            ORDER BY p.IsFeatured DESC, p.Name, p.ProductId
+            OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
             """;
+
+        int safePage = Math.Max(1, page);
+        int safePageSize = Math.Clamp(pageSize, 1, ProductListViewModel.MaximumPageSize);
+        long offset = ((long)safePage - 1) * safePageSize;
 
         await using SqlConnection connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
         await using SqlCommand command = new(sql, connection);
-        command.Parameters.Add("@keyword", SqlDbType.NVarChar, 220).Value = ToLikePattern(keyword);
-        command.Parameters.Add("@categoryId", SqlDbType.Int).Value = categoryId;
+        AddProductFilterParameters(command, keyword, categoryId);
+        command.Parameters.Add("@offset", SqlDbType.BigInt).Value = offset;
+        command.Parameters.Add("@pageSize", SqlDbType.Int).Value = safePageSize;
 
         return await ReadProductsAsync(command, cancellationToken);
+    }
+
+    public async Task<int> CountProductsAsync(
+        string? keyword,
+        int categoryId,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT COUNT(*)
+            FROM Products p
+            INNER JOIN Categories c ON c.CategoryId = p.CategoryId
+            """ + "\n" + ProductFilterClause;
+
+        await using SqlConnection connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        await using SqlCommand command = new(sql, connection);
+        AddProductFilterParameters(command, keyword, categoryId);
+
+        object? result = await command.ExecuteScalarAsync(cancellationToken);
+        return result is null or DBNull ? 0 : Convert.ToInt32(result);
     }
 
     public async Task<Product?> GetProductByIdAsync(
@@ -267,6 +297,12 @@ public sealed class SqlProductRepository : IProductRepository
         }
 
         return products;
+    }
+
+    private static void AddProductFilterParameters(SqlCommand command, string? keyword, int categoryId)
+    {
+        command.Parameters.Add("@keyword", SqlDbType.NVarChar, 220).Value = ToLikePattern(keyword);
+        command.Parameters.Add("@categoryId", SqlDbType.Int).Value = categoryId;
     }
 
     private static Product MapProduct(SqlDataReader reader) => new()

@@ -163,7 +163,7 @@ Web dùng **ADO.NET thuần** (`Microsoft.Data.SqlClient` 5.2.2) giống app Des
 | `WebBanHang/Data/SqlProductRepository.cs` | Cài đặt bằng ADO.NET: tham số hóa 100%, `async` + `CancellationToken`, đọc dữ liệu an toàn khi cột `NULL` |
 | `WebBanHang/Models/` | `Product`, `ProductVariant`, `Category`, `HomeViewModel`, `ProductListViewModel` |
 | `WebBanHang/Controllers/HomeController.cs` | Trang chủ: danh mục + sản phẩm nổi bật + tổng số sản phẩm đang bán |
-| `WebBanHang/Controllers/ProductsController.cs` | Danh sách (tìm kiếm + lọc danh mục) và chi tiết sản phẩm kèm tồn kho |
+| `WebBanHang/Controllers/ProductsController.cs` | Danh sách (tìm kiếm + lọc danh mục + phân trang) và chi tiết sản phẩm kèm tồn kho |
 | `WebBanHang/Services/ICartService.cs`, `CartService.cs` | Giỏ hàng lưu trong **Session** (JSON), mỗi khách một giỏ, tự hết hạn sau 2 giờ |
 | `WebBanHang/Data/IOrderRepository.cs`, `SqlOrderRepository.cs` | Ghi đơn hàng trong **một `SqlTransaction`**: khách → đơn → chi tiết → trừ kho |
 
@@ -179,7 +179,7 @@ Các URL đã lấy dữ liệu thật từ SQL Server:
 | URL | Nội dung |
 | --- | --- |
 | `/` | Danh mục + sản phẩm nổi bật (`IsFeatured = 1`) |
-| `/Products` | Tìm theo tên/mã (`keyword`) và lọc theo danh mục (`categoryId`) |
+| `/Products` | Tìm theo tên/mã (`keyword`), lọc theo danh mục (`categoryId`) và phân trang (`page`, mặc định 12 sản phẩm/trang; tối đa 50) |
 | `/Products/Detail/1` | Chi tiết sản phẩm + bảng size/màu + nút "Thêm vào giỏ" cho từng size/màu còn hàng |
 | `/Cart` | Giỏ hàng của khách: cập nhật số lượng, xóa dòng, xóa cả giỏ, tổng tiền |
 | `/Checkout` | Form thông tin nhận hàng + chọn thanh toán + tóm tắt đơn → tạo đơn thật trong CSDL |
