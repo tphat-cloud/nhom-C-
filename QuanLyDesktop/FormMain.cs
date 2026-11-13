@@ -315,6 +315,12 @@ public partial class FormMain : Form
             }
 
             giaGoc = giaGocValue;
+            if (giaGoc.HasValue && giaGoc.Value < giaBan)
+            {
+                MessageBox.Show("Giá gốc không được thấp hơn giá bán!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
         }
 
         try
@@ -420,6 +426,12 @@ public partial class FormMain : Form
             }
 
             giaGoc = giaGocValue;
+            if (giaGoc.HasValue && giaGoc.Value < giaBan)
+            {
+                MessageBox.Show("Giá gốc không được thấp hơn giá bán!",
+                    "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
         }
         try
         {
