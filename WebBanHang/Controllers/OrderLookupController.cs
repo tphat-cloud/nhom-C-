@@ -10,6 +10,8 @@ namespace WebBanHang.Controllers;
 /// </summary>
 public class OrderLookupController : Controller
 {
+    private const int MaxLookupInputLength = 50;
+
     private readonly IOrderRepository _orderRepository;
 
     public OrderLookupController(IOrderRepository orderRepository)
@@ -27,14 +29,17 @@ public class OrderLookupController : Controller
         [FromQuery] string? phoneNumber,
         CancellationToken cancellationToken = default)
     {
+        string cleanOrderCode = orderCode?.Trim() ?? string.Empty;
+        string cleanPhoneNumber = phoneNumber?.Trim() ?? string.Empty;
+
         var model = new OrderLookupViewModel
         {
-            OrderCodeInput = orderCode?.Trim(),
-            PhoneNumberInput = phoneNumber?.Trim()
+            OrderCodeInput = cleanOrderCode,
+            PhoneNumberInput = cleanPhoneNumber
         };
 
         // Khi khách vừa truy cập trang lần đầu, chưa nhập gì
-        if (string.IsNullOrWhiteSpace(orderCode) && string.IsNullOrWhiteSpace(phoneNumber))
+        if (string.IsNullOrWhiteSpace(cleanOrderCode) && string.IsNullOrWhiteSpace(cleanPhoneNumber))
         {
             model.HasSearched = false;
             return View(model);
@@ -42,21 +47,27 @@ public class OrderLookupController : Controller
 
         model.HasSearched = true;
 
-        if (string.IsNullOrWhiteSpace(orderCode))
+        if (string.IsNullOrWhiteSpace(cleanOrderCode))
         {
             model.ErrorMessage = "Vui lòng nhập mã đơn hàng (ví dụ: DH26...).";
             return View(model);
         }
 
-        if (string.IsNullOrWhiteSpace(phoneNumber))
+        if (string.IsNullOrWhiteSpace(cleanPhoneNumber))
         {
             model.ErrorMessage = "Vui lòng nhập số điện thoại đặt hàng để xác minh đơn.";
             return View(model);
         }
 
+        if (cleanOrderCode.Length > MaxLookupInputLength || cleanPhoneNumber.Length > MaxLookupInputLength)
+        {
+            model.ErrorMessage = $"Mã đơn hàng và số điện thoại không được dài quá {MaxLookupInputLength} ký tự.";
+            return View(model);
+        }
+
         OrderLookupViewModel? order = await _orderRepository.FindOrderForLookupAsync(
-            orderCode,
-            phoneNumber,
+            cleanOrderCode,
+            cleanPhoneNumber,
             cancellationToken);
 
         if (order == null)
@@ -66,8 +77,8 @@ public class OrderLookupController : Controller
             return View(model);
         }
 
-        order.OrderCodeInput = orderCode.Trim();
-        order.PhoneNumberInput = phoneNumber.Trim();
+        order.OrderCodeInput = cleanOrderCode;
+        order.PhoneNumberInput = cleanPhoneNumber;
         return View(order);
     }
 }

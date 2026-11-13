@@ -32,7 +32,18 @@ public class CartController : Controller
         string? returnUrl = null,
         CancellationToken cancellationToken = default)
     {
-        quantity = Math.Clamp(quantity, 1, ICartService.MaxQuantityPerItem);
+        if (variantId <= 0)
+        {
+            TempData["Error"] = "Không tìm thấy sản phẩm bạn muốn thêm. Vui lòng chọn lại sản phẩm.";
+            return RedirectBack(returnUrl);
+        }
+
+        if (quantity < 1 || quantity > ICartService.MaxQuantityPerItem)
+        {
+            TempData["Error"] =
+                $"Số lượng phải từ 1 đến {ICartService.MaxQuantityPerItem}. Vui lòng kiểm tra lại.";
+            return RedirectBack(returnUrl);
+        }
 
         VariantInfo? variant = await _productRepository.GetVariantInfoAsync(variantId, cancellationToken);
 
@@ -51,6 +62,13 @@ public class CartController : Controller
 
         int alreadyInCart = _cartService.GetItems()
             .FirstOrDefault(item => item.ProductVariantId == variantId)?.Quantity ?? 0;
+
+        if (alreadyInCart + quantity > ICartService.MaxQuantityPerItem)
+        {
+            TempData["Error"] =
+                $"Mỗi biến thể chỉ được đặt tối đa {ICartService.MaxQuantityPerItem} sản phẩm.";
+            return RedirectBack(returnUrl);
+        }
 
         // Không tiết lộ con số tồn kho chính xác cho khách
         if (alreadyInCart + quantity > variant.StockQuantity)
@@ -72,11 +90,38 @@ public class CartController : Controller
     /// <summary>Cập nhật số lượng một dòng trong giỏ (0 = xóa dòng).</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Update(int variantId, int quantity)
+    public IActionResult Update(int variantId, int? quantity)
     {
-        _cartService.UpdateQuantity(variantId, Math.Clamp(quantity, 0, ICartService.MaxQuantityPerItem));
+        if (variantId <= 0)
+        {
+            TempData["Error"] = "Không tìm thấy sản phẩm trong giỏ hàng.";
+            return RedirectToAction(nameof(Index));
+        }
 
-        TempData["Message"] = quantity <= 0
+        if (!_cartService.GetItems().Any(item => item.ProductVariantId == variantId))
+        {
+            TempData["Error"] = "Sản phẩm này không còn trong giỏ hàng. Vui lòng tải lại giỏ hàng.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!quantity.HasValue)
+        {
+            TempData["Error"] = "Vui lòng nhập số lượng từ 0 đến " +
+                $"{ICartService.MaxQuantityPerItem}. Nhập 0 để xóa sản phẩm.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        int requestedQuantity = quantity.Value;
+        if (requestedQuantity < 0 || requestedQuantity > ICartService.MaxQuantityPerItem)
+        {
+            TempData["Error"] =
+                $"Số lượng phải từ 0 đến {ICartService.MaxQuantityPerItem}. Nhập 0 để xóa sản phẩm.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        _cartService.UpdateQuantity(variantId, requestedQuantity);
+
+        TempData["Message"] = requestedQuantity == 0
             ? "Đã xóa sản phẩm khỏi giỏ hàng."
             : "Đã cập nhật số lượng trong giỏ hàng.";
 
@@ -87,6 +132,13 @@ public class CartController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Remove(int variantId)
     {
+        if (variantId <= 0 ||
+            !_cartService.GetItems().Any(item => item.ProductVariantId == variantId))
+        {
+            TempData["Error"] = "Sản phẩm này không còn trong giỏ hàng.";
+            return RedirectToAction(nameof(Index));
+        }
+
         _cartService.Remove(variantId);
         TempData["Message"] = "Đã xóa sản phẩm khỏi giỏ hàng.";
         return RedirectToAction(nameof(Index));
