@@ -580,6 +580,13 @@ public partial class FormMain : Form
         this.Close(); // Đóng FormMain để quay lại
     }
 
+    // 11. Nút "Đổi Mật Khẩu"
+    private void btnDoiMatKhau_Click(object sender, EventArgs e)
+    {
+        using FormDoiMatKhau formDoiMatKhau = new FormDoiMatKhau(_userId);
+        formDoiMatKhau.ShowDialog(this);
+    }
+
     // Hàm xóa trắng các ô nhập liệu
     private void ClearInputs()
     {

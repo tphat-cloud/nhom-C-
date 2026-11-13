@@ -27,6 +27,7 @@ partial class FormMain
     private Button btnHienTatCa;
     private DataGridView dgvSanPham;
     private Button btnDangXuat;
+    private Button btnDoiMatKhau;
     private TableLayoutPanel layoutRoot;
     private Panel panelSidebar;
     private Label lblBrand;
@@ -134,6 +135,7 @@ partial class FormMain
         btnTimKiem = new Button();
         txtTimKiem = new TextBox();
         btnDangXuat = new Button();
+        btnDoiMatKhau = new Button();
         button1 = new Button();
         btnDanhMuc = new Button();
         btnNhapKho = new Button();
@@ -255,6 +257,7 @@ partial class FormMain
         // panelHeader
         // 
         panelHeader.BackColor = Color.White;
+        panelHeader.Controls.Add(btnDoiMatKhau);
         panelHeader.Controls.Add(btnDangXuat);
         panelHeader.Controls.Add(lblXinChao);
         panelHeader.Controls.Add(lblTitle);
@@ -964,6 +967,23 @@ partial class FormMain
         btnDangXuat.Text = "Đăng Xuất";
         btnDangXuat.UseVisualStyleBackColor = false;
         btnDangXuat.Click += btnDangXuat_Click;
+        // 
+        // btnDoiMatKhau
+        // 
+        btnDoiMatKhau.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnDoiMatKhau.BackColor = Color.FromArgb(27, 54, 93);
+        btnDoiMatKhau.Cursor = Cursors.Hand;
+        btnDoiMatKhau.FlatStyle = FlatStyle.Flat;
+        btnDoiMatKhau.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+        btnDoiMatKhau.ForeColor = Color.White;
+        btnDoiMatKhau.Location = new Point(884, 20);
+        btnDoiMatKhau.Margin = new Padding(4);
+        btnDoiMatKhau.Name = "btnDoiMatKhau";
+        btnDoiMatKhau.Size = new Size(140, 42);
+        btnDoiMatKhau.TabIndex = 7;
+        btnDoiMatKhau.Text = "Đổi Mật Khẩu";
+        btnDoiMatKhau.UseVisualStyleBackColor = false;
+        btnDoiMatKhau.Click += btnDoiMatKhau_Click;
         // 
         // button1
         // 
