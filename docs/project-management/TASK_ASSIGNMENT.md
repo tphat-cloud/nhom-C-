@@ -1,13 +1,15 @@
 # PHÂN CHIA CÔNG VIỆC CÒN LẠI — ĐỒ ÁN FASHION SHOP
 
 > Tài liệu quản lý dự án — trưởng nhóm **Trịnh Tấn Phát** cập nhật.
-> Nhóm: Trịnh Tấn Phát (trưởng), Trần Lê Hồng Nhân, Dương Huỳnh Nam Anh.
+> Nhóm: Trịnh Tấn Phát (trưởng), Trần Lê Hồng Nhân, Dương Huỳnh Nam Anh,
+> Nguyễn Như (**nnhu**, mới tham gia).
 > Phạm vi: **chỉ liệt kê công việc còn tồn đọng**. Những phần đã hoàn thiện
 > được ghi nhận ở mục A và **không phân chia lại**.
 
 Tài liệu này được lập sau khi kiểm tra trực tiếp trên repository
 (branch `main`, commit `ff5db91`, working tree sạch, `dotnet build` thành công
-0 warning / 0 error).
+0 warning / 0 error), và **được cập nhật lại ngày 13/11/2026** sau khi đối chiếu
+toàn bộ code trên `main` tại commit `5a632bf` (đã merge SEC-01, DES-01, WEB-01).
 
 ---
 
@@ -20,9 +22,10 @@ SQL Server 2022 qua Docker) đã hình thành đầy đủ, luồng nghiệp v�
 (đăng nhập, sản phẩm, danh mục, biến thể size/màu, phiếu nhập kho, duyệt đơn,
 giỏ hàng, đặt hàng, tra cứu đơn) đã đi từ giao diện xuống tới dữ liệu thật.
 
-Phần còn thiếu tập trung vào **một lỗ hổng bảo mật**, **vài trường dữ liệu
-chưa chỉnh sửa được từ giao diện**, **báo cáo thống kê nâng cao**, và
-**các hạng mục phục vụ nghiệm thu** (CI/CD, kiểm thử tự động, tài liệu).
+Phần còn thiếu tập trung vào **báo cáo thống kê nâng cao**, **hai form quản lý
+còn thiếu** (khách hàng, tài khoản), **form đổi mật khẩu**, và **các hạng mục
+phục vụ nghiệm thu** (kiểm thử tự động, handbook, cập nhật báo cáo/slide).
+Lỗ hổng bảo mật mật khẩu và ba trường Ảnh/Giá gốc/Nổi bật đã xử lý xong.
 
 ### ✅ Đã hoàn thành (đã kiểm tra bằng code, không chỉ thấy file)
 
@@ -38,59 +41,54 @@ chưa chỉnh sửa được từ giao diện**, **báo cáo thống kê nâng c
 | Web: trang chủ / danh sách / chi tiết | `HomeController`, `ProductsController`, `SqlProductRepository` — SQL tham số hóa 100%, tìm kiếm không dấu (`COLLATE Vietnamese_CI_AI`), escape `LIKE` |
 | Web: giỏ hàng & đặt hàng | `CartController`/`CheckoutController` + `SqlOrderRepository` — ghi đơn trong 1 transaction (khách → đơn → chi tiết → trừ kho có điều kiện), `[ValidateAntiForgeryToken]`, chặn đặt quá tồn |
 | Web: tra cứu đơn hàng | `OrderLookupController` + `Views/OrderLookup/Index.cshtml`, lịch sử đơn qua localStorage |
-| Database & migration | `CSDL_ShopQuanAo.sql` + `Scripts/migrations/01–03` (CHECK, UNIQUE, index, view tồn kho, seed idempotent) |
+| Database & migration | `CSDL_ShopQuanAo.sql` + `Scripts/migrations/01–04` (CHECK, UNIQUE, index, view tồn kho, seed idempotent, băm mật khẩu) |
 | Hạ tầng & chạy thực tế | `docker-compose.yml`, `.env.example`, `run-web.cmd`/`run-desktop.cmd`, cấu hình kết nối qua biến môi trường; build sạch |
-| Tài liệu báo cáo/nghiệm thu (bản nháp) | `BaoCao_DoAn_...docx`, `PhanTichYeuCauNghiepVu_...pptx`, `diagrams/`, `screenshots/`, `CK_GD1_..._DONE.xlsx` |
+| Bảo mật mật khẩu (SEC-01) | `PasswordHasher.cs` dùng PBKDF2-HMAC-SHA256 100.000 vòng; `Form1.cs` xác thực qua `PasswordHasher.Verify`; seed `CSDL_ShopQuanAo.sql` và `Scripts/migrations/04_hash_passwords.sql` đều lưu dạng hash |
+| Sản phẩm: Ảnh / Giá gốc / Nổi bật (DES-01) | `FormMain.cs` có `txtImageUrl`, giá gốc, `chkIsFeatured`; cả `INSERT` (dòng 326) và `UPDATE` (dòng 430) đều ghi `ImageUrl`, `OriginalPrice`, `IsFeatured` |
+| Web: phân trang danh sách (WEB-01) | `ProductsController` + `SqlProductRepository` nhận `page`/`pageSize`; PR #8 đã merge vào `main` |
+| CI build (CI-01) | `.github/workflows/ci.yml` restore + build 2 project trên `windows-latest`; run #23 trên `main` kết luận **success** (bước `dotnet test` còn comment chờ QA-01) |
+| Tài liệu báo cáo/nghiệm thu (bản nháp) | trong `docs/baocao/`: `BaoCao_DoAn_...docx`, `PhanTichYeuCauNghiepVu_...pptx`, `CK_GD1_..._DONE.xlsx`, `diagrams/`, `screenshots/` (gitignore) |
 
 ### ⚠️ Còn thiếu / cần khắc phục (đã xác minh)
 
-1. **Bảo mật — mật khẩu lưu/so sánh dạng thuần** (CAO). `Form1.cs` gửi thẳng
-   mật khẩu người nhập so với cột `PasswordHash`; dữ liệu mẫu trong
-   `CSDL_ShopQuanAo.sql` nhét chuỗi `'123456'` vào cột `PasswordHash`. Tên cột
-   là "Hash" nhưng thực tế chưa hề băm.
-2. **Sản phẩm không chỉnh sửa được Ảnh / Giá gốc / Nổi bật** (TRUNG BÌNH).
-   `INSERT INTO Products` ghi cứng `IsFeatured = 0` và bỏ trống `ImageUrl`,
-   `OriginalPrice`; `UPDATE` cũng không đụng tới 3 cột này. Web **có hiển thị**
-   3 cột này → dữ liệu không bao giờ được thiết lập từ hệ thống quản lý.
-3. **Dashboard thiếu báo cáo nâng cao** (TRUNG BÌNH). Chỉ có 3 chỉ số "hôm nay";
+1. **Dashboard thiếu báo cáo nâng cao** (TRUNG BÌNH). Chỉ có 3 chỉ số "hôm nay";
    chưa có thống kê theo tháng/quý và top sản phẩm bán chạy.
-4. **Chưa có form Quản lý khách hàng** (TRUNG BÌNH). `Customers` chỉ được ghi
+2. **Chưa có form Quản lý khách hàng** (TRUNG BÌNH). `Customers` chỉ được ghi
    tự động khi đặt hàng, không có màn hình xem/tìm/sửa trong app desktop.
-5. **Chưa có form Quản lý tài khoản người dùng** (THẤP). Không thêm/tài khoản
-   mới, đổi mật khẩu, bật/tắt `IsActive` từ giao diện.
-6. **Web: danh sách sản phẩm chưa phân trang** (THẤP). `GetProductsAsync` trả
-   toàn bộ; lượng sản phẩm lớn sẽ nặng trang.
-7. **CI/CD chưa có** (THẤP–TRUNG BÌNH, tùy yêu cầu đề cương). Thư mục
-   `.github/workflows/` đang trống.
-8. **Kiểm thử tự động chưa có** (TRUNG BÌNH). Không có project test; kiểm thử
-   hiện ghi tay trong README.
-9. **Tài liệu hướng dẫn sử dụng & kịch bản thuyết trình** (CAO cho nghiệm thu).
-   README thiên về cài đặt kỹ thuật; chưa có handbook vận hành cho
-   admin/nhân viên và kịch bản demo phân công theo người.
+3. **Chưa có form Quản lý tài khoản người dùng** (THẤP). Không thêm tài khoản
+   mới, bật/tắt `IsActive` từ giao diện.
+4. **Chưa có form đổi mật khẩu** (TRUNG BÌNH). Đăng nhập đã băm PBKDF2 nhưng
+   người dùng chưa tự đổi được mật khẩu trong app.
+5. **Kiểm thử tự động chưa có** (TRUNG BÌNH). Repo chỉ có 2 project; chưa có
+   project test nên bước `dotnet test` trong CI vẫn đang comment.
+6. **Thiếu handbook và tài liệu chưa khớp code** (CAO cho nghiệm thu). README
+   thiên về cài đặt kỹ thuật; báo cáo/PPT/bảng đặc tả còn 2 chỗ ghi sai so với
+   code (mục 3.4.7 ghi mật khẩu "văn bản thuần", bảng đặc tả ghi "chưa phân trang").
 
 ---
 
-## B. DANH SÁCH CÔNG VIỆC CÒN LẠI
+## B. DANH SÁCH CÔNG VIỆC (cập nhật 13/11/2026)
 
 | Mã Task | Công việc | Mô tả | Người phụ trách | Ưu tiên | Trạng thái |
 |---|---|---|---|---|---|
-| SEC-01 | Băm mật khẩu | Triển khai PBKDF2/SHA-256+Salt cho đăng nhập & tạo user; migration mã hóa lại dữ liệu mẫu; cập nhật `Form1.cs`, `FormBienThe...`(không), seed SQL | Phát | Cao | Chưa hoàn thành |
+| SEC-01 | Băm mật khẩu | Triển khai PBKDF2/SHA-256+Salt cho đăng nhập & tạo user; migration mã hóa lại dữ liệu mẫu; cập nhật `Form1.cs`, `FormBienThe...`(không), seed SQL | Phát | Cao | ✅ Hoàn thành (PR #5: `PasswordHasher.cs` + migration 04 + seed hash) |
 | SEC-02 | Đổi mật khẩu an toàn | Form đổi mật khẩu cho người đăng nhập, kiểm tra mật khẩu cũ | Phát | Trung bình | Chưa hoàn thành |
-| DES-01 | Ảnh / Giá gốc / Nổi bật | Bổ sung 3 trường vào form sản phẩm; sửa `INSERT`/`UPDATE` trong `FormMain.cs`; hỗ trợ chọn đường dẫn/URL ảnh | Nhân | Trung bình | Chưa hoàn thành |
+| DES-01 | Ảnh / Giá gốc / Nổi bật | Bổ sung 3 trường vào form sản phẩm; sửa `INSERT`/`UPDATE` trong `FormMain.cs`; hỗ trợ chọn đường dẫn/URL ảnh | Nhân | Trung bình | ✅ Hoàn thành (`FormMain.cs` ghi đủ 3 cột ở cả INSERT và UPDATE) |
 | DES-02 | Báo cáo tháng / Top bán chạy | Thêm thống kê doanh thu theo tháng & top SP bán chạy vào dashboard (`FormMain.cs`) | Nhân | Trung bình | Chưa hoàn thành |
 | DES-03 | Form Quản lý khách hàng | Màn hình mới `FormKhachHang.cs` xem/tìm/sửa khách, lịch sử đơn | Nhân | Trung bình | Chưa hoàn thành |
 | DES-04 | Form Quản lý tài khoản | Màn hình mới `FormTaiKhoan.cs` thêm/sửa user, gán role, bật/tắt (chỉ Admin), dùng SEC-01 để băm khi tạo user | Nam Anh | Thấp | Chưa hoàn thành |
-| WEB-01 | Phân trang sản phẩm | `SqlProductRepository` + `ProductsController` + view: `page`/`pageSize`, hiển thị số trang | Nam Anh | Thấp | Chưa hoàn thành |
-| WEB-02 | Rà soát UX & lỗi biên | Kiểm tra form giỏ/checkout/tra cứu: empty cart, số lượng 0, URL lạ, thông báo lỗi thân thiện | Nam Anh | Trung bình | Cần kiểm tra thêm |
-| DB-01 | Rà soát ràng buộc & seed | Đối chiếu seed `CSDL_ShopQuanAo.sql` với migration; đảm bảo dữ liệu mẫu nhất quán sau SEC-01 | Phát | Trung bình | Cần kiểm tra thêm |
+| WEB-01 | Phân trang sản phẩm | `SqlProductRepository` + `ProductsController` + view: `page`/`pageSize`, hiển thị số trang | Nam Anh | Thấp | ✅ Hoàn thành (PR #8 đã merge) |
+| WEB-02 | Rà soát UX & lỗi biên | Kiểm tra form giỏ/checkout/tra cứu: empty cart, số lượng 0, URL lạ, thông báo lỗi thân thiện | Nam Anh | Trung bình | 🔶 Chưa merge — branch `web-02-validation` đã push (commit `09a745d`) nhưng chưa mở PR và đang cũ hơn `main`, cần rebase |
+| DB-01 | Rà soát ràng buộc & seed | Đối chiếu seed `CSDL_ShopQuanAo.sql` với migration; đảm bảo dữ liệu mẫu nhất quán sau SEC-01 | Phát | Trung bình | ✅ Hoàn thành (seed + migration 04 cùng dạng hash PBKDF2) |
 | QA-01 | Test tự động (unit/integration) | Project test cho tầng Repository/Service (web) và logic tồn kho/đơn (desktop hoặc qua test DB) | Nam Anh | Trung bình | Chưa hoàn thành |
 | QA-02 | Kịch bản test thủ công | Bộ test case nghiệm thu từng chức năng + checklist chạy trên SQL Server thật | Phát | Trung bình | Chưa hoàn thành |
-| CI-01 | Pipeline CI | `.github/workflows/build.yml`: restore + build 2 project trên `ubuntu`/`windows`, chạy QA-01 | Nam Anh | Thấp | Chưa hoàn thành |
-| DOC-01 | Handbook hướng dẫn sử dụng | Tài liệu vận hành cho Admin/Staff + Khách (kèm ảnh màn hình từ `screenshots/`) | Phát | Cao | Chưa hoàn thành |
+| CI-01 | Pipeline CI | `.github/workflows/ci.yml`: restore + build 2 project trên `windows`, chạy QA-01 | Nam Anh | Thấp | ✅ Hoàn thành phần build (run #23 xanh); bước `dotnet test` còn comment chờ QA-01 |
+| DOC-01 | Handbook hướng dẫn sử dụng | Tài liệu vận hành cho Admin/Staff + Khách (kèm ảnh màn hình từ `docs/baocao/screenshots/`) | nnhu | Cao | Chưa hoàn thành |
 | DOC-02 | Tài liệu nghiệm thu & thuyết trình | Cập nhật báo cáo/PPT theo code thực tế (đặc biệt sau SEC-01, DES-01); chuẩn bị slide demo | Phát | Cao | Chưa hoàn thành |
 
-> Ghi chú: "Cần kiểm tra thêm" = cần cả nhóm chạy thử trên môi trường thật để
-> chốt Có/Không trước khi quy về "Chưa hoàn thành".
+> Ghi chú trạng thái: ✅ = đã merge vào `main` và đối chiếu code;
+> 🔶 = code đã có nhưng chưa vào `main`; để trống = chưa làm.
+> Các mục ✅ **không phân chia lại**, chỉ còn việc chạy tay khi nghiệm thu (mục E).
 
 ---
 
@@ -98,68 +96,83 @@ chưa chỉnh sửa được từ giao diện**, **báo cáo thống kê nâng c
 
 ### 🧑‍💼 Trịnh Tấn Phát — Trưởng nhóm
 Phụ trách chéo (bảo mật + tích hợp + nghiệm thu).
-- **SEC-01, SEC-02**: bảo mật mật khẩu (chạm `Form1.cs`, tầng tạo user, migration băm lại seed).
-- **DB-01**: rà soát ràng buộc/seed sau khi đổi cách lưu mật khẩu.
+- ~~SEC-01, DB-01~~: **đã xong** (băm PBKDF2 + seed khớp hash, đã merge).
+- **SEC-02**: form đổi mật khẩu cho người đang đăng nhập, kiểm tra mật khẩu cũ.
 - **QA-02**: soạn bộ test case thủ công, chủ trì chạy nghiệm thu end-to-end.
-- **DOC-01, DOC-02**: handbook + cập nhật báo cáo/thuyết trình.
-- **Phối hợp**: duyệt sự hợp nhất (merge) giữa 3 người, giữ `main` luôn build sạch.
+- **DOC-02**: cập nhật báo cáo/PPT theo code thật (hiện còn sai ở mục mật khẩu
+  "văn bản thuần" và "chưa phân trang"), chuẩn bị slide demo.
+- **Duyệt merge**: xử lý branch `web-02-validation` còn treo, giữ `main` build sạch.
 
-**Bàn giao**: code băm mật khẩu + migration, bộ test case, handbook, báo cáo & slide cập nhật.
+**Bàn giao**: form đổi mật khẩu, bộ test case, báo cáo & slide cập nhật.
 
 ### 🧑‍💻 Trần Lê Hồng Nhân — App Desktop (WinForms)
 Phụ trách mảng desktop, tập trung vào `FormMain.cs` và các form mới.
-- **DES-01**: Ảnh / Giá gốc / Nổi bật trong form sản phẩm (sửa `INSERT`/`UPDATE`).
+- ~~DES-01~~: **đã xong** (Ảnh / Giá gốc / Nổi bật ghi được ở cả `INSERT`/`UPDATE`).
 - **DES-02**: Báo cáo theo tháng + top sản phẩm bán chạy trên dashboard.
 - **DES-03**: form mới `FormKhachHang.cs` (quản lý khách hàng).
 
-**Bàn giao**: các form desktop hoàn chỉnh, ảnh/giá gốc/nổi bật thiết lập được
-và hiển thị đúng trên web, dashboard có thống kê.
+**Bàn giao**: dashboard có báo cáo tháng + top bán chạy, form quản lý khách hàng
+hoàn chỉnh.
 
 > Lưu ý chống xung đột: Nhân là **chủ sở hữu duy nhất `FormMain.cs`** trong
-> đợt này (DES-01 + DES-02 cùng file). Không ai khác sửa file này.
+> đợt này (DES-02 dùng lại file này). Không ai khác sửa file này.
 
 ### 🧑‍💻 Dương Huỳnh Nam Anh — Web + Test + CI
 Phụ trách `WebBanHang/` và một form desktop mới (không đụng `FormMain.cs`).
-- **WEB-01**: phân trang sản phẩm.
+- ~~WEB-01~~: **đã xong** (PR #8).
 - **WEB-02**: rà soát UX/lỗi biên giỏ hàng, checkout, tra cứu đơn.
 - **DES-04**: form mới `FormTaiKhoan.cs` (quản lý tài khoản) — dùng API băm của SEC-01.
 - **QA-01**: project test tự động cho tầng repository/service.
-- **CI-01**: workflow GitHub Actions build + chạy test.
+- ~~CI-01~~: **đã xong phần build** — còn bật bước `dotnet test` sau khi có QA-01.
 
-**Bàn giao**: web có phân trang, UX mượt, form tài khoản mới, project test chạy
-được, pipeline xanh.
+**Bàn giao**: WEB-02 rebase + merge, form tài khoản mới, project test chạy
+được, pipeline chạy cả test.
 
 > Lưu ý chống xung đột: Nam Anh làm **file mới** cho desktop (`FormTaiKhoan.cs`)
 > để không sửa chồng lên `FormMain.cs` của Nhân. Trên web chỉ Nam Anh chỉnh.
+
+### 🧑💻 Nguyễn Như (nnhu) — Tài liệu & hỗ trợ nghiệm thu
+Mới tham gia; nhận phần tài liệu để Phát dồn vào báo cáo/slide.
+- **DOC-01**: handbook hướng dẫn sử dụng cho Admin/Staff và Khách, kèm ảnh chụp
+  màn hình (nguồn ảnh ở `docs/baocao/screenshots/`).
+- **Hỗ trợ QA-02**: góp test case thủ công cho những luồng đã tự chạy thử.
+
+**Bàn giao**: handbook hoàn chỉnh (Markdown hoặc `.docx`), có ảnh và từng bước thao tác.
+
+> Lưu ý: nnhu chỉ **tạo file tài liệu mới**, không sửa code — tránh xung đột
+> với Nhân và Nam Anh.
 
 ---
 
 ## D. THỨ TỰ THỰC HIỆN
 
 ### Phải làm trước
-1. **SEC-01** (Phát) — vì DES-04 (tạo tài khoản) và DB-01 phụ thuộc cách lưu mật khẩu mới.
-2. **WEB-02 / QA-02** chạy nhanh để chốt các mục "Cần kiểm tra thêm".
+1. ~~**SEC-01**~~ — **đã xong**, nên DES-04 và DB-01 không còn bị chặn.
+2. **WEB-02** (Nam Anh): rebase branch lên `main` rồi mở PR — đang treo, dễ bỏ sót.
+3. **QA-02** (Phát): chốt bộ test case để cả nhóm có căn cứ nghiệm thu.
 
 ### Phụ thuộc
 - **DES-04** (form tài khoản) ⟵ sau **SEC-01** (dùng chung hàm băm).
-- **DB-01** ⟵ sau **SEC-01** (seed phải nhất quán với lưu dạng hash).
+- ~~**DB-01** ⟵ SEC-01~~: **đã xong** (seed + migration cùng dạng hash).
 - **CI-01** ⟵ sau **QA-01** (pipeline cần có test để chạy).
 - **DOC-02 / báo cáo** ⟵ sau **DES-01, SEC-01** (mô tả tính năng phải khớp code thật).
 
 ### Có thể làm song song (không chồng file)
-- Nhân: DES-01 → DES-02 → DES-03 (toàn bộ ở desktop, riêng `FormMain.cs`).
-- Nam Anh: WEB-01, WEB-02 (chỉ `WebBanHang/`).
-- Phát: SEC-01, QA-02, DOC-01.
+- Nhân: DES-02 → DES-03 (desktop; DES-01 đã xong).
+- Nam Anh: WEB-02 (rebase + mở PR), DES-04, QA-01.
+- Phát: SEC-02, QA-02, DOC-02.
+- nnhu: DOC-01 (chỉ viết tài liệu, không chạm code).
 
 ### Cần cả nhóm phối hợp
-- **SEC-01 ⟷ DES-04**: Phát cung cấp hàm băm/util, Nam Anh tích hợp vào form tài khoản.
-- **DES-01 ⟷ WEB**: Nhân bổ sung trường ảnh/giá gốc, Nam Anh xác nhận web render đúng.
-- **QA-02 / nghiệm thu**: cả 3 cùng chạy luồng end-to-end (đặt hàng web → duyệt đơn desktop → hoàn tồn khi hủy).
-- **DOC-02**: Phát tổng hợp, mỗi người xác nhận phần module mình.
+- **SEC-01 ⟷ DES-04**: ~~Phát cung cấp hàm băm~~ đã xong — Nam Anh dùng lại `PasswordHasher` có sẵn khi tạo user.
+- ~~**DES-01 ⟷ WEB**: Nhân bổ sung trường ảnh/giá gốc, Nam Anh xác nhận web render đúng~~ — **đã xong**.
+- **QA-02 / nghiệm thu**: cả 4 người cùng chạy luồng end-to-end (đặt hàng web → duyệt đơn desktop → hoàn tồn khi hủy).
+- **DOC-02**: Phát tổng hợp, mỗi người xác nhận phần module mình; nnhu viết handbook song song.
 
 ### Mốc trước ngày nộp
-- Hoàn tất **SEC-01** và **DES-01** (2 thay đổi ảnh hưởng trực tiếp tới dữ liệu & nghiệp vụ).
-- **QA-02** chạy xong, mọi "Cần kiểm tra thêm" về "Đã hoàn thành".
+- ~~SEC-01, DES-01~~ **đã xong** — cả hai đã merge vào `main`.
+- **WEB-02** phải được rebase rồi mở PR/merge (branch đang treo, chưa có PR).
+- **QA-02** chạy xong, mọi mục trong checklist E được tick bằng kết quả chạy thật.
 - **DOC-01, DOC-02** chốt bản cuối cho thuyết trình.
 
 ### Chiến lược merge (áp dụng cho cả nhóm)
@@ -184,6 +197,9 @@ Nhịp độ thường ngày: unit nhỏ tách được thì tách và merge li�
 ## E. CHECKLIST NGHIỆM THU CUỐI CÙNG
 
 > Cả nhóm đánh dấu `[x]` khi từng hạng mục đã chạy thật và được nghiệm thu.
+>
+> Trạng thái 13/11/2026: SEC-01, DES-01, WEB-01, CI-01 đã merge và CI xanh,
+> **nhưng vẫn phải chạy tay** từng mục dưới đây trước khi tick.
 
 ### Chức năng
 - [ ] Đăng nhập Admin/Staff, phân quyền đúng
@@ -230,5 +246,5 @@ Nhịp độ thường ngày: unit nhỏ tách được thì tách và merge li�
 
 ### Chuẩn bị thuyết trình
 - [ ] Slide (PPT) cập nhật, có phần bảo mật & tính năng mới
-- [ ] Kịch bản demo phân vai theo 3 người, chạy thử suôn sẻ
+- [ ] Kịch bản demo phân vai theo 4 người, chạy thử suôn sẻ
 - [ ] dữ liệu demo chuẩn bị sẵn (đơn, phiếu nhập, tài khoản)
