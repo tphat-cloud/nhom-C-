@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="QuanLyDesktop/QuanLyDesktop.csproj" />
   <Project Path="WebBanHang/WebBanHang.csproj" />
+  <Project Path="WebBanHang.Tests/WebBanHang.Tests.csproj" />
 </Solution>
