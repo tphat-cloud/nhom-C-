@@ -173,6 +173,41 @@ public partial class FormMain : Form
             MessageBox.Show("Lỗi khi tải danh mục: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
     }
+    private void LoadDanhMucKhiSua(int categoryId)
+    {
+        try
+        {
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+
+                string sql = @"
+                SELECT CategoryId, Name
+                FROM Categories
+                WHERE IsActive = 1 OR CategoryId = @categoryId";
+
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@categoryId", categoryId);
+
+                    using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+
+                        cboDanhMuc.DataSource = dt;
+                        cboDanhMuc.DisplayMember = "Name";
+                        cboDanhMuc.ValueMember = "CategoryId";
+                        cboDanhMuc.SelectedValue = categoryId;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show("Lỗi khi tải danh mục: " + ex.Message);
+        }
+    }
 
     // 2. Tải danh sách quần áo lên DataGridView
     private void LoadSanPham(string keyword = "")
@@ -260,9 +295,11 @@ public partial class FormMain : Form
                 && featuredValue != DBNull.Value
                 && Convert.ToBoolean(featuredValue);
 
-            if (row.Cells["CategoryId"].Value != null)
+            if (row.Cells["CategoryId"].Value != null
+                && row.Cells["CategoryId"].Value != DBNull.Value)
             {
-                cboDanhMuc.SelectedValue = Convert.ToInt32(row.Cells["CategoryId"].Value);
+                int categoryId = Convert.ToInt32(row.Cells["CategoryId"].Value);
+                LoadDanhMucKhiSua(categoryId);
             }
         }
     }
