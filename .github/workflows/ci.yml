@@ -37,6 +37,8 @@ jobs:
           dotnet build QuanLyDesktop/QuanLyDesktop.csproj
           --configuration Release --no-restore
 
-      # QA-01: bỏ comment bước này sau khi thêm project test (*.Tests).
-      # - name: Test
-      #   run: dotnet test --configuration Release --no-build
+      - name: Restore Tests
+        run: dotnet restore WebBanHang.Tests/WebBanHang.Tests.csproj
+
+      - name: Test (Web)
+        run: dotnet test WebBanHang.Tests/WebBanHang.Tests.csproj --configuration Release --no-restore
