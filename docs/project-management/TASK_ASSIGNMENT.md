@@ -1,8 +1,7 @@
 # PHÂN CHIA CÔNG VIỆC — ĐỒ ÁN FASHION SHOP
 
 > Tài liệu quản lý dự án — trưởng nhóm **Trịnh Tấn Phát** cập nhật.
-> Nhóm: Trịnh Tấn Phát (trưởng), Trần Lê Hồng Nhân, Dương Huỳnh Nam Anh,
-> Nguyễn Như (**nnhu**, mới tham gia).
+> Nhóm: Trịnh Tấn Phát (trưởng), Trần Lê Hồng Nhân, Dương Huỳnh Nam Anh, Võ Thị Ngọc Như
 > Phạm vi: **chỉ liệt kê công việc còn tồn đọng**. Những phần đã hoàn thiện
 > được ghi nhận ở mục A và **không phân chia lại**.
 >
@@ -87,8 +86,8 @@ handbook, báo cáo/slide). Ngoài ra đợt này bổ sung **7 tính năng giao
 | WEB-02 | Rà soát UX & lỗi biên | Empty cart, số lượng 0/âm, `returnUrl` lạ, thông báo lỗi thân thiện | `CartController.cs`, `CheckoutController.cs`, `Views/Cart`, `Views/Checkout` | Nam Anh | **Cao** | 🔶 Branch `web-02-validation` chưa có PR, cần rebase lên `main` |
 | WEB-03 | **Sắp xếp danh sách sản phẩm** | Thêm lựa chọn "Nổi bật / Mới nhất / Giá tăng dần / Giá giảm dần" ở `/Products`; `sort` truyền xuống SQL bằng `CASE` tham số hóa (không nối chuỗi); giữ `keyword`, `categoryId`, `page`, `pageSize` khi chuyển trang | `IProductRepository.cs`, `SqlProductRepository.cs`, `ProductsController.cs`, `ProductListViewModel.cs`, `Views/Products/Index.cshtml`, `WebBanHang.Tests/` (cập nhật fake) | Nam Anh | Trung bình | Chưa làm |
 | WEB-04 | **Sản phẩm liên quan** | Khối "Có thể bạn cũng thích" cuối trang chi tiết: tối đa 4 SP cùng danh mục (trừ chính nó), ưu tiên còn hàng, dùng lại `_ProductCard` | `IProductRepository.cs`, `SqlProductRepository.cs`, `ProductsController.cs` (Detail), `Views/Products/Detail.cshtml` | Nam Anh | Trung bình | Chưa làm |
-| WEB-05 | **Đã xem gần đây** | Lưu 6 sản phẩm vừa xem vào `localStorage`, hiện khối nhỏ ở trang chi tiết; khối tự ẩn khi rỗng; không đụng SQL | `wwwroot/js/recently-viewed.js` (mới), `Views/Shared/_RecentlyViewed.cshtml` (mới) | nnhu | Thấp | Chưa làm |
-| WEB-06 | **Trang 404 + favicon** | Gõ sai URL ra trang 404 thân thiện thay vì trang mặc định; thêm favicon và meta chia sẻ mặc định | `Program.cs`, `HomeController.cs`, `Views/Home/NotFound.cshtml` (mới), `Views/Shared/Error.cshtml`, `Views/Shared/_Layout.cshtml` (head), `wwwroot/css/extras.css` (mới), `wwwroot/favicon.svg` (mới) | nnhu | Thấp | Chưa làm |
+| WEB-05 | **Đã xem gần đây** | Lưu 6 sản phẩm vừa xem vào `localStorage`, hiện khối nhỏ ở trang chi tiết; khối tự ẩn khi rỗng; không đụng SQL | `wwwroot/js/recently-viewed.js` , `Views/Shared/_RecentlyViewed.cshtml`  | Như | Thấp | Chưa làm |
+| WEB-06 | **Trang 404 + favicon** | Gõ sai URL ra trang 404 thân thiện thay vì trang mặc định; thêm favicon và meta chia sẻ mặc định | `Program.cs`, `HomeController.cs`, `Views/Home/NotFound.cshtml` , `Views/Shared/Error.cshtml`, `Views/Shared/_Layout.cshtml` (head), `wwwroot/css/extras.css` , `wwwroot/favicon.svg` | Như | Thấp | Chưa làm |
 | DES-02 | Báo cáo tháng / Top bán chạy | Thống kê doanh thu theo tháng + top SP bán chạy trên dashboard | `FormMain.cs` | Nhân | Trung bình | Chưa làm |
 | DES-03 | Form Quản lý khách hàng | Form mới: xem/tìm/sửa khách, xem lịch sử đơn, không xóa cứng | `FormKhachHang.cs` (mới) | Nhân | Trung bình | Chưa làm |
 | DES-04 | Form Quản lý tài khoản | Thêm/sửa user, gán role, bật/tắt `IsActive` (chỉ Admin), tạo user qua `PasswordHasher` | `FormTaiKhoan.cs` (mới) | Nam Anh | Thấp | Chưa làm |
@@ -97,10 +96,10 @@ handbook, báo cáo/slide). Ngoài ra đợt này bổ sung **7 tính năng giao
 | DES-07 | **Xem trước ảnh sản phẩm** | `PictureBox` cạnh ô URL ảnh: dán URL/đường dẫn là xem ngay; ảnh lỗi thì hiện ảnh mặc định, **không chặn lưu** | `FormMain.cs` | Nhân | Thấp | Chưa làm |
 | DES-08 | **Hiện/ẩn mật khẩu khi đăng nhập** | Nút con mắt đổi `UseSystemPasswordChar`; không đổi logic `PasswordHasher.Verify`, không ghi log mật khẩu | `Form1.cs`, `Form1.Designer.cs` | Phát | Thấp | Chưa làm |
 | QA-01 | Test tự động (phần còn lại) | Đã có 5 test phân trang ở PR #11; còn: giỏ hàng (cộng/giới hạn số lượng), checkout (thiếu thông tin, quá tồn), tra cứu đơn (không tìm thấy) | `WebBanHang.Tests/` | Nam Anh | Trung bình | 🔶 PR #11 chờ merge |
-| QA-03 | **Test model sản phẩm** | Viết test cho phần logic đã có sẵn: `DiscountPercent`, `StockText`, `IsInStock`, ảnh dự phòng; `TotalPages`, `HasNextPage` của `ProductListViewModel` — file test mới, không đổi interface | `WebBanHang.Tests/ProductModelTests.cs` (mới) | nnhu | Thấp | Chưa làm |
+| QA-03 | **Test model sản phẩm** | Viết test cho phần logic đã có sẵn: `DiscountPercent`, `StockText`, `IsInStock`, ảnh dự phòng; `TotalPages`, `HasNextPage` của `ProductListViewModel` — file test mới, không đổi interface | `WebBanHang.Tests/ProductModelTests.cs` (mới) | Như | Thấp | Chưa làm |
 | QA-02 | Kịch bản test thủ công | Bộ test case nghiệm thu từng chức năng + checklist chạy trên SQL Server thật | `docs/` | Phát | Cao | Chưa làm |
 | CI-01 | Pipeline CI | Build 2 project + chạy test; đã xanh phần build | `.github/workflows/ci.yml` | Nam Anh | Thấp | ✅ Build xanh; bước test bật trong PR #11 |
-| DOC-01 | Handbook hướng dẫn sử dụng | Tài liệu vận hành cho Admin/Staff + Khách, kèm ảnh màn hình | `docs/` | nnhu | Cao | Chưa làm |
+| DOC-01 | Handbook hướng dẫn sử dụng | Tài liệu vận hành cho Admin/Staff + Khách, kèm ảnh màn hình | `docs/` | Như | Cao | Chưa làm |
 | DOC-02 | Tài liệu nghiệm thu & thuyết trình | Cập nhật báo cáo/PPT theo code thật (SEC-02, tính năng mới); chuẩn bị slide demo | `docs/baocao/` | Phát | Cao | Chưa làm |
 
 > Ghi chú trạng thái: ✅ = đã merge vào `main` và đối chiếu code;
@@ -113,8 +112,8 @@ handbook, báo cáo/slide). Ngoài ra đợt này bổ sung **7 tính năng giao
 |---|---|---|---|
 | WEB-03 | Trang `/Products` | Nam Anh | Rẻ, rõ kết quả, dùng lại dữ liệu sẵn có; dạy được `ORDER BY` an toàn |
 | WEB-04 | Trang chi tiết | Nam Anh | Tăng chiều sâu demo, tái dùng `_ProductCard` |
-| WEB-05 | Trang chi tiết | nnhu | Thuần JS, không đụng SQL — phù hợp thành viên mới |
-| WEB-06 | Trang 404 + head layout | nnhu | Điểm cộng nhỏ nhưng ai xem demo cũng thấy; file riêng (`extras.css`) |
+| WEB-05 | Trang chi tiết | Như | Thuần JS, không đụng SQL — phù hợp thành viên mới |
+| WEB-06 | Trang 404 + head layout | Như | Điểm cộng nhỏ nhưng ai xem demo cũng thấy; file riêng (`extras.css`) |
 | DES-05 | Dashboard desktop | Nhân | Tận dụng `vw_ProductStock`, hữu ích thật cho cửa hàng |
 | DES-07 | Form sản phẩm | Nhân | Nhìn thấy ngay khi nhập liệu, ít rủi ro |
 | DES-08 | Form đăng nhập | Phát | Nhỏ, an toàn, ai cũng thấy lúc demo |
@@ -168,7 +167,7 @@ Phụ trách `WebBanHang/` và một form desktop mới.
 > `Form1.cs`. Sau khi nâng cấp `IProductRepository`, phải cập nhật luôn
 > `FakeProductRepository` trong `WebBanHang.Tests` — nếu không CI sẽ đỏ.
 
-### 🧑‍💻 Nguyễn Như (nnhu) — Front-end nhỏ + test + tài liệu
+### 🧑‍💻 Võ Thị Ngọc Như — Front-end nhỏ + test + tài liệu
 Mới tham gia, nhận các việc **file riêng** để vừa có code vừa không xung đột.
 - **WEB-05**: khối "Đã xem gần đây" bằng `localStorage` (2 file mới, không SQL).
 - **WEB-06**: trang 404 thân thiện + favicon + head layout (`extras.css` riêng).
@@ -180,7 +179,7 @@ Mới tham gia, nhận các việc **file riêng** để vừa có code vừa kh
 **Bàn giao**: 3 commit code riêng (WEB-05, WEB-06, QA-03) + handbook hoàn chỉnh,
 để lịch sử GitHub thể hiện rõ phần đóng góp của thành viên mới.
 
-> Lưu ý: nnhu **không sửa** `ProductsController`, `SqlProductRepository`,
+> Lưu ý: Như **không sửa** `ProductsController`, `SqlProductRepository`,
 > `ProductListViewModel` hay `Detail.cshtml` — chỉ tạo file mới và sửa
 > `_Layout.cshtml`, `HomeController.cs`, `Program.cs`, `Error.cshtml`
 > (bốn file này không ai khác đụng trong đợt này).
@@ -201,12 +200,12 @@ Mới tham gia, nhận các việc **file riêng** để vừa có code vừa kh
 - Nam Anh: **WEB-03** → **WEB-04** (làm tuần tự vì cùng file repository).
 - Nhân: **DES-07** → **DES-02**.
 - Phát: **DES-06**.
-- nnhu: **WEB-05** → **WEB-06** → **QA-03** song song (file riêng, không chờ ai).
+- Như: **WEB-05** → **WEB-06** → **QA-03** song song (file riêng, không chờ ai).
 
 ### Đợt 3 — phần nặng còn lại
 - Nhân: **DES-03** (form khách hàng).
 - Nam Anh: **DES-04** (form tài khoản) + **QA-01** phần còn lại.
-- nnhu: **DOC-01** (handbook) — sau khi 3 việc code đã merge.
+- Như: **DOC-01** (handbook) — sau khi 3 việc code đã merge.
 - Cả nhóm: chạy **QA-02**, hoàn thiện **DOC-01/DOC-02**.
 
 ### Phụ thuộc
@@ -224,7 +223,7 @@ Mới tham gia, nhận các việc **file riêng** để vừa có code vừa kh
 - Nhân: `FormMain.cs` (DES-05, DES-07, DES-02) → `FormKhachHang.cs` (DES-03).
 - Nam Anh: web (`Products*`, `IProductRepository`) → `FormTaiKhoan.cs` (DES-04).
 - Phát: `FormDonHang.cs` (DES-06) → `Form1.cs` (DES-08) → tài liệu.
-- nnhu: `recently-viewed.js` (WEB-05) → `extras.css` + trang 404 (WEB-06) →
+- Như: `recently-viewed.js` (WEB-05) → `extras.css` + trang 404 (WEB-06) →
   `ProductModelTests.cs` (QA-03) → handbook.
 
 ### Mốc trước ngày nộp
