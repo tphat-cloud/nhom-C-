@@ -12,6 +12,8 @@
     bool isLookup = currentController == "OrderLookup";
 
     string pageTitle = ViewData["Title"] as string ?? "Thời trang tối giản";
+    string fullTitle = $"{pageTitle} — Fashion Shop";
+    const string shopDescription = "Fashion Shop - quần áo thời trang tối giản, chất liệu tốt, giá hợp lý. Miễn phí vận chuyển toàn quốc, đổi trả trong 7 ngày.";
     string bodyClass = ViewData["BodyClass"] as string ?? string.Empty;
 }
 <!DOCTYPE html>
@@ -20,11 +22,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#f7f4ef" />
-    <meta name="description" content="Fashion Shop - quần áo thời trang tối giản, chất liệu tốt, giá hợp lý. Miễn phí vận chuyển toàn quốc, đổi trả trong 7 ngày." />
-    <title>@pageTitle — Fashion Shop</title>
+    <meta name="description" content="@shopDescription" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Fashion Shop" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:title" content="@fullTitle" />
+    <meta property="og:description" content="@shopDescription" />
+    <meta name="twitter:card" content="summary" />
+    <title>@fullTitle</title>
+    <link rel="icon" type="image/svg+xml" href="~/favicon.svg" asp-append-version="true" />
     <link rel="preconnect" href="https://images.unsplash.com" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/extras.css" asp-append-version="true" />
 </head>
 <body class="@bodyClass">
     <a class="skip-link" href="#main">Bỏ qua điều hướng</a>

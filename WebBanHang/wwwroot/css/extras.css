@@ -1,0 +1,19 @@
+.status-page {
+  margin-block: clamp(1.5rem, 5vw, 4rem);
+}
+
+.status-page__code {
+  display: block;
+  margin-bottom: .5rem;
+  color: var(--accent);
+  font: 700 clamp(2rem, 8vw, 4rem)/1 var(--font-serif);
+}
+
+.status-page h1 {
+  margin: 0 0 .75rem;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.status-page .btn + .btn {
+  margin-left: 0;
+}

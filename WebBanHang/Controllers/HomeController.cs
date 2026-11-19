@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using WebBanHang.Data;
 using WebBanHang.Models;
@@ -7,25 +8,18 @@ namespace WebBanHang.Controllers;
 
 public class HomeController : Controller
 {
-    private readonly IProductRepository _productRepository;
-    private readonly ILogger<HomeController> _logger;
-
-    public HomeController(IProductRepository productRepository, ILogger<HomeController> logger)
-    {
-        _productRepository = productRepository;
-        _logger = logger;
-    }
-
     /// <summary>
     /// Trang chủ: nạp danh mục + sản phẩm nổi bật trực tiếp từ SQL Server.
     /// </summary>
-    public async Task<IActionResult> Index(CancellationToken cancellationToken)
+    public async Task<IActionResult> Index(
+        [FromServices] IProductRepository productRepository,
+        CancellationToken cancellationToken)
     {
         var viewModel = new HomeViewModel
         {
-            Categories = await _productRepository.GetActiveCategoriesAsync(cancellationToken),
-            FeaturedProducts = await _productRepository.GetFeaturedProductsAsync(8, cancellationToken),
-            TotalProducts = await _productRepository.CountActiveProductsAsync(cancellationToken)
+            Categories = await productRepository.GetActiveCategoriesAsync(cancellationToken),
+            FeaturedProducts = await productRepository.GetFeaturedProductsAsync(8, cancellationToken),
+            TotalProducts = await productRepository.CountActiveProductsAsync(cancellationToken)
         };
 
         return View(viewModel);
@@ -34,6 +28,21 @@ public class HomeController : Controller
     public IActionResult Privacy()
     {
         return View();
+    }
+
+    public IActionResult StatusPage()
+    {
+        if (HttpContext.Features.Get<IStatusCodeReExecuteFeature>() is not null
+            && Response.StatusCode != StatusCodes.Status404NotFound)
+        {
+            return new EmptyResult();
+        }
+
+        return new ViewResult
+        {
+            ViewName = "NotFound",
+            StatusCode = StatusCodes.Status404NotFound
+        };
     }
 
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
