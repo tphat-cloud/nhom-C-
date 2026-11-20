@@ -57,6 +57,7 @@ app.UseRequestLocalization(new RequestLocalizationOptions
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+app.UseStatusCodePagesWithReExecute("/Home/StatusPage");
 app.UseRouting();
 
 // Session phải nằm sau UseRouting và trước MapControllerRoute

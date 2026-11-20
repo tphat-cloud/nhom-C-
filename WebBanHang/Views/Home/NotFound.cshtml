@@ -1,0 +1,14 @@
+@{
+    ViewData["Title"] = "Không tìm thấy trang";
+}
+
+<section class="empty status-page" aria-labelledby="not-found-title">
+    <span class="status-page__code">404</span>
+    <h1 id="not-found-title">Không tìm thấy trang</h1>
+    <p>Trang bạn tìm có thể đã được chuyển hoặc đường dẫn chưa đúng.</p>
+
+    <div class="page-actions page-actions--center">
+        <a class="btn btn--ink" asp-controller="Home" asp-action="Index">Về trang chủ</a>
+        <a class="btn btn--line" asp-controller="Products" asp-action="Index">Xem sản phẩm</a>
+    </div>
+</section>
