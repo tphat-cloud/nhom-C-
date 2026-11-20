@@ -5,11 +5,10 @@
 > Phạm vi: **chỉ liệt kê công việc còn tồn đọng**. Những phần đã hoàn thiện
 > được ghi nhận ở mục A và **không phân chia lại**.
 >
-> Bản cập nhật **19/11/2026** (trước đó 13/11/2026): đã merge **SEC-02** (PR #10,
-> `FormDoiMatKhau`), đang chờ merge **QA-01 phần 1** (PR #11 — 5 test phân trang +
-> bật `dotnet test` trong CI), và bổ sung **7 tính năng giao diện nhỏ**
-> (WEB-03…06, DES-05…08) cùng **1 bộ test model** (QA-03) để chia đều việc code
-> cho cả nhóm — mỗi thành viên đều có commit riêng trên GitHub.
+> Bản cập nhật **21/11/2026** (trước đó 19/11/2026): đã merge **QA-01 phần 1**
+> (PR #11), **WEB-02** (PR #15), **WEB-06** (PR #14), phần Như phụ trách của
+> **WEB-05** (PR #16), **QA-03** (PR #17), **DOC-01** (PR #18) và 8 ca Như
+> đóng góp cho **QA-02** (PR #19).
 
 ---
 
@@ -22,11 +21,10 @@ SQL Server 2022 qua Docker) đã hình thành đầy đủ, luồng nghiệp v�
 (đăng nhập, sản phẩm, danh mục, biến thể size/màu, phiếu nhập kho, duyệt đơn,
 giỏ hàng, đặt hàng, tra cứu đơn) đã đi từ giao diện xuống tới dữ liệu thật.
 
-Phần còn thiếu hiện nay: **một branch web đang treo chưa mở PR** (WEB-02),
-**báo cáo thống kê nâng cao**, **hai form quản lý** (khách hàng, tài khoản),
-**phần test tự động còn lại**, và **các hạng mục nghiệm thu** (test case,
-handbook, báo cáo/slide). Ngoài ra đợt này bổ sung **7 tính năng giao diện nhỏ**
-để mỗi thành viên đều có phần code rõ ràng, demo được trước hội đồng.
+Phần còn thiếu hiện nay gồm **báo cáo thống kê nâng cao**, **hai form quản lý**
+(khách hàng, tài khoản), **phần test tự động còn lại** và **các hạng mục nghiệm thu**
+(tổng hợp test case, chạy nghiệm thu, cập nhật báo cáo/slide). Các tính năng
+giao diện còn lại và việc tích hợp WEB-05 được theo dõi ở mục B và D.
 
 ### ✅ Đã hoàn thành (đã kiểm tra bằng code, không chỉ thấy file)
 
@@ -48,33 +46,34 @@ handbook, báo cáo/slide). Ngoài ra đợt này bổ sung **7 tính năng giao
 | Đổi mật khẩu (SEC-02) | `FormDoiMatKhau.cs` + `.Designer.cs`; PR #10 đã merge vào `main` (`6280b06`) |
 | Sản phẩm: Ảnh / Giá gốc / Nổi bật (DES-01) | `FormMain.cs` có `txtImageUrl`, giá gốc, `chkIsFeatured`; cả `INSERT` và `UPDATE` đều ghi 3 cột; web đã hiện `-x%` và giá gạch ngang |
 | Web: phân trang danh sách (WEB-01) | `ProductsController` + `SqlProductRepository` nhận `page`/`pageSize`; PR #8 đã merge |
-| CI build (CI-01) | `.github/workflows/ci.yml` restore + build 2 project trên `windows-latest`; run trên `main` kết luận **success** |
-| Kiểm thử tự động phần 1 (QA-01) | `WebBanHang.Tests` + 5 test phân trang (`ProductsControllerPaginationTests`), đã chạy lại tại máy: **5/5 pass**; PR #11 đang chờ merge |
+| Web: xử lý lỗi biên (WEB-02) | PR #15 đã merge, cập nhật giỏ hàng, đặt hàng và tra cứu đơn, kèm 7 test trong `Web02EdgeCaseTests.cs` |
+| Web: trang 404 và favicon (WEB-06) | PR #14 đã merge, URL sai hiển thị trang 404 tiếng Việt và layout dùng favicon SVG |
+| CI build và test (CI-01) | `.github/workflows/ci.yml` build 2 ứng dụng và chạy `dotnet test` trên `windows-latest` từ PR #11 |
+| Kiểm thử tự động phần 1 (QA-01) | PR #11 đã merge với 5 test phân trang (`ProductsControllerPaginationTests`) |
+| Kiểm thử model sản phẩm (QA-03) | PR #17 đã merge với 27 ca xUnit trong `ProductModelTests.cs` |
+| Handbook hướng dẫn sử dụng (DOC-01) | PR #18 đã merge với [hướng dẫn Admin/Staff và khách hàng](../handbook/README.md) kèm 7 ảnh màn hình |
 | Tài liệu báo cáo/nghiệm thu (bản nháp) | trong `docs/baocao/`: `BaoCao_DoAn_...docx`, `PhanTichYeuCauNghiepVu_...pptx`, `CK_GD1_...DONE.xlsx`, `diagrams/`, `screenshots/` (gitignore) |
 
 ### ⚠ Còn thiếu / cần khắc phục (đã xác minh)
 
-1. **WEB-02 đang treo** (CAO). Branch `web-02-validation` đã push nhưng **chưa mở PR**
-   và cũ hơn `main` — dễ bị bỏ sót trước ngày nộp.
-2. **Test tự động mới phủ phần phân trang** (TRUNG BÌNH). Chưa có test cho giỏ
-   hàng, đặt hàng, tra cứu đơn.
-3. **Dashboard thiếu báo cáo nâng cao** (TRUNG BÌNH). Chỉ có 3 chỉ số "hôm nay";
+1. **Còn các ca kiểm thử tự động của QA-01** (TRUNG BÌNH). Đã có test phân trang,
+   model sản phẩm và một số lỗi biên của giỏ, đặt hàng và tra cứu đơn. Các ca
+   còn lại được liệt kê ở mục B.
+2. **Dashboard thiếu báo cáo nâng cao** (TRUNG BÌNH). Chỉ có 3 chỉ số "hôm nay";
    chưa có thống kê theo tháng/quý, top bán chạy, cảnh báo sắp hết hàng.
-4. **Chưa có form Quản lý khách hàng** (TRUNG BÌNH). `Customers` chỉ được ghi tự
+3. **Chưa có form Quản lý khách hàng** (TRUNG BÌNH). `Customers` chỉ được ghi tự
    động khi đặt hàng, không có màn hình xem/tìm/sửa trong app desktop.
-5. **Chưa có form Quản lý tài khoản** (THẤP). Không thêm tài khoản mới, bật/tắt
+4. **Chưa có form Quản lý tài khoản** (THẤP). Không thêm tài khoản mới, bật/tắt
    `IsActive` từ giao diện.
-6. **Thiếu các tính năng giao diện nhỏ tạo khác biệt khi demo** (THẤP–TRUNG BÌNH):
-   sắp xếp sản phẩm, sản phẩm liên quan, đã xem gần đây, trang 404 thân thiện,
-   xem trước ảnh, xuất CSV, hiện/ẩn mật khẩu.
-7. **Chưa có trang 404** (THẤP). `Program.cs` mới chỉ có `UseExceptionHandler` cho
-   lỗi 500; gõ sai URL hiện trang mặc định của ASP.NET, không có favicon.
-8. **Thiếu handbook và tài liệu chưa khớp code** (CAO cho nghiệm thu). README thiên
-   về cài đặt kỹ thuật; báo cáo/PPT/bảng đặc tả còn chỗ ghi sai so với code.
+5. **Thiếu một số tính năng giao diện** (THẤP–TRUNG BÌNH). Còn sắp xếp sản phẩm,
+   sản phẩm liên quan, tích hợp khối đã xem gần đây, xem trước ảnh, xuất CSV
+   và hiện/ẩn mật khẩu.
+6. **Tài liệu báo cáo chưa khớp code** (CAO cho nghiệm thu). Báo cáo, PPT và
+   bảng đặc tả còn cần cập nhật.
 
 ---
 
-## B. DANH SÁCH CÔNG VIỆC (cập nhật 19/11/2026)
+## B. DANH SÁCH CÔNG VIỆC (cập nhật 21/11/2026)
 
 | Mã Task | Công việc | Mô tả | File chính | Người phụ trách | Ưu tiên | Trạng thái |
 |---|---|---|---|---|---|---|
@@ -83,11 +82,11 @@ handbook, báo cáo/slide). Ngoài ra đợt này bổ sung **7 tính năng giao
 | DES-01 | Ảnh / Giá gốc / Nổi bật | 3 trường trong form sản phẩm | `FormMain.cs` | Nhân | Trung bình | ✅ |
 | WEB-01 | Phân trang sản phẩm | `page`/`pageSize` | `ProductsController.cs`, `SqlProductRepository.cs` | Nam Anh | Thấp | ✅ PR #8 |
 | DB-01 | Ràng buộc & seed | Seed khớp migration, cùng dạng hash | `CSDL_ShopQuanAo.sql`, `Scripts/migrations` | Phát | Trung bình | ✅ |
-| WEB-02 | Rà soát UX & lỗi biên | Empty cart, số lượng 0/âm, `returnUrl` lạ, thông báo lỗi thân thiện | `CartController.cs`, `CheckoutController.cs`, `Views/Cart`, `Views/Checkout` | Nam Anh | **Cao** | 🔶 Branch `web-02-validation` chưa có PR, cần rebase lên `main` |
+| WEB-02 | Rà soát UX & lỗi biên | Empty cart, số lượng 0/âm, `returnUrl` lạ, thông báo lỗi thân thiện | `CartController.cs`, `CheckoutController.cs`, `Views/Cart`, `Views/Checkout` | Nam Anh | **Cao** | ✅ PR #15 |
 | WEB-03 | **Sắp xếp danh sách sản phẩm** | Thêm lựa chọn "Nổi bật / Mới nhất / Giá tăng dần / Giá giảm dần" ở `/Products`; `sort` truyền xuống SQL bằng `CASE` tham số hóa (không nối chuỗi); giữ `keyword`, `categoryId`, `page`, `pageSize` khi chuyển trang | `IProductRepository.cs`, `SqlProductRepository.cs`, `ProductsController.cs`, `ProductListViewModel.cs`, `Views/Products/Index.cshtml`, `WebBanHang.Tests/` (cập nhật fake) | Nam Anh | Trung bình | Chưa làm |
 | WEB-04 | **Sản phẩm liên quan** | Khối "Có thể bạn cũng thích" cuối trang chi tiết: tối đa 4 SP cùng danh mục (trừ chính nó), ưu tiên còn hàng, dùng lại `_ProductCard` | `IProductRepository.cs`, `SqlProductRepository.cs`, `ProductsController.cs` (Detail), `Views/Products/Detail.cshtml` | Nam Anh | Trung bình | Chưa làm |
-| WEB-05 | **Đã xem gần đây** | Lưu 6 sản phẩm vừa xem vào `localStorage`, hiện khối nhỏ ở trang chi tiết; khối tự ẩn khi rỗng; không đụng SQL | `wwwroot/js/recently-viewed.js` , `Views/Shared/_RecentlyViewed.cshtml`  | Như | Thấp | Chưa làm |
-| WEB-06 | **Trang 404 + favicon** | Gõ sai URL ra trang 404 thân thiện thay vì trang mặc định; thêm favicon và meta chia sẻ mặc định | `Program.cs`, `HomeController.cs`, `Views/Home/NotFound.cshtml` , `Views/Shared/Error.cshtml`, `Views/Shared/_Layout.cshtml` (head), `wwwroot/css/extras.css` , `wwwroot/favicon.svg` | Như | Thấp | Chưa làm |
+| WEB-05 | **Đã xem gần đây** | Lưu 6 sản phẩm vừa xem vào `localStorage`, hiện khối nhỏ ở trang chi tiết; khối tự ẩn khi rỗng; không đụng SQL | `wwwroot/js/recently-viewed.js` , `Views/Shared/_RecentlyViewed.cshtml`  | Như | Thấp | 🔶 Phần Như đã merge qua PR #16. Nam Anh gắn partial vào trang chi tiết sau WEB-04 |
+| WEB-06 | **Trang 404 + favicon** | Gõ sai URL ra trang 404 thân thiện thay vì trang mặc định; thêm favicon và meta chia sẻ mặc định | `Program.cs`, `HomeController.cs`, `Views/Home/NotFound.cshtml` , `Views/Shared/Error.cshtml`, `Views/Shared/_Layout.cshtml` (head), `wwwroot/css/extras.css` , `wwwroot/favicon.svg` | Như | Thấp | ✅ PR #14 |
 | DES-02 | Báo cáo tháng / Top bán chạy | Thống kê doanh thu theo tháng + top SP bán chạy trên dashboard | `FormMain.cs` | Nhân | Trung bình | Chưa làm |
 | DES-03 | Form Quản lý khách hàng | Form mới: xem/tìm/sửa khách, xem lịch sử đơn, không xóa cứng | `FormKhachHang.cs` (mới) | Nhân | Trung bình | Chưa làm |
 | DES-04 | Form Quản lý tài khoản | Thêm/sửa user, gán role, bật/tắt `IsActive` (chỉ Admin), tạo user qua `PasswordHasher` | `FormTaiKhoan.cs` (mới) | Nam Anh | Thấp | Chưa làm |
@@ -95,15 +94,15 @@ handbook, báo cáo/slide). Ngoài ra đợt này bổ sung **7 tính năng giao
 | DES-06 | **Xuất CSV đơn hàng** | Nút "Xuất CSV" trong `FormDonHang`: xuất đúng danh sách đang lọc (mã đơn, ngày, khách, SĐT, tổng tiền, trạng thái), ghi UTF-8 **có BOM** để Excel không lỗi tiếng Việt | `FormDonHang.cs`, `FormDonHang.Designer.cs` | Phát | Thấp | Chưa làm |
 | DES-07 | **Xem trước ảnh sản phẩm** | `PictureBox` cạnh ô URL ảnh: dán URL/đường dẫn là xem ngay; ảnh lỗi thì hiện ảnh mặc định, **không chặn lưu** | `FormMain.cs` | Nhân | Thấp | Chưa làm |
 | DES-08 | **Hiện/ẩn mật khẩu khi đăng nhập** | Nút con mắt đổi `UseSystemPasswordChar`; không đổi logic `PasswordHasher.Verify`, không ghi log mật khẩu | `Form1.cs`, `Form1.Designer.cs` | Phát | Thấp | Chưa làm |
-| QA-01 | Test tự động (phần còn lại) | Đã có 5 test phân trang ở PR #11; còn: giỏ hàng (cộng/giới hạn số lượng), checkout (thiếu thông tin, quá tồn), tra cứu đơn (không tìm thấy) | `WebBanHang.Tests/` | Nam Anh | Trung bình | 🔶 PR #11 chờ merge |
-| QA-03 | **Test model sản phẩm** | Viết test cho phần logic đã có sẵn: `DiscountPercent`, `StockText`, `IsInStock`, ảnh dự phòng; `TotalPages`, `HasNextPage` của `ProductListViewModel` — file test mới, không đổi interface | `WebBanHang.Tests/ProductModelTests.cs` (mới) | Như | Thấp | Chưa làm |
-| QA-02 | Kịch bản test thủ công | Bộ test case nghiệm thu từng chức năng + checklist chạy trên SQL Server thật | `docs/` | Phát | Cao | Chưa làm |
-| CI-01 | Pipeline CI | Build 2 project + chạy test; đã xanh phần build | `.github/workflows/ci.yml` | Nam Anh | Thấp | ✅ Build xanh; bước test bật trong PR #11 |
-| DOC-01 | Handbook hướng dẫn sử dụng | Tài liệu vận hành cho Admin/Staff + Khách, kèm ảnh màn hình | `docs/` | Như | Cao | Chưa làm |
+| QA-01 | Test tự động (phần còn lại) | Còn các ca giỏ hàng (cộng/giới hạn số lượng), checkout (thiếu thông tin, quá tồn), tra cứu đơn (không tìm thấy) | `WebBanHang.Tests/` | Nam Anh | Trung bình | 🔶 Đã merge 5 test phân trang ở PR #11 và 7 test lỗi biên ở PR #15 |
+| QA-03 | **Test model sản phẩm** | Viết test cho phần logic đã có sẵn: `DiscountPercent`, `StockText`, `IsInStock`, ảnh dự phòng; `TotalPages`, `HasNextPage` của `ProductListViewModel` — file test mới, không đổi interface | `WebBanHang.Tests/ProductModelTests.cs` | Như | Thấp | ✅ PR #17 |
+| QA-02 | Kịch bản test thủ công | Bộ test case nghiệm thu từng chức năng + checklist chạy trên SQL Server thật | `docs/` | Phát | Cao | 🔶 Như đã góp 8 ca ở PR #19. Phát phụ trách tổng hợp và nghiệm thu |
+| CI-01 | Pipeline CI | Build 2 project + chạy test | `.github/workflows/ci.yml` | Nam Anh | Thấp | ✅ Bật bước test ở PR #11 |
+| DOC-01 | Handbook hướng dẫn sử dụng | Tài liệu vận hành cho Admin/Staff + Khách, kèm ảnh màn hình | `docs/handbook/README.md` | Như | Cao | ✅ PR #18 |
 | DOC-02 | Tài liệu nghiệm thu & thuyết trình | Cập nhật báo cáo/PPT theo code thật (SEC-02, tính năng mới); chuẩn bị slide demo | `docs/baocao/` | Phát | Cao | Chưa làm |
 
-> Ghi chú trạng thái: ✅ = đã merge vào `main` và đối chiếu code;
-> 🔶 = code đã có nhưng chưa vào `main`; để trống = chưa làm.
+> Ghi chú trạng thái: ✅ = đã merge vào `main` và đối chiếu kết quả.
+> 🔶 = đã có một phần kết quả hoặc đang chờ merge/tích hợp.
 > Các mục ✅ **không phân chia lại**, chỉ còn việc chạy tay khi nghiệm thu (mục E).
 
 ### 7 tính năng giao diện mới + 1 bộ test trong đợt này
@@ -133,7 +132,7 @@ Phụ trách chéo (bảo mật + tích hợp + nghiệm thu) và 2 việc code 
 - **DOC-02**: cập nhật báo cáo/PPT theo code thật, chuẩn bị slide demo.
 - **DES-06**: nút xuất CSV đơn hàng trong `FormDonHang.cs`.
 - **DES-08**: hiện/ẩn mật khẩu ở `Form1`.
-- **Duyệt merge**: xử lý branch `web-02-validation` còn treo, giữ `main` build sạch.
+- **Duyệt merge**: WEB-02 đã vào `main` qua PR #15, tiếp tục giữ `main` build sạch.
 
 **Bàn giao**: bộ test case, báo cáo & slide cập nhật, CSV đơn hàng chạy được.
 
@@ -155,7 +154,7 @@ hoàn chỉnh, ảnh xem trước được khi nhập sản phẩm.
 
 ### 🧑‍💻 Dương Huỳnh Nam Anh — Web + Test + CI
 Phụ trách `WebBanHang/` và một form desktop mới.
-- **WEB-02** (ưu tiên 1): rebase branch `web-02-validation` lên `main` rồi mở PR.
+- **WEB-02**: đã merge qua PR #15.
 - **WEB-03**: sắp xếp danh sách sản phẩm.
 - **WEB-04**: khối sản phẩm liên quan ở trang chi tiết.
 - **DES-04**: form mới `FormTaiKhoan.cs` (dùng `PasswordHasher` có sẵn).
@@ -168,16 +167,15 @@ Phụ trách `WebBanHang/` và một form desktop mới.
 > `FakeProductRepository` trong `WebBanHang.Tests` — nếu không CI sẽ đỏ.
 
 ### 🧑‍💻 Võ Thị Ngọc Như — Front-end nhỏ + test + tài liệu
-Mới tham gia, nhận các việc **file riêng** để vừa có code vừa không xung đột.
-- **WEB-05**: khối "Đã xem gần đây" bằng `localStorage` (2 file mới, không SQL).
-- **WEB-06**: trang 404 thân thiện + favicon + head layout (`extras.css` riêng).
-- **QA-03**: viết `ProductModelTests.cs` cho `DiscountPercent`, `StockText`,
-  `IsInStock`, ảnh dự phòng và `ProductListViewModel.TotalPages`.
-- **DOC-01**: handbook hướng dẫn sử dụng cho Admin/Staff và Khách, kèm ảnh.
-- **Hỗ trợ QA-02**: góp test case thủ công cho những luồng đã tự chạy thử.
+Như đã bàn giao các phần sau trên `main`.
 
-**Bàn giao**: 3 commit code riêng (WEB-05, WEB-06, QA-03) + handbook hoàn chỉnh,
-để lịch sử GitHub thể hiện rõ phần đóng góp của thành viên mới.
+- **WEB-05**: partial và JavaScript cho khối "Đã xem gần đây" (PR #16).
+- **WEB-06**: trang 404 thân thiện, favicon và meta chia sẻ mặc định (PR #14).
+- **QA-03**: 27 ca kiểm thử model sản phẩm và phân trang (PR #17).
+- **DOC-01**: [handbook cho Admin/Staff và khách hàng](../handbook/README.md),
+  kèm 7 ảnh màn hình (PR #18).
+- **Hỗ trợ QA-02**: [8 ca kiểm thử thủ công](../qa/QA-02-Ngoc-Nhu.md) để Phát
+  tổng hợp vào bộ nghiệm thu (PR #19).
 
 > Lưu ý: Như **không sửa** `ProductsController`, `SqlProductRepository`,
 > `ProductListViewModel` hay `Detail.cshtml` — chỉ tạo file mới và sửa
@@ -191,22 +189,22 @@ Mới tham gia, nhận các việc **file riêng** để vừa có code vừa kh
 ## D. THỨ TỰ THỰC HIỆN
 
 ### Đợt 1 — gỡ điểm nghẽn (1–2 ngày)
-1. **WEB-02** (Nam Anh): rebase + mở PR — đang treo, dễ bỏ sót.
+1. **WEB-02** (Nam Anh): đã merge qua PR #15.
 2. **QA-02** (Phát): chốt bộ test case để cả nhóm có căn cứ nghiệm thu.
 3. **DES-08** (Phát) và **DES-05** (Nhân): hai việc nhỏ, xong sớm để lấy đà.
-4. **PR #11**: merge nếu CI xanh — mở đường cho WEB-03 (vì cùng đụng interface).
+4. **PR #11**: đã merge bộ test phân trang và bước chạy test trong CI.
 
 ### Đợt 2 — tính năng giao diện (3–5 ngày)
 - Nam Anh: **WEB-03** → **WEB-04** (làm tuần tự vì cùng file repository).
 - Nhân: **DES-07** → **DES-02**.
 - Phát: **DES-06**.
-- Như: **WEB-05** → **WEB-06** → **QA-03** song song (file riêng, không chờ ai).
+- Như: đã bàn giao **WEB-05**, **WEB-06** và **QA-03** theo mục C.
 
 ### Đợt 3 — phần nặng còn lại
 - Nhân: **DES-03** (form khách hàng).
 - Nam Anh: **DES-04** (form tài khoản) + **QA-01** phần còn lại.
-- Như: **DOC-01** (handbook) — sau khi 3 việc code đã merge.
-- Cả nhóm: chạy **QA-02**, hoàn thiện **DOC-01/DOC-02**.
+- Như: **DOC-01** đã merge qua PR #18.
+- Cả nhóm: chạy **QA-02**, hoàn thiện **DOC-02**.
 
 ### Phụ thuộc
 - **WEB-03 ⟵ PR #11**: vì thêm tham số vào `IProductRepository.GetProductsAsync`
@@ -223,14 +221,11 @@ Mới tham gia, nhận các việc **file riêng** để vừa có code vừa kh
 - Nhân: `FormMain.cs` (DES-05, DES-07, DES-02) → `FormKhachHang.cs` (DES-03).
 - Nam Anh: web (`Products*`, `IProductRepository`) → `FormTaiKhoan.cs` (DES-04).
 - Phát: `FormDonHang.cs` (DES-06) → `Form1.cs` (DES-08) → tài liệu.
-- Như: `recently-viewed.js` (WEB-05) → `extras.css` + trang 404 (WEB-06) →
-  `ProductModelTests.cs` (QA-03) → handbook.
 
 ### Mốc trước ngày nộp
-- **WEB-02** phải rebase, mở PR và merge.
 - 7 tính năng mới (WEB-03…06, DES-05…08) + QA-03 merge xong, mỗi cái chạy thật 1 lần.
 - **QA-02** chạy hết, mọi mục trong checklist E được tick bằng kết quả thật.
-- **DOC-01, DOC-02** chốt bản cuối cho thuyết trình.
+- **DOC-02** chốt bản cuối cho thuyết trình.
 
 ### Chiến lược merge (áp dụng cho cả nhóm)
 **Nguyên tắc: merge sớm, merge nhỏ theo từng tính năng — KHÔNG đợi xong hết mới gộp.**
@@ -253,7 +248,7 @@ mỗi commit phải build được. Tên PR trùng commit chính.
 
 | Task | Branch | Commit / PR title |
 |---|---|---|
-| WEB-02 | `web-02-validation` (đã có) | `fix(web): chặn số lượng không hợp lệ và làm rõ thông báo lỗi` |
+| WEB-02 | `fix/web-02-validation` (PR #15) | `fix(web): hoan thien validation gio hang checkout va tra cuu` |
 | WEB-03 | `web-03-sap-xep` | `feat(web): sắp xếp sản phẩm theo giá và độ mới` |
 | WEB-04 | `web-04-san-pham-lien-quan` | `feat(web): hiển thị sản phẩm liên quan ở trang chi tiết` |
 | WEB-05 | `web-05-da-xem-gan-day` | `feat(web): lưu và hiển thị sản phẩm đã xem gần đây` |
