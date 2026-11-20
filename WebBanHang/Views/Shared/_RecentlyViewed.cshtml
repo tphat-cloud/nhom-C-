@@ -1,0 +1,24 @@
+@model Product
+
+<section class="section--tight" aria-labelledby="recently-viewed-title" hidden
+         data-recently-viewed data-product-id="@Model.ProductId" data-product-name="@Model.Name"
+         data-product-price="@(Model.Price.ToString("N0")) đ" data-product-image="@Model.DisplayImage"
+         data-detail-url="@Url.Action("Detail", "Products", new { area = "", id = "PRODUCT_ID" })"
+         data-fallback-image="@Url.Content("~/images/no-image.svg")">
+    <div class="section-head">
+        <h2 id="recently-viewed-title">Đã xem gần đây</h2>
+    </div>
+    <div class="product-grid" data-recently-viewed-list></div>
+    <template>
+        <article class="product-card">
+            <a class="product-card__media" tabindex="-1" aria-hidden="true">
+                <img alt="" loading="lazy" width="600" height="800" />
+            </a>
+            <div class="product-card__body">
+                <h3 class="product-card__name"><a data-product-link></a></h3>
+                <p class="product-card__price"><span class="price"></span></p>
+            </div>
+        </article>
+    </template>
+</section>
+<script src="~/js/recently-viewed.js" asp-append-version="true" defer></script>
