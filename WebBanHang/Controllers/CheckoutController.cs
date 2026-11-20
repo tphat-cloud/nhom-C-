@@ -47,6 +47,14 @@ public class CheckoutController : Controller
             return RedirectToAction(nameof(CartController.Index), "Cart");
         }
 
+        if (items.Any(item => item.ProductVariantId <= 0 ||
+                              item.Quantity < 1 ||
+                              item.Quantity > ICartService.MaxQuantityPerItem))
+        {
+            ModelState.AddModelError(string.Empty,
+                "Giỏ hàng có dữ liệu không hợp lệ. Vui lòng tải lại giỏ hàng và chọn số lượng hợp lệ.");
+        }
+
         if (!PaymentMethods.IsSupported(model.PaymentMethod))
         {
             ModelState.AddModelError(nameof(CheckoutViewModel.PaymentMethod),
@@ -59,13 +67,29 @@ public class CheckoutController : Controller
             return View(model);
         }
 
+        string customerName = model.CustomerName?.Trim() ?? string.Empty;
+        string phoneNumber = model.PhoneNumber?.Trim() ?? string.Empty;
+        string address = model.Address?.Trim() ?? string.Empty;
+        string? email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim();
+        string? note = string.IsNullOrWhiteSpace(model.Note) ? null : model.Note.Trim();
+
+        if (string.IsNullOrWhiteSpace(customerName) ||
+            string.IsNullOrWhiteSpace(phoneNumber) ||
+            string.IsNullOrWhiteSpace(address))
+        {
+            ModelState.AddModelError(string.Empty,
+                "Vui lòng nhập đầy đủ họ tên, số điện thoại và địa chỉ nhận hàng.");
+            model.Items = items;
+            return View(model);
+        }
+
         OrderResult result = await _orderRepository.CreateOrderAsync(new NewOrder
         {
-            CustomerName = model.CustomerName.Trim(),
-            PhoneNumber = model.PhoneNumber.Trim(),
-            Email = string.IsNullOrWhiteSpace(model.Email) ? null : model.Email.Trim(),
-            Address = model.Address.Trim(),
-            Note = string.IsNullOrWhiteSpace(model.Note) ? null : model.Note.Trim(),
+            CustomerName = customerName,
+            PhoneNumber = phoneNumber,
+            Email = email,
+            Address = address,
+            Note = note,
             PaymentMethod = model.PaymentMethod,
             Items = items
                 .Select(item => new NewOrderItem
@@ -91,9 +115,9 @@ public class CheckoutController : Controller
         // Giá trị thô (không định dạng) để trang xác nhận lưu "đơn hàng gần đây" vào LocalStorage
         TempData["OrderTotalRaw"] = result.TotalAmount.ToString(CultureInfo.InvariantCulture);
         TempData["OrderDateIso"] = DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss", CultureInfo.InvariantCulture);
-        TempData["OrderCustomer"] = model.CustomerName.Trim();
-        TempData["OrderPhone"] = model.PhoneNumber.Trim();
-        TempData["OrderAddress"] = model.Address.Trim();
+        TempData["OrderCustomer"] = customerName;
+        TempData["OrderPhone"] = phoneNumber;
+        TempData["OrderAddress"] = address;
         TempData["OrderPayment"] = model.PaymentMethod;
 
         return RedirectToAction(nameof(Success));

@@ -90,7 +90,10 @@ public class CartController : Controller
     /// <summary>Cập nhật số lượng một dòng trong giỏ (0 = xóa dòng).</summary>
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult Update(int variantId, int? quantity)
+    public async Task<IActionResult> Update(
+        int variantId,
+        int? quantity,
+        CancellationToken cancellationToken = default)
     {
         if (variantId <= 0)
         {
@@ -117,6 +120,31 @@ public class CartController : Controller
             TempData["Error"] =
                 $"Số lượng phải từ 0 đến {ICartService.MaxQuantityPerItem}. Nhập 0 để xóa sản phẩm.";
             return RedirectToAction(nameof(Index));
+        }
+
+        if (requestedQuantity > 0)
+        {
+            VariantInfo? variant = await _productRepository.GetVariantInfoAsync(variantId, cancellationToken);
+            if (variant is null)
+            {
+                TempData["Error"] = "Sản phẩm không còn tồn tại trong hệ thống.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (!variant.IsAvailable)
+            {
+                TempData["Error"] =
+                    $"\"{variant.ProductName}\" (size {variant.Size}, màu {variant.Color}) đã hết hàng.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (requestedQuantity > variant.StockQuantity)
+            {
+                TempData["Error"] =
+                    $"\"{variant.ProductName}\" (size {variant.Size}, màu {variant.Color}) không đủ số lượng bạn chọn " +
+                    "(có thể vừa được khách khác mua). Vui lòng chọn số lượng nhỏ hơn.";
+                return RedirectToAction(nameof(Index));
+            }
         }
 
         _cartService.UpdateQuantity(variantId, requestedQuantity);

@@ -65,6 +65,12 @@ public class OrderLookupController : Controller
             return View(model);
         }
 
+        if (!cleanPhoneNumber.All(character => char.IsDigit(character)))
+        {
+            model.ErrorMessage = "Số điện thoại tra cứu chỉ được chứa chữ số.";
+            return View(model);
+        }
+
         OrderLookupViewModel? order = await _orderRepository.FindOrderForLookupAsync(
             cleanOrderCode,
             cleanPhoneNumber,
