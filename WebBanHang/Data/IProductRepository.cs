@@ -24,6 +24,7 @@ public interface IProductRepository
         int categoryId,
         int page = 1,
         int pageSize = ProductListViewModel.DefaultPageSize,
+        string sort = ProductSortOptions.Featured,
         CancellationToken cancellationToken = default);
 
     Task<Product?> GetProductByIdAsync(int productId, CancellationToken cancellationToken = default);

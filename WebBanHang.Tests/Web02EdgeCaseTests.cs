@@ -262,6 +262,7 @@ public sealed class Web02EdgeCaseTests
             int categoryId,
             int page = 1,
             int pageSize = ProductListViewModel.DefaultPageSize,
+            string sort = ProductSortOptions.Featured,
             CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Product>>(Array.Empty<Product>());
 

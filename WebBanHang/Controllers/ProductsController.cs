@@ -22,8 +22,10 @@ public class ProductsController : Controller
         int categoryId = 0,
         int page = 1,
         int pageSize = ProductListViewModel.DefaultPageSize,
+        string? sort = ProductSortOptions.Featured,
         CancellationToken cancellationToken = default)
     {
+        string safeSort = ProductSortOptions.Normalize(sort);
         pageSize = pageSize < 1
             ? ProductListViewModel.DefaultPageSize
             : Math.Min(pageSize, ProductListViewModel.MaximumPageSize);
@@ -38,6 +40,7 @@ public class ProductsController : Controller
         {
             Keyword = keyword,
             CategoryId = categoryId,
+            Sort = safeSort,
             Page = page,
             PageSize = pageSize,
             TotalCount = totalCount,
@@ -47,6 +50,7 @@ public class ProductsController : Controller
                 categoryId,
                 page,
                 pageSize,
+                safeSort,
                 cancellationToken)
         };
 
