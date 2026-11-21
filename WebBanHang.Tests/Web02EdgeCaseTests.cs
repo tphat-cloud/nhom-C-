@@ -56,6 +56,103 @@ public sealed class Web02EdgeCaseTests
     }
 
     [Fact]
+    public async Task CartAdd_ValidQuantity_AddsVariantFromRepository()
+    {
+        var cart = new FakeCartService();
+        var repository = new FakeProductRepository
+        {
+            Variant = new VariantInfo
+            {
+                ProductVariantId = 10,
+                ProductName = "Áo thun",
+                Price = 150_000m,
+                StockQuantity = 5
+            }
+        };
+        var controller = CreateCartController(cart, repository);
+
+        IActionResult result = await controller.Add(10, 2);
+
+        var redirect = Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(nameof(CartController.Index), redirect.ActionName);
+        Assert.True(repository.VariantWasRequested);
+        Assert.Equal(1, cart.AddCalls);
+        Assert.Equal(2, cart.AddedQuantity);
+        Assert.Equal(10, cart.AddedItem!.ProductVariantId);
+        Assert.Equal("Áo thun", cart.AddedItem.ProductName);
+        Assert.Equal(150_000m, cart.AddedItem.UnitPrice);
+    }
+
+    [Fact]
+    public async Task CartAdd_QuantityAboveMaximum_DoesNotRequestVariantOrChangeCart()
+    {
+        var cart = new FakeCartService();
+        var repository = new FakeProductRepository();
+        var controller = CreateCartController(cart, repository);
+
+        IActionResult result = await controller.Add(10, ICartService.MaxQuantityPerItem + 1);
+
+        Assert.IsType<RedirectToActionResult>(result);
+        Assert.False(repository.VariantWasRequested);
+        Assert.Equal(0, cart.AddCalls);
+        Assert.Empty(cart.GetItems());
+        Assert.Contains("từ 1 đến 99", cart.TempError(controller));
+    }
+
+    [Fact]
+    public async Task CartAdd_CombinedQuantityAboveMaximum_KeepsExistingQuantity()
+    {
+        var cart = new FakeCartService(new CartItem
+        {
+            ProductVariantId = 10,
+            Quantity = ICartService.MaxQuantityPerItem - 1
+        });
+        var repository = new FakeProductRepository
+        {
+            Variant = new VariantInfo
+            {
+                ProductVariantId = 10,
+                StockQuantity = ICartService.MaxQuantityPerItem
+            }
+        };
+        var controller = CreateCartController(cart, repository);
+
+        IActionResult result = await controller.Add(10, 2);
+
+        Assert.IsType<RedirectToActionResult>(result);
+        Assert.Single(cart.GetItems());
+        Assert.Equal(ICartService.MaxQuantityPerItem - 1, cart.GetItems()[0].Quantity);
+        Assert.Equal(0, cart.AddCalls);
+        Assert.Contains("tối đa 99", cart.TempError(controller));
+    }
+
+    [Fact]
+    public async Task CartAdd_CombinedQuantityAboveStock_KeepsExistingQuantity()
+    {
+        var cart = new FakeCartService(new CartItem
+        {
+            ProductVariantId = 10,
+            Quantity = 2
+        });
+        var repository = new FakeProductRepository
+        {
+            Variant = new VariantInfo
+            {
+                ProductVariantId = 10,
+                StockQuantity = 3
+            }
+        };
+        var controller = CreateCartController(cart, repository);
+
+        IActionResult result = await controller.Add(10, 2);
+
+        Assert.IsType<RedirectToActionResult>(result);
+        Assert.Equal(2, cart.GetItems()[0].Quantity);
+        Assert.Equal(0, cart.AddCalls);
+        Assert.Contains("không đủ số lượng", cart.TempError(controller));
+    }
+
+    [Fact]
     public async Task Checkout_InvalidCartQuantity_DoesNotCallOrderRepository()
     {
         var cart = new FakeCartService(new CartItem
@@ -73,6 +170,52 @@ public sealed class Web02EdgeCaseTests
         Assert.False(controller.ModelState.IsValid);
         Assert.False(orderRepository.CreateOrderWasCalled);
         Assert.Single(Assert.IsType<CheckoutViewModel>(view.Model).Items);
+    }
+
+    [Fact]
+    public async Task Checkout_MissingRequiredInformation_DoesNotCallOrderRepository()
+    {
+        var cart = new FakeCartService(new CartItem
+        {
+            ProductVariantId = 10,
+            Quantity = 1
+        });
+        var orderRepository = new FakeOrderRepository();
+        var controller = CreateCheckoutController(cart, orderRepository);
+        var model = ValidCheckoutModel();
+        model.CustomerName = " ";
+
+        IActionResult result = await controller.Index(model);
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.False(controller.ModelState.IsValid);
+        Assert.False(orderRepository.CreateOrderWasCalled);
+        Assert.Single(Assert.IsType<CheckoutViewModel>(view.Model).Items);
+    }
+
+    [Fact]
+    public async Task Checkout_InsufficientStock_ReturnsErrorAndPreservesCart()
+    {
+        var cart = new FakeCartService(new CartItem
+        {
+            ProductVariantId = 10,
+            Quantity = 2
+        });
+        var orderRepository = new FakeOrderRepository
+        {
+            Result = OrderResult.Fail("Sản phẩm không đủ tồn kho.")
+        };
+        var controller = CreateCheckoutController(cart, orderRepository);
+
+        IActionResult result = await controller.Index(ValidCheckoutModel());
+
+        var view = Assert.IsType<ViewResult>(result);
+        Assert.True(orderRepository.CreateOrderWasCalled);
+        Assert.Contains(
+            controller.ModelState.Values.SelectMany(entry => entry.Errors),
+            error => error.ErrorMessage == "Sản phẩm không đủ tồn kho.");
+        Assert.Single(Assert.IsType<CheckoutViewModel>(view.Model).Items);
+        Assert.Single(cart.GetItems());
     }
 
     [Fact]
@@ -156,6 +299,22 @@ public sealed class Web02EdgeCaseTests
         Assert.False(repository.LookupWasCalled);
     }
 
+    [Fact]
+    public async Task OrderLookup_OrderNotFound_ReturnsFriendlyError()
+    {
+        var repository = new FakeOrderRepository();
+        var controller = CreateLookupController(repository);
+
+        IActionResult result = await controller.Index("DH2601-0001", "0901234567");
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<OrderLookupViewModel>(view.Model);
+        Assert.True(repository.LookupWasCalled);
+        Assert.True(model.HasSearched);
+        Assert.False(model.IsFound);
+        Assert.Contains("Không tìm thấy đơn hàng", model.ErrorMessage);
+    }
+
     private static CheckoutViewModel ValidCheckoutModel() => new()
     {
         CustomerName = "Nguyễn Văn An",
@@ -209,6 +368,10 @@ public sealed class Web02EdgeCaseTests
     {
         private readonly List<CartItem> _items = new();
 
+        public int AddCalls { get; private set; }
+        public CartItem? AddedItem { get; private set; }
+        public int AddedQuantity { get; private set; }
+
         public FakeCartService(params CartItem[] items)
         {
             _items.AddRange(items);
@@ -220,6 +383,9 @@ public sealed class Web02EdgeCaseTests
 
         public void Add(CartItem item, int quantity)
         {
+            AddCalls++;
+            AddedItem = item;
+            AddedQuantity = quantity;
             _items.Add(item);
         }
 
