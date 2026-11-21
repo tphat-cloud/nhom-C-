@@ -1,16 +1,24 @@
 using System.Data;
+using System.Drawing;
 using Microsoft.Data.SqlClient;
 
 namespace QuanLyDesktop;
 
 public partial class FormMain : Form
 {
+    private const int MaxPreviewImageBytes = 5 * 1024 * 1024;
+    private static readonly HttpClient ImagePreviewHttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(8)
+    };
+
     private string connectionString => DatabaseConfig.ConnectionString;
     private string _fullName;
     private string _roleName;
     private int _userId;
     private int _selectedProductId = -1; // Lưu mã sản phẩm đang được chọn để Sửa hoặc Xóa
     private DataGridView dgvLowStockProducts = new DataGridView();
+    private CancellationTokenSource? _imagePreviewCancellation;
 
     /// <summary>
     /// Kiểm tra người đang đăng nhập có quyền Admin hay không.
@@ -39,6 +47,235 @@ public partial class FormMain : Form
         _fullName = fullName;
         _roleName = roleName;
         InitializeComponent();
+        picImagePreview.Image = CreateImagePreviewPlaceholder();
+        txtImageUrl.TextChanged += txtImageUrl_TextChanged;
+        FormClosed += (_, _) =>
+        {
+            _imagePreviewCancellation?.Cancel();
+            picImagePreview.Image?.Dispose();
+        };
+    }
+
+    private async void txtImageUrl_TextChanged(object? sender, EventArgs e)
+    {
+        CancellationTokenSource? previousRequest = _imagePreviewCancellation;
+        CancellationTokenSource request = new();
+        _imagePreviewCancellation = request;
+        previousRequest?.Cancel();
+
+        string imageLocation = txtImageUrl.Text.Trim();
+        if (imageLocation.Length == 0)
+        {
+            SetImagePreview(CreateImagePreviewPlaceholder());
+            lblImagePreviewStatus.Text = "";
+            _imagePreviewCancellation = null;
+            request.Dispose();
+            return;
+        }
+
+        try
+        {
+            await Task.Delay(350, request.Token);
+            Image? preview = await LoadImagePreviewAsync(imageLocation, request.Token);
+            if (request.IsCancellationRequested)
+            {
+                preview?.Dispose();
+                return;
+            }
+
+            if (preview is null)
+            {
+                SetImagePreview(CreateImagePreviewPlaceholder());
+                lblImagePreviewStatus.Text = "Không tải được ảnh; vẫn có thể lưu.";
+            }
+            else
+            {
+                SetImagePreview(preview);
+                lblImagePreviewStatus.Text = "";
+            }
+        }
+        catch (OperationCanceledException) when (request.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex) when (IsImagePreviewError(ex))
+        {
+            if (!request.IsCancellationRequested)
+            {
+                SetImagePreview(CreateImagePreviewPlaceholder());
+                lblImagePreviewStatus.Text = "Không tải được ảnh; vẫn có thể lưu.";
+            }
+        }
+        finally
+        {
+            if (ReferenceEquals(_imagePreviewCancellation, request))
+            {
+                _imagePreviewCancellation = null;
+            }
+
+            request.Dispose();
+        }
+    }
+
+    private static bool IsImagePreviewError(Exception exception) =>
+        exception is HttpRequestException
+            or IOException
+            or UnauthorizedAccessException
+            or ArgumentException
+            or NotSupportedException
+            or OutOfMemoryException
+            or TaskCanceledException;
+
+    private static async Task<Image?> LoadImagePreviewAsync(
+        string imageLocation,
+        CancellationToken cancellationToken)
+    {
+        byte[] imageBytes;
+
+        if (Uri.TryCreate(imageLocation, UriKind.Absolute, out Uri? uri)
+            && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        {
+            using HttpResponseMessage response = await ImagePreviewHttpClient.GetAsync(
+                uri,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken);
+            response.EnsureSuccessStatusCode();
+
+            if (response.Content.Headers.ContentLength > MaxPreviewImageBytes)
+            {
+                return null;
+            }
+
+            await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            imageBytes = await ReadImageBytesAsync(stream, cancellationToken);
+        }
+        else
+        {
+            string? path = ResolveLocalImagePath(imageLocation);
+            if (path is null || !File.Exists(path))
+            {
+                return null;
+            }
+
+            FileInfo file = new(path);
+            if (file.Length > MaxPreviewImageBytes)
+            {
+                return null;
+            }
+
+            await using FileStream stream = new(
+                path,
+                FileMode.Open,
+                FileAccess.Read,
+                FileShare.Read,
+                bufferSize: 81920,
+                useAsync: true);
+            imageBytes = await ReadImageBytesAsync(stream, cancellationToken);
+        }
+
+        if (imageBytes.Length == 0)
+        {
+            return null;
+        }
+
+        using MemoryStream imageStream = new(imageBytes, writable: false);
+        using Image sourceImage = Image.FromStream(imageStream);
+        return new Bitmap(sourceImage);
+    }
+
+    private static async Task<byte[]> ReadImageBytesAsync(
+        Stream stream,
+        CancellationToken cancellationToken)
+    {
+        using MemoryStream buffer = new();
+        byte[] chunk = new byte[81920];
+        int bytesRead;
+
+        while ((bytesRead = await stream.ReadAsync(chunk.AsMemory(), cancellationToken)) > 0)
+        {
+            if (buffer.Length + bytesRead > MaxPreviewImageBytes)
+            {
+                return [];
+            }
+
+            await buffer.WriteAsync(chunk.AsMemory(0, bytesRead), cancellationToken);
+        }
+
+        return buffer.ToArray();
+    }
+
+    private static string? ResolveLocalImagePath(string imageLocation)
+    {
+        if (Uri.TryCreate(imageLocation, UriKind.Absolute, out Uri? uri)
+            && uri.IsFile)
+        {
+            return uri.LocalPath;
+        }
+
+        if (Path.IsPathRooted(imageLocation))
+        {
+            return imageLocation;
+        }
+
+        string? webRoot = FindWebRoot();
+        if (webRoot is null)
+        {
+            return null;
+        }
+
+        string relativePath = imageLocation.TrimStart('/', '\\')
+            .Replace('/', Path.DirectorySeparatorChar);
+        string fullPath = Path.GetFullPath(Path.Combine(webRoot, relativePath));
+        string webRootPrefix = Path.GetFullPath(webRoot) + Path.DirectorySeparatorChar;
+
+        return fullPath.StartsWith(webRootPrefix, StringComparison.OrdinalIgnoreCase)
+            ? fullPath
+            : null;
+    }
+
+    private static string? FindWebRoot()
+    {
+        string[] startPaths = [AppContext.BaseDirectory, Environment.CurrentDirectory];
+        foreach (string startPath in startPaths)
+        {
+            DirectoryInfo? directory = new(startPath);
+            while (directory is not null)
+            {
+                string candidate = Path.Combine(directory.FullName, "WebBanHang", "wwwroot");
+                if (Directory.Exists(candidate))
+                {
+                    return candidate;
+                }
+
+                directory = directory.Parent;
+            }
+        }
+
+        return null;
+    }
+
+    private static Image CreateImagePreviewPlaceholder()
+    {
+        Bitmap placeholder = new(160, 120);
+        using Graphics graphics = Graphics.FromImage(placeholder);
+        graphics.Clear(Color.FromArgb(238, 242, 247));
+        using Font font = new("Segoe UI", 9F, FontStyle.Regular);
+        using Brush brush = new SolidBrush(Color.FromArgb(99, 112, 129));
+        string text = "Chưa có ảnh";
+        SizeF textSize = graphics.MeasureString(text, font);
+        graphics.DrawString(
+            text,
+            font,
+            brush,
+            (placeholder.Width - textSize.Width) / 2,
+            (placeholder.Height - textSize.Height) / 2);
+        return placeholder;
+    }
+
+    private void SetImagePreview(Image image)
+    {
+        Image? previousImage = picImagePreview.Image;
+        picImagePreview.Image = image;
+        previousImage?.Dispose();
     }
 
     // Sự kiện khi mở Form lên
