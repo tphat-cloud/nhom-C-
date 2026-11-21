@@ -57,6 +57,14 @@ partial class FormMain
     private Label lblStatLowStockValue;
     private Panel panelOverview;
     private Panel panelLowStockList;
+    private TableLayoutPanel layoutDashboardMiddle;
+    private Panel panelMonthlyReport;
+    private Label lblMonthlyReportTitle;
+    private DateTimePicker dtpReportMonth;
+    private Label lblMonthlyRevenueTitle;
+    private Label lblMonthlyRevenueValue;
+    private DataGridView dgvMonthlyTopProducts;
+    private Label lblMonthlyReportStatus;
     private Label lblLowStockListTitle;
     private Label lblOverviewTitle;
     private Label lblOverviewBody;
@@ -110,6 +118,14 @@ partial class FormMain
         lblOverviewBody = new Label();
         lblDashboardStatus = new Label();
         panelLowStockList = new Panel();
+        layoutDashboardMiddle = new TableLayoutPanel();
+        panelMonthlyReport = new Panel();
+        lblMonthlyReportTitle = new Label();
+        dtpReportMonth = new DateTimePicker();
+        lblMonthlyRevenueTitle = new Label();
+        lblMonthlyRevenueValue = new Label();
+        dgvMonthlyTopProducts = new DataGridView();
+        lblMonthlyReportStatus = new Label();
         lblLowStockListTitle = new Label();
         layoutQuickActions = new FlowLayoutPanel();
         btnQuickProducts = new Button();
@@ -160,6 +176,8 @@ partial class FormMain
         panelContent.SuspendLayout();
         panelDashboard.SuspendLayout();
         layoutDashboard.SuspendLayout();
+        layoutDashboardMiddle.SuspendLayout();
+        panelMonthlyReport.SuspendLayout();
         panelWelcome.SuspendLayout();
         layoutStats.SuspendLayout();
         panelStatProducts.SuspendLayout();
@@ -168,6 +186,7 @@ partial class FormMain
         panelOverview.SuspendLayout();
         layoutQuickActions.SuspendLayout();
         ((System.ComponentModel.ISupportInitialize)dgvSanPham).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)dgvMonthlyTopProducts).BeginInit();
         SuspendLayout();
         // 
         // layoutRoot
@@ -300,14 +319,14 @@ partial class FormMain
         layoutDashboard.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         layoutDashboard.Controls.Add(panelWelcome, 0, 0);
         layoutDashboard.Controls.Add(layoutStats, 0, 1);
-        layoutDashboard.Controls.Add(panelOverview, 0, 2);
+        layoutDashboard.Controls.Add(layoutDashboardMiddle, 0, 2);
         layoutDashboard.Controls.Add(panelLowStockList, 0, 3);
         layoutDashboard.Dock = DockStyle.Fill;
         layoutDashboard.Padding = new Padding(0, 0, 0, 4);
         layoutDashboard.RowCount = 4;
         layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 110F));
         layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 158F));
-        layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 204F));
+        layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 244F));
         layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         layoutDashboard.TabIndex = 0;
         // 
@@ -492,6 +511,108 @@ partial class FormMain
         lblStatLowStockValue.Text = "0";
         // 
         // 
+        // layoutDashboardMiddle
+        //
+        layoutDashboardMiddle.ColumnCount = 2;
+        layoutDashboardMiddle.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        layoutDashboardMiddle.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+        layoutDashboardMiddle.Controls.Add(panelOverview, 0, 0);
+        layoutDashboardMiddle.Controls.Add(panelMonthlyReport, 1, 0);
+        layoutDashboardMiddle.Dock = DockStyle.Fill;
+        layoutDashboardMiddle.Margin = new Padding(0, 0, 0, 16);
+        layoutDashboardMiddle.RowCount = 1;
+        layoutDashboardMiddle.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        layoutDashboardMiddle.TabIndex = 2;
+        //
+        // panelMonthlyReport
+        //
+        panelMonthlyReport.BackColor = Color.White;
+        panelMonthlyReport.BorderStyle = BorderStyle.FixedSingle;
+        panelMonthlyReport.Controls.Add(lblMonthlyReportStatus);
+        panelMonthlyReport.Controls.Add(dgvMonthlyTopProducts);
+        panelMonthlyReport.Controls.Add(lblMonthlyRevenueValue);
+        panelMonthlyReport.Controls.Add(lblMonthlyRevenueTitle);
+        panelMonthlyReport.Controls.Add(dtpReportMonth);
+        panelMonthlyReport.Controls.Add(lblMonthlyReportTitle);
+        panelMonthlyReport.Dock = DockStyle.Fill;
+        panelMonthlyReport.Margin = new Padding(8, 0, 0, 0);
+        panelMonthlyReport.Padding = new Padding(12);
+        panelMonthlyReport.TabIndex = 1;
+        //
+        // lblMonthlyReportTitle
+        //
+        lblMonthlyReportTitle.AutoSize = true;
+        lblMonthlyReportTitle.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        lblMonthlyReportTitle.ForeColor = Color.FromArgb(28, 43, 61);
+        lblMonthlyReportTitle.Location = new Point(16, 12);
+        lblMonthlyReportTitle.Name = "lblMonthlyReportTitle";
+        lblMonthlyReportTitle.Size = new Size(130, 19);
+        lblMonthlyReportTitle.TabIndex = 0;
+        lblMonthlyReportTitle.Text = "BÁO CÁO THÁNG";
+        //
+        // dtpReportMonth
+        //
+        dtpReportMonth.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        dtpReportMonth.CustomFormat = "MM/yyyy";
+        dtpReportMonth.Font = new Font("Segoe UI", 8.5F);
+        dtpReportMonth.Format = DateTimePickerFormat.Custom;
+        dtpReportMonth.Location = new Point(340, 10);
+        dtpReportMonth.Name = "dtpReportMonth";
+        dtpReportMonth.ShowUpDown = true;
+        dtpReportMonth.Size = new Size(120, 23);
+        dtpReportMonth.TabIndex = 1;
+        //
+        // lblMonthlyRevenueTitle
+        //
+        lblMonthlyRevenueTitle.AutoSize = true;
+        lblMonthlyRevenueTitle.Font = new Font("Segoe UI", 8F, FontStyle.Regular);
+        lblMonthlyRevenueTitle.ForeColor = Color.FromArgb(99, 112, 129);
+        lblMonthlyRevenueTitle.Location = new Point(16, 43);
+        lblMonthlyRevenueTitle.Name = "lblMonthlyRevenueTitle";
+        lblMonthlyRevenueTitle.Size = new Size(115, 13);
+        lblMonthlyRevenueTitle.TabIndex = 2;
+        lblMonthlyRevenueTitle.Text = "Doanh thu ghi nhận:";
+        //
+        // lblMonthlyRevenueValue
+        //
+        lblMonthlyRevenueValue.AutoSize = true;
+        lblMonthlyRevenueValue.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+        lblMonthlyRevenueValue.ForeColor = Color.FromArgb(20, 151, 116);
+        lblMonthlyRevenueValue.Location = new Point(137, 39);
+        lblMonthlyRevenueValue.Name = "lblMonthlyRevenueValue";
+        lblMonthlyRevenueValue.Size = new Size(18, 19);
+        lblMonthlyRevenueValue.TabIndex = 3;
+        lblMonthlyRevenueValue.Text = "--";
+        //
+        // dgvMonthlyTopProducts
+        //
+        dgvMonthlyTopProducts.AllowUserToAddRows = false;
+        dgvMonthlyTopProducts.AllowUserToDeleteRows = false;
+        dgvMonthlyTopProducts.AllowUserToResizeRows = false;
+        dgvMonthlyTopProducts.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        dgvMonthlyTopProducts.BackgroundColor = Color.White;
+        dgvMonthlyTopProducts.BorderStyle = BorderStyle.None;
+        dgvMonthlyTopProducts.ColumnHeadersHeight = 28;
+        dgvMonthlyTopProducts.Location = new Point(16, 68);
+        dgvMonthlyTopProducts.MultiSelect = false;
+        dgvMonthlyTopProducts.Name = "dgvMonthlyTopProducts";
+        dgvMonthlyTopProducts.ReadOnly = true;
+        dgvMonthlyTopProducts.RowHeadersVisible = false;
+        dgvMonthlyTopProducts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        dgvMonthlyTopProducts.Size = new Size(460, 142);
+        dgvMonthlyTopProducts.TabIndex = 4;
+        //
+        // lblMonthlyReportStatus
+        //
+        lblMonthlyReportStatus.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+        lblMonthlyReportStatus.AutoEllipsis = true;
+        lblMonthlyReportStatus.Font = new Font("Segoe UI", 7.5F);
+        lblMonthlyReportStatus.ForeColor = Color.Firebrick;
+        lblMonthlyReportStatus.Location = new Point(16, 216);
+        lblMonthlyReportStatus.Name = "lblMonthlyReportStatus";
+        lblMonthlyReportStatus.Size = new Size(460, 16);
+        lblMonthlyReportStatus.TabIndex = 5;
+        //
         // panelLowStockList
         //
         panelLowStockList.BackColor = Color.White;
@@ -516,8 +637,7 @@ partial class FormMain
         panelOverview.Controls.Add(layoutQuickActions);
         panelOverview.Controls.Add(lblOverviewBody);
         panelOverview.Controls.Add(lblOverviewTitle);
-        panelOverview.Dock = DockStyle.Top;
-        panelOverview.Height = 204;
+        panelOverview.Dock = DockStyle.Fill;
         panelOverview.Padding = new Padding(22, 16, 22, 16);
         panelOverview.TabIndex = 2;
         //
@@ -564,9 +684,9 @@ partial class FormMain
         layoutQuickActions.Controls.Add(btnQuickCategories);
         layoutQuickActions.Location = new Point(22, 78);
         layoutQuickActions.Name = "layoutQuickActions";
-        layoutQuickActions.Size = new Size(930, 48);
+        layoutQuickActions.Size = new Size(440, 96);
         layoutQuickActions.TabIndex = 3;
-        layoutQuickActions.WrapContents = false;
+        layoutQuickActions.WrapContents = true;
         //
         // btnQuickProducts
         //
@@ -578,7 +698,7 @@ partial class FormMain
         btnQuickProducts.ForeColor = Color.White;
         btnQuickProducts.Margin = new Padding(0, 0, 12, 0);
         btnQuickProducts.Name = "btnQuickProducts";
-        btnQuickProducts.Size = new Size(210, 44);
+        btnQuickProducts.Size = new Size(200, 40);
         btnQuickProducts.TabIndex = 0;
         btnQuickProducts.Text = "Sản phẩm";
         btnQuickProducts.UseVisualStyleBackColor = false;
@@ -595,7 +715,7 @@ partial class FormMain
         btnQuickOrders.ForeColor = Color.FromArgb(13, 71, 161);
         btnQuickOrders.Margin = new Padding(0, 0, 12, 0);
         btnQuickOrders.Name = "btnQuickOrders";
-        btnQuickOrders.Size = new Size(210, 44);
+        btnQuickOrders.Size = new Size(200, 40);
         btnQuickOrders.TabIndex = 1;
         btnQuickOrders.Text = "Đơn hàng";
         btnQuickOrders.UseVisualStyleBackColor = false;
@@ -612,7 +732,7 @@ partial class FormMain
         btnQuickInventory.ForeColor = Color.FromArgb(13, 71, 161);
         btnQuickInventory.Margin = new Padding(0, 0, 12, 0);
         btnQuickInventory.Name = "btnQuickInventory";
-        btnQuickInventory.Size = new Size(210, 44);
+        btnQuickInventory.Size = new Size(200, 40);
         btnQuickInventory.TabIndex = 2;
         btnQuickInventory.Text = "Nhập kho";
         btnQuickInventory.UseVisualStyleBackColor = false;
@@ -628,7 +748,7 @@ partial class FormMain
         btnQuickCategories.Font = new Font("Segoe UI", 9.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
         btnQuickCategories.ForeColor = Color.FromArgb(13, 71, 161);
         btnQuickCategories.Name = "btnQuickCategories";
-        btnQuickCategories.Size = new Size(210, 44);
+        btnQuickCategories.Size = new Size(200, 40);
         btnQuickCategories.TabIndex = 3;
         btnQuickCategories.Text = "Danh mục";
         btnQuickCategories.UseVisualStyleBackColor = false;
@@ -1148,6 +1268,7 @@ partial class FormMain
         grpDanhSach.ResumeLayout(false);
         grpDanhSach.PerformLayout();
         ((System.ComponentModel.ISupportInitialize)dgvSanPham).EndInit();
+        ((System.ComponentModel.ISupportInitialize)dgvMonthlyTopProducts).EndInit();
         panelStatProducts.ResumeLayout(false);
         panelStatProducts.PerformLayout();
         panelStatOrders.ResumeLayout(false);
@@ -1160,6 +1281,9 @@ partial class FormMain
         panelOverview.PerformLayout();
         layoutQuickActions.ResumeLayout(false);
         layoutStats.ResumeLayout(false);
+        panelMonthlyReport.ResumeLayout(false);
+        panelMonthlyReport.PerformLayout();
+        layoutDashboardMiddle.ResumeLayout(false);
         panelWelcome.ResumeLayout(false);
         panelWelcome.PerformLayout();
         layoutDashboard.ResumeLayout(false);

@@ -49,6 +49,7 @@ public partial class FormMain : Form
         InitializeComponent();
         picImagePreview.Image = CreateImagePreviewPlaceholder();
         txtImageUrl.TextChanged += txtImageUrl_TextChanged;
+        dtpReportMonth.ValueChanged += dtpReportMonth_ValueChanged;
         FormClosed += (_, _) =>
         {
             _imagePreviewCancellation?.Cancel();
@@ -289,8 +290,10 @@ public partial class FormMain : Form
         LoadDanhMuc();
         LoadSanPham();
         InitializeLowStockGrid();
+        InitializeMonthlyReportGrid();
         LoadDashboardSummary();
         LoadLowStockProducts();
+        LoadMonthlyReport();
         ShowDashboard();
     }
 
@@ -443,6 +446,106 @@ public partial class FormMain : Form
         }
     }
 
+    private void InitializeMonthlyReportGrid()
+    {
+        dgvMonthlyTopProducts.AllowUserToAddRows = false;
+        dgvMonthlyTopProducts.AllowUserToDeleteRows = false;
+        dgvMonthlyTopProducts.AllowUserToResizeRows = false;
+        dgvMonthlyTopProducts.ReadOnly = true;
+        dgvMonthlyTopProducts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        dgvMonthlyTopProducts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        dgvMonthlyTopProducts.MultiSelect = false;
+        dgvMonthlyTopProducts.RowHeadersVisible = false;
+        dgvMonthlyTopProducts.BackgroundColor = Color.White;
+        dgvMonthlyTopProducts.BorderStyle = BorderStyle.None;
+        dgvMonthlyTopProducts.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+        dgvMonthlyTopProducts.ColumnHeadersHeight = 28;
+        dgvMonthlyTopProducts.RowTemplate.Height = 22;
+        dgvMonthlyTopProducts.EnableHeadersVisualStyles = false;
+        dgvMonthlyTopProducts.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 247, 250);
+        dgvMonthlyTopProducts.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(60, 72, 88);
+        dgvMonthlyTopProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 8F, FontStyle.Bold);
+        dgvMonthlyTopProducts.DefaultCellStyle.Font = new Font("Segoe UI", 8.5F);
+        dgvMonthlyTopProducts.DefaultCellStyle.ForeColor = Color.FromArgb(28, 43, 61);
+        dgvMonthlyTopProducts.DefaultCellStyle.SelectionBackColor = Color.FromArgb(232, 240, 254);
+        dgvMonthlyTopProducts.DefaultCellStyle.SelectionForeColor = Color.FromArgb(28, 43, 61);
+        dgvMonthlyTopProducts.Columns.Add("ProductName", "Sản phẩm");
+        dgvMonthlyTopProducts.Columns.Add("QuantitySold", "Đã bán");
+        dgvMonthlyTopProducts.Columns.Add("Revenue", "Doanh thu");
+        dgvMonthlyTopProducts.Columns["ProductName"].FillWeight = 52;
+        dgvMonthlyTopProducts.Columns["QuantitySold"].FillWeight = 17;
+        dgvMonthlyTopProducts.Columns["Revenue"].FillWeight = 31;
+        dgvMonthlyTopProducts.Columns["QuantitySold"].DefaultCellStyle.Alignment =
+            DataGridViewContentAlignment.MiddleCenter;
+        dgvMonthlyTopProducts.Columns["Revenue"].DefaultCellStyle.Format = "N0";
+    }
+
+    private void LoadMonthlyReport()
+    {
+        DateTime monthStart = new(dtpReportMonth.Value.Year, dtpReportMonth.Value.Month, 1);
+        dgvMonthlyTopProducts.Rows.Clear();
+        lblMonthlyRevenueValue.Text = "--";
+        lblMonthlyReportStatus.Text = "";
+
+        try
+        {
+            using SqlConnection conn = new(connectionString);
+            conn.Open();
+
+            string sql = @"
+                DECLARE @monthStart DATE = @selectedMonth;
+                DECLARE @nextMonth DATE = DATEADD(MONTH, 1, @monthStart);
+
+                SELECT COALESCE(SUM(o.TotalAmount), 0) AS MonthlyRevenue
+                FROM Orders o
+                WHERE o.OrderDate >= @monthStart
+                  AND o.OrderDate < @nextMonth
+                  AND (o.Status = N'Hoàn thành'
+                       OR (o.IsPaid = 1 AND o.Status <> N'Đã hủy'));
+
+                SELECT TOP (5)
+                    COALESCE(MAX(p.Name), MAX(od.ProductName)) AS ProductName,
+                    SUM(od.Quantity) AS QuantitySold,
+                    SUM(od.TotalPrice) AS Revenue
+                FROM OrderDetails od
+                INNER JOIN Orders o ON o.OrderId = od.OrderId
+                LEFT JOIN Products p ON p.ProductId = od.ProductId
+                WHERE o.OrderDate >= @monthStart
+                  AND o.OrderDate < @nextMonth
+                  AND (o.Status = N'Hoàn thành'
+                       OR (o.IsPaid = 1 AND o.Status <> N'Đã hủy'))
+                GROUP BY od.ProductId
+                ORDER BY SUM(od.Quantity) DESC, SUM(od.TotalPrice) DESC";
+
+            using SqlCommand cmd = new(sql, conn);
+            cmd.Parameters.Add("@selectedMonth", SqlDbType.Date).Value = monthStart;
+
+            using SqlDataReader reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                lblMonthlyRevenueValue.Text =
+                    Convert.ToDecimal(reader["MonthlyRevenue"]).ToString("N0") + " đ";
+            }
+
+            if (reader.NextResult())
+            {
+                while (reader.Read())
+                {
+                    dgvMonthlyTopProducts.Rows.Add(
+                        reader["ProductName"].ToString(),
+                        reader["QuantitySold"].ToString(),
+                        reader["Revenue"]);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            dgvMonthlyTopProducts.Rows.Clear();
+            lblMonthlyRevenueValue.Text = "--";
+            lblMonthlyReportStatus.Text = "Không thể tải báo cáo tháng: " + ex.Message;
+        }
+    }
+
     /// <summary>
     /// Hiển thị trang tổng quan và đánh dấu mục Trang chủ trên menu.
     /// </summary>
@@ -478,7 +581,13 @@ public partial class FormMain : Form
     private void btnTrangChu_Click(object sender, EventArgs e)
     {
         LoadDashboardSummary();
+        LoadMonthlyReport();
         ShowDashboard();
+    }
+
+    private void dtpReportMonth_ValueChanged(object? sender, EventArgs e)
+    {
+        LoadMonthlyReport();
     }
 
     private void btnSanPham_Click(object sender, EventArgs e)
@@ -952,6 +1061,7 @@ public partial class FormMain : Form
         // Đơn hàng có thể vừa được đổi trạng thái hoặc đánh dấu thanh toán,
         // nên doanh thu và số đơn phải được tính lại ngay khi quay về dashboard.
         LoadDashboardSummary();
+        LoadMonthlyReport();
     }
 
     /// <summary>
