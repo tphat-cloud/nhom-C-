@@ -46,13 +46,18 @@ partial class FormMain
     private DashboardStatCard panelStatProducts;
     private DashboardStatCard panelStatOrders;
     private DashboardStatCard panelStatRevenue;
+    private DashboardStatCard panelStatLowStock;
     private Label lblStatProductsTitle;
     private Label lblStatProductsValue;
     private Label lblStatOrdersTitle;
     private Label lblStatOrdersValue;
     private Label lblStatRevenueTitle;
     private Label lblStatRevenueValue;
+    private Label lblStatLowStockTitle;
+    private Label lblStatLowStockValue;
     private Panel panelOverview;
+    private Panel panelLowStockList;
+    private Label lblLowStockListTitle;
     private Label lblOverviewTitle;
     private Label lblOverviewBody;
     private Label lblDashboardStatus;
@@ -91,16 +96,21 @@ partial class FormMain
         panelStatProducts = new DashboardStatCard();
         panelStatOrders = new DashboardStatCard();
         panelStatRevenue = new DashboardStatCard();
+        panelStatLowStock = new DashboardStatCard();
         lblStatProductsTitle = new Label();
         lblStatProductsValue = new Label();
         lblStatOrdersTitle = new Label();
         lblStatOrdersValue = new Label();
         lblStatRevenueTitle = new Label();
         lblStatRevenueValue = new Label();
+        lblStatLowStockTitle = new Label();
+        lblStatLowStockValue = new Label();
         panelOverview = new Panel();
         lblOverviewTitle = new Label();
         lblOverviewBody = new Label();
         lblDashboardStatus = new Label();
+        panelLowStockList = new Panel();
+        lblLowStockListTitle = new Label();
         layoutQuickActions = new FlowLayoutPanel();
         btnQuickProducts = new Button();
         btnQuickOrders = new Button();
@@ -283,17 +293,19 @@ partial class FormMain
         panelDashboard.TabIndex = 0;
         // 
         // layoutDashboard
-        // 
+        //
         layoutDashboard.ColumnCount = 1;
         layoutDashboard.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         layoutDashboard.Controls.Add(panelWelcome, 0, 0);
         layoutDashboard.Controls.Add(layoutStats, 0, 1);
         layoutDashboard.Controls.Add(panelOverview, 0, 2);
+        layoutDashboard.Controls.Add(panelLowStockList, 0, 3);
         layoutDashboard.Dock = DockStyle.Fill;
         layoutDashboard.Padding = new Padding(0, 0, 0, 4);
-        layoutDashboard.RowCount = 3;
+        layoutDashboard.RowCount = 4;
         layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 110F));
         layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 158F));
+        layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Absolute, 204F));
         layoutDashboard.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
         layoutDashboard.TabIndex = 0;
         // 
@@ -331,13 +343,15 @@ partial class FormMain
         // 
         // layoutStats
         // 
-        layoutStats.ColumnCount = 3;
-        layoutStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333F));
-        layoutStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.333F));
-        layoutStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.334F));
+        layoutStats.ColumnCount = 4;
+        layoutStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        layoutStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        layoutStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+        layoutStats.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
         layoutStats.Controls.Add(panelStatProducts, 0, 0);
         layoutStats.Controls.Add(panelStatOrders, 1, 0);
         layoutStats.Controls.Add(panelStatRevenue, 2, 0);
+        layoutStats.Controls.Add(panelStatLowStock, 3, 0);
         layoutStats.Dock = DockStyle.Fill;
         layoutStats.Margin = new Padding(0, 0, 0, 16);
         layoutStats.RowCount = 1;
@@ -442,8 +456,58 @@ partial class FormMain
         lblStatRevenueValue.Size = new Size(42, 42);
         lblStatRevenueValue.TabIndex = 1;
         lblStatRevenueValue.Text = "0";
+        // panelStatLowStock
+        //
+        panelStatLowStock.BackColor = Color.White;
+        panelStatLowStock.AccentColor = Color.FromArgb(220, 80, 70);
+        panelStatLowStock.Controls.Add(lblStatLowStockValue);
+        panelStatLowStock.Controls.Add(lblStatLowStockTitle);
+        panelStatLowStock.Dock = DockStyle.Fill;
+        panelStatLowStock.Margin = new Padding(10, 0, 0, 0);
+        panelStatLowStock.Padding = new Padding(20);
+        panelStatLowStock.TabIndex = 3;
         // 
-        // panelOverview
+        // lblStatLowStockTitle
+        // 
+        lblStatLowStockTitle.AutoSize = true;
+        lblStatLowStockTitle.Font = new Font("Segoe UI", 8.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        lblStatLowStockTitle.ForeColor = Color.FromArgb(99, 112, 129);
+        lblStatLowStockTitle.Location = new Point(43, 20);
+        lblStatLowStockTitle.Name = "lblStatLowStockTitle";
+        lblStatLowStockTitle.Size = new Size(200, 17);
+        lblStatLowStockTitle.TabIndex = 0;
+        lblStatLowStockTitle.Text = "SẢN PHẨ SẮP HẾT HÀNG";
+        // 
+        // lblStatLowStockValue
+        // 
+        lblStatLowStockValue.AutoSize = true;
+        lblStatLowStockValue.Font = new Font("Segoe UI", 20F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        lblStatLowStockValue.ForeColor = Color.FromArgb(220, 80, 70);
+        lblStatLowStockValue.Location = new Point(42, 55);
+        lblStatLowStockValue.Name = "lblStatLowStockValue";
+        lblStatLowStockValue.Size = new Size(47, 48);
+        lblStatLowStockValue.TabIndex = 1;
+        lblStatLowStockValue.Text = "0";
+        // 
+        // 
+        // panelLowStockList
+        //
+        panelLowStockList.BackColor = Color.White;
+        panelLowStockList.Dock = DockStyle.Fill;
+        panelLowStockList.Margin = new Padding(0, 10, 0, 0);
+        panelLowStockList.Padding = new Padding(20);
+        panelLowStockList.BorderStyle = BorderStyle.FixedSingle;
+        panelLowStockList.TabIndex = 3;
+        panelLowStockList.Controls.Add(lblLowStockListTitle);
+        // lblLowStockListTitle
+        lblLowStockListTitle.AutoSize = true;
+        lblLowStockListTitle.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        lblLowStockListTitle.ForeColor = Color.FromArgb(28, 43, 61);
+        lblLowStockListTitle.Location = new Point(20, 18);
+        lblLowStockListTitle.Name = "lblLowStockListTitle";
+        lblLowStockListTitle.Size = new Size(250, 21);
+        lblLowStockListTitle.TabIndex = 0;
+        lblLowStockListTitle.Text = "SẢN PHẨM CẦN NHẬP HÀNG";
         // 
         panelOverview.BackColor = Color.White;
         panelOverview.Controls.Add(lblDashboardStatus);
@@ -1064,6 +1128,8 @@ partial class FormMain
         panelStatOrders.PerformLayout();
         panelStatRevenue.ResumeLayout(false);
         panelStatRevenue.PerformLayout();
+        panelStatLowStock.ResumeLayout(false);
+        panelStatLowStock.PerformLayout();
         panelOverview.ResumeLayout(false);
         panelOverview.PerformLayout();
         layoutQuickActions.ResumeLayout(false);
