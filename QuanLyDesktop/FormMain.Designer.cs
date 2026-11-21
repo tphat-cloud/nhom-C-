@@ -218,6 +218,7 @@ partial class FormMain
         panelSidebar.Controls.Add(lblBrandSubtitle);
         panelSidebar.Controls.Add(lblBrand);
         panelSidebar.Dock = DockStyle.Fill;
+        panelSidebar.Size = new Size(226, 900);
         panelSidebar.TabIndex = 0;
         // 
         // lblBrand
@@ -298,6 +299,7 @@ partial class FormMain
         panelHeader.Controls.Add(lblTitle);
         panelHeader.Dock = DockStyle.Fill;
         panelHeader.Padding = new Padding(28, 12, 24, 10);
+        panelHeader.Size = new Size(1214, 86);
         panelHeader.TabIndex = 0;
         // 
         // panelContent
@@ -308,6 +310,7 @@ partial class FormMain
         panelContent.Controls.Add(grpThongTin);
         panelContent.Dock = DockStyle.Fill;
         panelContent.Padding = new Padding(24);
+        panelContent.Size = new Size(1214, 814);
         panelContent.TabIndex = 1;
         // 
         // panelDashboard
@@ -315,6 +318,7 @@ partial class FormMain
         panelDashboard.BackColor = Color.FromArgb(244, 247, 251);
         panelDashboard.Controls.Add(layoutDashboard);
         panelDashboard.Dock = DockStyle.Fill;
+        panelDashboard.Size = new Size(1214, 814);
         panelDashboard.TabIndex = 0;
         // 
         // layoutDashboard
@@ -342,6 +346,7 @@ partial class FormMain
         panelWelcome.Dock = DockStyle.Fill;
         panelWelcome.Margin = new Padding(0, 0, 0, 16);
         panelWelcome.Padding = new Padding(22, 14, 20, 12);
+        panelWelcome.Size = new Size(1166, 110);
         panelWelcome.TabIndex = 0;
         // 
         // lblDashboardGreeting
@@ -501,7 +506,7 @@ partial class FormMain
         lblStatLowStockTitle.Name = "lblStatLowStockTitle";
         lblStatLowStockTitle.Size = new Size(200, 17);
         lblStatLowStockTitle.TabIndex = 0;
-        lblStatLowStockTitle.Text = "SẢN PHẨ SẮP HẾT HÀNG";
+        lblStatLowStockTitle.Text = "SẢN PHẨM SẮP HẾT HÀNG";
         // 
         // lblStatLowStockValue
         // 
@@ -541,6 +546,7 @@ partial class FormMain
         panelMonthlyReport.Dock = DockStyle.Fill;
         panelMonthlyReport.Margin = new Padding(8, 0, 0, 0);
         panelMonthlyReport.Padding = new Padding(12);
+        panelMonthlyReport.Size = new Size(575, 244);
         panelMonthlyReport.TabIndex = 1;
         //
         // lblMonthlyReportTitle
@@ -623,6 +629,7 @@ partial class FormMain
         panelLowStockList.Dock = DockStyle.Fill;
         panelLowStockList.Margin = new Padding(0, 10, 0, 0);
         panelLowStockList.Padding = new Padding(20);
+        panelLowStockList.Size = new Size(1166, 244);
         panelLowStockList.BorderStyle = BorderStyle.FixedSingle;
         panelLowStockList.TabIndex = 3;
         panelLowStockList.Controls.Add(lblLowStockListTitle);
@@ -643,6 +650,7 @@ partial class FormMain
         panelOverview.Controls.Add(lblOverviewTitle);
         panelOverview.Dock = DockStyle.Fill;
         panelOverview.Padding = new Padding(22, 16, 22, 16);
+        panelOverview.Size = new Size(575, 244);
         panelOverview.TabIndex = 2;
         //
         // lblOverviewTitle
@@ -815,7 +823,7 @@ partial class FormMain
         grpThongTin.Name = "grpThongTin";
         grpThongTin.Padding = new Padding(4);
         // Cao hơn để chứa thêm hàng Giá gốc / Ảnh / Nổi bật, không đè danh sách SP.
-        grpThongTin.Size = new Size(1000, 300);
+        grpThongTin.Size = new Size(1166, 300);
         grpThongTin.TabIndex = 2;
         grpThongTin.TabStop = false;
         grpThongTin.Text = "THÔNG TIN SẢN PHẨM";
@@ -1098,7 +1106,7 @@ partial class FormMain
         grpDanhSach.Name = "grpDanhSach";
         grpDanhSach.Padding = new Padding(4);
         // Giữ chừa 24px đáy của panelContent; anchor Bottom sẽ tự co giãn theo cửa sổ.
-        grpDanhSach.Size = new Size(1000, 450);
+        grpDanhSach.Size = new Size(1166, 450);
         grpDanhSach.TabIndex = 3;
         grpDanhSach.TabStop = false;
         grpDanhSach.Text = "DANH SÁCH SẢN PHẨM";
@@ -1119,7 +1127,7 @@ partial class FormMain
         dgvSanPham.ReadOnly = true;
         dgvSanPham.RowHeadersWidth = 51;
         dgvSanPham.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-        dgvSanPham.Size = new Size(950, 320);
+        dgvSanPham.Size = new Size(1116, 320);
         dgvSanPham.TabIndex = 3;
         dgvSanPham.CellClick += dgvSanPham_CellClick;
         // 

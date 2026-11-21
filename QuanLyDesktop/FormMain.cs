@@ -397,17 +397,18 @@ public partial class FormMain : Form
         dgvLowStockProducts.Columns["VariantCount"].DefaultCellStyle.Alignment =
             DataGridViewContentAlignment.MiddleCenter;
 
-        dgvLowStockProducts.Location = new Point(20, 55);
-        dgvLowStockProducts.Size = new Size(
-            panelLowStockList.ClientSize.Width - 40,
-            panelLowStockList.ClientSize.Height - 75);
-
-        dgvLowStockProducts.Anchor = AnchorStyles.Top
-                                  | AnchorStyles.Bottom
-                                  | AnchorStyles.Left
-                                  | AnchorStyles.Right;
+        dgvLowStockProducts.Anchor = AnchorStyles.Top | AnchorStyles.Left;
 
         panelLowStockList.Controls.Add(dgvLowStockProducts);
+        panelLowStockList.SizeChanged += (_, _) => SizeLowStockGrid();
+        SizeLowStockGrid();
+    }
+
+    private void SizeLowStockGrid()
+    {
+        int width = Math.Max(200, panelLowStockList.ClientSize.Width - 40);
+        int height = Math.Max(90, panelLowStockList.ClientSize.Height - 75);
+        dgvLowStockProducts.SetBounds(20, 55, width, height);
     }
     private void LoadLowStockProducts()
     {
@@ -479,6 +480,17 @@ public partial class FormMain : Form
         dgvMonthlyTopProducts.Columns["QuantitySold"].DefaultCellStyle.Alignment =
             DataGridViewContentAlignment.MiddleCenter;
         dgvMonthlyTopProducts.Columns["Revenue"].DefaultCellStyle.Format = "N0";
+
+        dgvMonthlyTopProducts.Anchor = AnchorStyles.Top | AnchorStyles.Left;
+        panelMonthlyReport.SizeChanged += (_, _) => SizeMonthlyReportGrid();
+        SizeMonthlyReportGrid();
+    }
+
+    private void SizeMonthlyReportGrid()
+    {
+        int width = Math.Max(200, panelMonthlyReport.ClientSize.Width - 28);
+        int height = Math.Max(80, panelMonthlyReport.ClientSize.Height - 80);
+        dgvMonthlyTopProducts.SetBounds(16, 68, width, height);
     }
 
     private void LoadMonthlyReport()
