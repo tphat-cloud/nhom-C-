@@ -8,6 +8,8 @@ partial class Form1
     private TextBox txtTaiKhoan;
     private Label lblMatKhau;
     private TextBox txtMatKhau;
+    private Panel panelMatKhau;
+    private Button btnHienMatKhau;
     private Button btnDangNhap;
     private Button btnThoat;
     private TableLayoutPanel layoutRoot;
@@ -48,6 +50,8 @@ partial class Form1
         txtTaiKhoan = new TextBox();
         lblMatKhau = new Label();
         txtMatKhau = new TextBox();
+        panelMatKhau = new Panel();
+        btnHienMatKhau = new Button();
         btnDangNhap = new Button();
         btnThoat = new Button();
         lblAccessNote = new Label();
@@ -55,6 +59,7 @@ partial class Form1
         panelBrand.SuspendLayout();
         panelLogin.SuspendLayout();
         layoutLogin.SuspendLayout();
+        panelMatKhau.SuspendLayout();
         SuspendLayout();
         // 
         // layoutRoot
@@ -160,7 +165,9 @@ partial class Form1
         layoutLogin.Controls.Add(lblTaiKhoan, 1, 4);
         layoutLogin.Controls.Add(txtTaiKhoan, 1, 5);
         layoutLogin.Controls.Add(lblMatKhau, 1, 7);
-        layoutLogin.Controls.Add(txtMatKhau, 1, 8);
+        panelMatKhau.Controls.Add(txtMatKhau);
+        panelMatKhau.Controls.Add(btnHienMatKhau);
+        layoutLogin.Controls.Add(panelMatKhau, 1, 8);
         layoutLogin.Controls.Add(btnDangNhap, 1, 10);
         layoutLogin.Controls.Add(btnThoat, 1, 11);
         layoutLogin.Controls.Add(lblAccessNote, 1, 12);
@@ -250,15 +257,43 @@ partial class Form1
         // txtMatKhau
         // 
         txtMatKhau.BorderStyle = BorderStyle.FixedSingle;
-        txtMatKhau.Dock = DockStyle.Fill;
+        txtMatKhau.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
         txtMatKhau.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point, 0);
-        txtMatKhau.Location = new Point(97, 360);
-        txtMatKhau.Margin = new Padding(0, 5, 0, 5);
+        txtMatKhau.Location = new Point(0, 0);
+        txtMatKhau.Margin = new Padding(0);
         txtMatKhau.Name = "txtMatKhau";
         txtMatKhau.PasswordChar = '●';
         txtMatKhau.PlaceholderText = "Nhập mật khẩu";
-        txtMatKhau.Size = new Size(455, 37);
+        txtMatKhau.Size = new Size(391, 37);
         txtMatKhau.TabIndex = 5;
+        // 
+        // btnHienMatKhau
+        // 
+        btnHienMatKhau.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+        btnHienMatKhau.BackColor = Color.White;
+        btnHienMatKhau.Cursor = Cursors.Hand;
+        btnHienMatKhau.FlatAppearance.BorderSize = 0;
+        btnHienMatKhau.FlatStyle = FlatStyle.Flat;
+        btnHienMatKhau.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+        btnHienMatKhau.ForeColor = Color.FromArgb(24, 105, 213);
+        btnHienMatKhau.Location = new Point(391, 0);
+        btnHienMatKhau.Margin = new Padding(0);
+        btnHienMatKhau.Name = "btnHienMatKhau";
+        btnHienMatKhau.Size = new Size(64, 37);
+        btnHienMatKhau.TabStop = false;
+        btnHienMatKhau.Text = "Hiện";
+        btnHienMatKhau.UseVisualStyleBackColor = false;
+        btnHienMatKhau.Click += btnHienMatKhau_Click;
+        // 
+        // panelMatKhau
+        // 
+        panelMatKhau.BackColor = Color.White;
+        panelMatKhau.Dock = DockStyle.Fill;
+        panelMatKhau.Location = new Point(97, 360);
+        panelMatKhau.Margin = new Padding(0, 5, 0, 5);
+        panelMatKhau.Name = "panelMatKhau";
+        panelMatKhau.Size = new Size(455, 37);
+        panelMatKhau.TabIndex = 5;
         // 
         // btnDangNhap
         // 
@@ -327,6 +362,8 @@ partial class Form1
         panelBrand.ResumeLayout(false);
         panelBrand.PerformLayout();
         panelLogin.ResumeLayout(false);
+        panelMatKhau.ResumeLayout(false);
+        panelMatKhau.PerformLayout();
         layoutLogin.ResumeLayout(false);
         layoutLogin.PerformLayout();
         ResumeLayout(false);

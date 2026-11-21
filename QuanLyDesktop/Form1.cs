@@ -65,7 +65,7 @@ public partial class Form1 : Form
                             fMain.ShowDialog();
 
                             // Giữ Form đăng nhập để người dùng có thể đăng nhập lại sau khi đăng xuất.
-                            txtMatKhau.Clear();
+                            XoaMatKhau();
                             txtTaiKhoan.Focus();
                             this.Show();
                         }
@@ -74,7 +74,7 @@ public partial class Form1 : Form
                             // Sai tài khoản hoặc mật khẩu
                             MessageBox.Show("Tên đăng nhập hoặc mật khẩu không chính xác!",
                                             "Lỗi đăng nhập", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            txtMatKhau.Clear();
+                            XoaMatKhau();
                             txtMatKhau.Focus();
                         }
                     }
@@ -100,5 +100,21 @@ public partial class Form1 : Form
     private void txtTaiKhoan_TextChanged(object sender, EventArgs e)
     {
 
+    }
+
+    private void btnHienMatKhau_Click(object sender, EventArgs e)
+    {
+        bool dangHien = txtMatKhau.PasswordChar == '\0';
+        txtMatKhau.PasswordChar = dangHien ? '●' : '\0';
+        btnHienMatKhau.Text = dangHien ? "Hiện" : "Ẩn";
+        txtMatKhau.Focus();
+        txtMatKhau.SelectionStart = txtMatKhau.TextLength;
+    }
+
+    private void XoaMatKhau()
+    {
+        txtMatKhau.Clear();
+        txtMatKhau.PasswordChar = '●';
+        btnHienMatKhau.Text = "Hiện";
     }
 }
