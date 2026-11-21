@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Windows.Forms;
 using Microsoft.Data.SqlClient;
 
@@ -405,6 +409,109 @@ namespace QuanLyDesktop
             txtTimKiem.Clear();
             cboLocTrangThai.SelectedIndex = 0;
             LoadDonHang();
+        }
+
+        /// <summary>
+        /// Xuất đúng danh sách đơn hàng đang hiển thị (theo bộ lọc/tìm kiếm hiện tại) ra CSV.
+        /// Ghi UTF-8 có BOM để Excel mở không lỗi tiếng Việt.
+        /// </summary>
+        private void btnXuatCsv_Click(object sender, EventArgs e)
+        {
+            if (dgvDonHang.Rows.Count == 0)
+            {
+                MessageBox.Show(
+                    "Không có đơn hàng để xuất.",
+                    "Xuất CSV",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            using (SaveFileDialog dialog = new SaveFileDialog
+            {
+                Filter = "Tệp CSV (*.csv)|*.csv",
+                DefaultExt = "csv",
+                AddExtension = true,
+                FileName = $"don-hang-{DateTime.Now:yyyyMMdd-HHmm}.csv"
+            })
+            {
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                {
+                    return;
+                }
+
+                List<DataGridViewColumn> columns = dgvDonHang.Columns
+                    .Cast<DataGridViewColumn>()
+                    .Where(column => column.Visible)
+                    .OrderBy(column => column.DisplayIndex)
+                    .ToList();
+
+                List<string[]> rows = new List<string[]>();
+                foreach (DataGridViewRow row in dgvDonHang.Rows)
+                {
+                    if (row.IsNewRow)
+                    {
+                        continue;
+                    }
+
+                    rows.Add(columns
+                        .Select(column => row.Cells[column.Index].FormattedValue?.ToString() ?? "")
+                        .ToArray());
+                }
+
+                string csv = BuildCsv(
+                    columns.Select(column => column.HeaderText).ToArray(),
+                    rows);
+
+                try
+                {
+                    WriteCsvFile(dialog.FileName, csv);
+                    MessageBox.Show(
+                        $"Đã xuất {rows.Count} đơn hàng ra tệp:\n{dialog.FileName}",
+                        "Xuất CSV",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    MessageBox.Show(
+                        "Không ghi được tệp CSV: " + ex.Message,
+                        "Xuất CSV",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private static void WriteCsvFile(string path, string content)
+        {
+            // UTF-8 có BOM để Excel nhận đúng tiếng Việt thay vì đoán mã ANSI.
+            File.WriteAllText(path, content, new UTF8Encoding(true));
+        }
+
+        private static string BuildCsv(IReadOnlyList<string> headers, IEnumerable<string[]> rows)
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.AppendLine(string.Join(",", headers.Select(EscapeCsv)));
+            foreach (string[] row in rows)
+            {
+                builder.AppendLine(string.Join(",", row.Select(EscapeCsv)));
+            }
+
+            return builder.ToString();
+        }
+
+        private static string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return "";
+            }
+
+            bool needsQuotes = value.IndexOfAny(new[] { ',', '"', '\n', '\r' }) >= 0;
+            return needsQuotes
+                ? "\"" + value.Replace("\"", "\"\"") + "\""
+                : value;
         }
 
         /// <summary>
