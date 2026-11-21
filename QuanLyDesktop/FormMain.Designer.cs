@@ -168,6 +168,7 @@ partial class FormMain
         btnDanhMuc = new Button();
         btnNhapKho = new Button();
         btnKhachHang = new Button();
+        btnTaiKhoan = new Button();
         grpThongTin.SuspendLayout();
         grpDanhSach.SuspendLayout();
         layoutRoot.SuspendLayout();
@@ -209,6 +210,7 @@ partial class FormMain
         panelSidebar.BackColor = Color.FromArgb(17, 43, 72);
         panelSidebar.Controls.Add(btnDanhMuc);
         panelSidebar.Controls.Add(btnNhapKho);
+        panelSidebar.Controls.Add(btnTaiKhoan);
         panelSidebar.Controls.Add(btnKhachHang);
         panelSidebar.Controls.Add(button1);
         panelSidebar.Controls.Add(btnSanPham);
@@ -1267,6 +1269,23 @@ partial class FormMain
         btnKhachHang.UseVisualStyleBackColor = false;
         btnKhachHang.Click += btnKhachHang_Click;
         // 
+        // btnTaiKhoan
+        //
+        btnTaiKhoan.BackColor = Color.FromArgb(17, 43, 72);
+        btnTaiKhoan.Cursor = Cursors.Hand;
+        btnTaiKhoan.FlatAppearance.BorderSize = 0;
+        btnTaiKhoan.FlatStyle = FlatStyle.Flat;
+        btnTaiKhoan.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        btnTaiKhoan.ForeColor = Color.FromArgb(223, 232, 243);
+        btnTaiKhoan.Location = new Point(12, 438);
+        btnTaiKhoan.Name = "btnTaiKhoan";
+        btnTaiKhoan.Size = new Size(202, 44);
+        btnTaiKhoan.TabIndex = 6;
+        btnTaiKhoan.Text = "   Quản lý tài khoản";
+        btnTaiKhoan.TextAlign = ContentAlignment.MiddleLeft;
+        btnTaiKhoan.UseVisualStyleBackColor = false;
+        btnTaiKhoan.Click += btnTaiKhoan_Click;
+        //
         // FormMain
         // 
         AutoScaleDimensions = new SizeF(96F, 96F);
@@ -1322,6 +1341,7 @@ partial class FormMain
     private Button btnDanhMuc;
     private Button btnNhapKho;
     private Button btnKhachHang;
+    private Button btnTaiKhoan;
     private TextBox txtGiaGoc;
     private Label lblGiaGoc;
 

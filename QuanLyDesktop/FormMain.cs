@@ -285,6 +285,7 @@ public partial class FormMain : Form
         this.Text = $"Quản Lý Shop Quần Áo - Người dùng: {_fullName} ({_roleName})";
         lblXinChao.Text = $"Người dùng: {_fullName} | Quyền: {_roleName}";
         lblDashboardGreeting.Text = $"Chào mừng trở lại, {_fullName}";
+        btnTaiKhoan.Visible = string.Equals(_roleName, "Admin", StringComparison.OrdinalIgnoreCase);
 
         // Tải danh mục vào ComboBox và tải danh sách quần áo lên bảng DataGridView
         LoadDanhMuc();
@@ -1081,6 +1082,17 @@ public partial class FormMain : Form
     {
         using FormKhachHang formKhachHang = new();
         formKhachHang.ShowDialog(this);
+    }
+
+    private void btnTaiKhoan_Click(object? sender, EventArgs e)
+    {
+        if (!KiemTraQuyenAdmin())
+        {
+            return;
+        }
+
+        using FormTaiKhoan formTaiKhoan = new(_userId);
+        formTaiKhoan.ShowDialog(this);
     }
 
     private void button2_Click(object sender, EventArgs e)
