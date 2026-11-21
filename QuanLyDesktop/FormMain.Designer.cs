@@ -132,6 +132,8 @@ partial class FormMain
         lblGiaGoc = new Label();
         txtImageUrl = new TextBox();
         lblImageUrl = new Label();
+        picImagePreview = new PictureBox();
+        lblImagePreviewStatus = new Label();
         chkIsFeatured = new CheckBox();
         cboDanhMuc = new ComboBox();
         lblDanhMuc = new Label();
@@ -673,6 +675,8 @@ partial class FormMain
         grpThongTin.Controls.Add(lblGiaGoc);
         grpThongTin.Controls.Add(txtImageUrl);
         grpThongTin.Controls.Add(lblImageUrl);
+        grpThongTin.Controls.Add(picImagePreview);
+        grpThongTin.Controls.Add(lblImagePreviewStatus);
         grpThongTin.Controls.Add(chkIsFeatured);
         grpThongTin.Controls.Add(cboDanhMuc);
         grpThongTin.Controls.Add(lblDanhMuc);
@@ -773,25 +777,25 @@ partial class FormMain
         btnThem.UseVisualStyleBackColor = false;
         btnThem.Click += btnThem_Click;
         // 
-        // txtMoTa — hàng 3, bên phải (không chồng ImageUrl)
+        // txtMoTa — hàng 3, bên phải phần xem trước ảnh
         // 
         txtMoTa.Font = new Font("Segoe UI", 9.5F);
-        txtMoTa.Location = new Point(470, 152);
+        txtMoTa.Location = new Point(515, 152);
         txtMoTa.Margin = new Padding(4);
         txtMoTa.Name = "txtMoTa";
         txtMoTa.PlaceholderText = "Chất liệu cotton, thoáng mát...";
-        txtMoTa.Size = new Size(490, 33);
-        txtMoTa.TabIndex = 10;
+        txtMoTa.Size = new Size(445, 33);
+        txtMoTa.TabIndex = 11;
         // 
         // lblMoTa
         // 
         lblMoTa.AutoSize = true;
         lblMoTa.Font = new Font("Segoe UI", 9.5F);
         lblMoTa.ForeColor = Color.Black;
-        lblMoTa.Location = new Point(340, 156);
+        lblMoTa.Location = new Point(455, 156);
         lblMoTa.Margin = new Padding(4, 0, 4, 0);
         lblMoTa.Name = "lblMoTa";
-        lblMoTa.Size = new Size(65, 25);
+        lblMoTa.Size = new Size(55, 25);
         lblMoTa.TabIndex = 10;
         lblMoTa.Text = "Mô tả:";
         // 
@@ -854,6 +858,28 @@ partial class FormMain
         lblImageUrl.Location = new Point(24, 156);
         lblImageUrl.Name = "lblImageUrl";
         lblImageUrl.Text = "URL ảnh:";
+        //
+        // picImagePreview
+        //
+        picImagePreview.BackColor = Color.FromArgb(238, 242, 247);
+        picImagePreview.BorderStyle = BorderStyle.FixedSingle;
+        picImagePreview.Location = new Point(350, 132);
+        picImagePreview.Name = "picImagePreview";
+        picImagePreview.Size = new Size(80, 72);
+        picImagePreview.SizeMode = PictureBoxSizeMode.Zoom;
+        picImagePreview.TabIndex = 10;
+        picImagePreview.TabStop = false;
+        //
+        // lblImagePreviewStatus
+        //
+        lblImagePreviewStatus.AutoSize = false;
+        lblImagePreviewStatus.Font = new Font("Segoe UI", 7.5F);
+        lblImagePreviewStatus.ForeColor = Color.Firebrick;
+        lblImagePreviewStatus.Location = new Point(326, 204);
+        lblImagePreviewStatus.Name = "lblImagePreviewStatus";
+        lblImagePreviewStatus.Size = new Size(130, 16);
+        lblImagePreviewStatus.TabIndex = 16;
+        lblImagePreviewStatus.TextAlign = ContentAlignment.MiddleCenter;
         // 
         // chkIsFeatured — hàng 2 phải
         // 
@@ -1157,6 +1183,8 @@ partial class FormMain
 
     private TextBox txtImageUrl;
     private Label lblImageUrl;
+    private PictureBox picImagePreview;
+    private Label lblImagePreviewStatus;
 
     private CheckBox chkIsFeatured;
 }
