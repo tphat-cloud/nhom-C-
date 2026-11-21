@@ -12,6 +12,7 @@ namespace QuanLyDesktop
     private TextBox txtTimKiem;
     private ComboBox cboLocTrangThai;
     private Button btnTimKiem;
+    private Button btnXuatCsv;
     private Label lblTrangThaiMoi;
     private ComboBox cboTrangThaiMoi;
 
@@ -44,6 +45,7 @@ namespace QuanLyDesktop
             txtTimKiem = new TextBox();
             cboLocTrangThai = new ComboBox();
             btnTimKiem = new Button();
+            btnXuatCsv = new Button();
             lblTrangThaiMoi = new Label();
             cboTrangThaiMoi = new ComboBox();
             btnDuyetDon = new Button();
@@ -234,6 +236,22 @@ namespace QuanLyDesktop
             btnLamMoi.UseVisualStyleBackColor = false;
             btnLamMoi.Click += btnLamMoi_Click;
             // 
+            // btnXuatCsv
+            // 
+            btnXuatCsv.BackColor = Color.FromArgb(30, 123, 79);
+            btnXuatCsv.Cursor = Cursors.Hand;
+            btnXuatCsv.FlatAppearance.BorderSize = 0;
+            btnXuatCsv.FlatStyle = FlatStyle.Flat;
+            btnXuatCsv.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            btnXuatCsv.ForeColor = Color.White;
+            btnXuatCsv.Location = new Point(855, 94);
+            btnXuatCsv.Name = "btnXuatCsv";
+            btnXuatCsv.Size = new Size(120, 38);
+            btnXuatCsv.TabIndex = 5;
+            btnXuatCsv.Text = "Xuất CSV";
+            btnXuatCsv.UseVisualStyleBackColor = false;
+            btnXuatCsv.Click += btnXuatCsv_Click;
+            // 
             // btnXemChiTiet
             // 
             btnXemChiTiet.BackColor = Color.FromArgb(230, 239, 250);
@@ -279,6 +297,7 @@ namespace QuanLyDesktop
             Controls.Add(btnThanhToan);
             Controls.Add(btnXemChiTiet);
             Controls.Add(btnLamMoi);
+            Controls.Add(btnXuatCsv);
             Controls.Add(btnDuyetDon);
             Controls.Add(cboTrangThaiMoi);
             Controls.Add(lblTrangThaiMoi);

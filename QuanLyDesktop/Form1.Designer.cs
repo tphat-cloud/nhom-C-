@@ -121,7 +121,7 @@ partial class Form1
         lblBrandName.Name = "lblBrandName";
         lblBrandName.Size = new Size(285, 112);
         lblBrandName.TabIndex = 2;
-        lblBrandName.Text = "BULUBU";
+        lblBrandName.Text = "Fashion";
         lblBrandName.TextAlign = ContentAlignment.MiddleLeft;
         // 
         // lblBrandEyebrow
