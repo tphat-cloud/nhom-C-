@@ -35,6 +35,9 @@ public class Product
     /// <summary>Chỉ được nạp ở trang chi tiết sản phẩm.</summary>
     public IReadOnlyList<ProductVariant> Variants { get; set; } = Array.Empty<ProductVariant>();
 
+    /// <summary>Sản phẩm cùng danh mục được nạp ở trang chi tiết.</summary>
+    public IReadOnlyList<Product> RelatedProducts { get; set; } = Array.Empty<Product>();
+
     public bool IsInStock => Variants.Count > 0
         ? Variants.Any(variant => variant.StockQuantity > 0)
         : TotalStock > 0;

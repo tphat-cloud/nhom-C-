@@ -9,6 +9,32 @@ namespace WebBanHang.Tests;
 public sealed class ProductsControllerPaginationTests
 {
     [Fact]
+    public async Task Detail_LoadsUpToFourRelatedProductsForSameCategory()
+    {
+        var product = new Product { ProductId = 12, CategoryId = 3 };
+        Product[] relatedProducts =
+        {
+            new() { ProductId = 21, CategoryId = 3 },
+            new() { ProductId = 22, CategoryId = 3 }
+        };
+        var repository = new FakeProductRepository
+        {
+            DetailProduct = product,
+            RelatedProducts = relatedProducts
+        };
+        var controller = new ProductsController(repository);
+
+        var result = await controller.Detail(product.ProductId);
+
+        var view = Assert.IsType<ViewResult>(result);
+        var model = Assert.IsType<Product>(view.Model);
+        Assert.Equal(3, repository.RequestedRelatedCategoryId);
+        Assert.Equal(12, repository.RequestedExcludedProductId);
+        Assert.Equal(4, repository.RequestedRelatedTake);
+        Assert.Equal(relatedProducts, model.RelatedProducts);
+    }
+
+    [Fact]
     public async Task Index_InvalidPageAndPageSize_UsesSafeDefaults()
     {
         var repository = new FakeProductRepository { TotalCount = 25 };
@@ -151,12 +177,17 @@ public sealed class ProductsControllerPaginationTests
     {
         public int TotalCount { get; init; }
         public IReadOnlyList<Product> Products { get; init; } = Array.Empty<Product>();
+        public Product? DetailProduct { get; init; }
+        public IReadOnlyList<Product> RelatedProducts { get; init; } = Array.Empty<Product>();
 
         public string? RequestedKeyword { get; private set; }
         public int RequestedCategoryId { get; private set; }
         public int RequestedPage { get; private set; }
         public int RequestedPageSize { get; private set; }
         public string? RequestedSort { get; private set; }
+        public int? RequestedRelatedCategoryId { get; private set; }
+        public int? RequestedExcludedProductId { get; private set; }
+        public int RequestedRelatedTake { get; private set; }
 
         public Task<IReadOnlyList<Category>> GetActiveCategoriesAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Category>>(Array.Empty<Category>());
@@ -190,6 +221,18 @@ public sealed class ProductsControllerPaginationTests
             return Task.FromResult(Products);
         }
 
+        public Task<IReadOnlyList<Product>> GetRelatedProductsAsync(
+            int categoryId,
+            int excludedProductId,
+            int take = 4,
+            CancellationToken cancellationToken = default)
+        {
+            RequestedRelatedCategoryId = categoryId;
+            RequestedExcludedProductId = excludedProductId;
+            RequestedRelatedTake = take;
+            return Task.FromResult(RelatedProducts);
+        }
+
         public Task<Product?> GetProductByIdAsync(int productId, CancellationToken cancellationToken = default)
             => Task.FromResult<Product?>(null);
 
@@ -200,6 +243,6 @@ public sealed class ProductsControllerPaginationTests
             => Task.FromResult<VariantInfo?>(null);
 
         public Task<Product?> GetProductWithVariantsAsync(int productId, CancellationToken cancellationToken = default)
-            => Task.FromResult<Product?>(null);
+            => Task.FromResult(DetailProduct);
     }
 }

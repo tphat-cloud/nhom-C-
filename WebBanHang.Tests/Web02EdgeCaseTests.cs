@@ -266,6 +266,13 @@ public sealed class Web02EdgeCaseTests
             CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Product>>(Array.Empty<Product>());
 
+        public Task<IReadOnlyList<Product>> GetRelatedProductsAsync(
+            int categoryId,
+            int excludedProductId,
+            int take = 4,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<Product>>(Array.Empty<Product>());
+
         public Task<Product?> GetProductByIdAsync(int productId, CancellationToken cancellationToken = default)
             => Task.FromResult<Product?>(null);
 

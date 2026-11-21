@@ -27,6 +27,12 @@ public interface IProductRepository
         string sort = ProductSortOptions.Featured,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<Product>> GetRelatedProductsAsync(
+        int categoryId,
+        int excludedProductId,
+        int take = 4,
+        CancellationToken cancellationToken = default);
+
     Task<Product?> GetProductByIdAsync(int productId, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<ProductVariant>> GetVariantsAsync(int productId, CancellationToken cancellationToken = default);

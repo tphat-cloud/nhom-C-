@@ -154,6 +154,40 @@ public sealed class SqlProductRepository : IProductRepository
         return await ReadProductsAsync(command, cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Product>> GetRelatedProductsAsync(
+        int categoryId,
+        int excludedProductId,
+        int take = 4,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = ProductSelect + """
+
+            WHERE p.IsActive = 1
+              AND c.IsActive = 1
+              AND p.CategoryId = @categoryId
+              AND p.ProductId <> @excludedProductId
+            ORDER BY
+                CASE WHEN EXISTS (
+                    SELECT 1
+                    FROM ProductVariants v
+                    WHERE v.ProductId = p.ProductId AND v.StockQuantity > 0
+                ) THEN 0 ELSE 1 END,
+                p.CreatedAt DESC,
+                p.ProductId DESC
+            OFFSET 0 ROWS FETCH NEXT @take ROWS ONLY
+            """;
+
+        await using SqlConnection connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync(cancellationToken);
+
+        await using SqlCommand command = new(sql, connection);
+        command.Parameters.Add("@categoryId", SqlDbType.Int).Value = categoryId;
+        command.Parameters.Add("@excludedProductId", SqlDbType.Int).Value = excludedProductId;
+        command.Parameters.Add("@take", SqlDbType.Int).Value = Math.Clamp(take, 1, 4);
+
+        return await ReadProductsAsync(command, cancellationToken);
+    }
+
     public async Task<int> CountProductsAsync(
         string? keyword,
         int categoryId,
