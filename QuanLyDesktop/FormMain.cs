@@ -10,6 +10,7 @@ public partial class FormMain : Form
     private string _roleName;
     private int _userId;
     private int _selectedProductId = -1; // Lưu mã sản phẩm đang được chọn để Sửa hoặc Xóa
+    private DataGridView dgvLowStockProducts = new DataGridView();
 
     /// <summary>
     /// Kiểm tra người đang đăng nhập có quyền Admin hay không.
@@ -50,7 +51,9 @@ public partial class FormMain : Form
         // Tải danh mục vào ComboBox và tải danh sách quần áo lên bảng DataGridView
         LoadDanhMuc();
         LoadSanPham();
+        InitializeLowStockGrid();
         LoadDashboardSummary();
+        LoadLowStockProducts();
         ShowDashboard();
     }
 
@@ -65,22 +68,28 @@ public partial class FormMain : Form
             conn.Open();
 
             string sql = @"
-                DECLARE @today DATE = CONVERT(DATE, GETDATE());
+            DECLARE @today DATE = CONVERT(DATE, GETDATE());
 
-                SELECT
-                    (SELECT COUNT(1)
-                     FROM Products
-                     WHERE IsActive = 1) AS ActiveProductCount,
-                    (SELECT COUNT(1)
-                     FROM Orders
-                     WHERE OrderDate >= @today
-                       AND OrderDate < DATEADD(DAY, 1, @today)) AS OrdersToday,
-                    (SELECT COALESCE(SUM(TotalAmount), 0)
-                     FROM Orders
-                     WHERE (Status = N'Hoàn thành'
-                            OR (IsPaid = 1 AND Status <> N'Đã hủy'))
-                       AND OrderDate >= @today
-                       AND OrderDate < DATEADD(DAY, 1, @today)) AS RevenueToday";
+            SELECT
+                (SELECT COUNT(1)
+                 FROM Products
+                 WHERE IsActive = 1) AS ActiveProductCount,
+
+                (SELECT COUNT(1)
+                 FROM Orders
+                 WHERE OrderDate >= @today
+                   AND OrderDate < DATEADD(DAY, 1, @today)) AS OrdersToday,
+
+                (SELECT COALESCE(SUM(TotalAmount), 0)
+                 FROM Orders
+                 WHERE (Status = N'Hoàn thành'
+                        OR (IsPaid = 1 AND Status <> N'Đã hủy'))
+                   AND OrderDate >= @today
+                   AND OrderDate < DATEADD(DAY, 1, @today)) AS RevenueToday,
+
+                (SELECT COUNT(1)
+                 FROM vw_ProductStock
+                 WHERE TotalStock <= 5) AS LowStockCount";
 
             using SqlCommand cmd = new SqlCommand(sql, conn);
             using SqlDataReader reader = cmd.ExecuteReader();
@@ -90,15 +99,110 @@ public partial class FormMain : Form
                 lblStatProductsValue.Text = Convert.ToInt32(reader["ActiveProductCount"]).ToString("N0");
                 lblStatOrdersValue.Text = Convert.ToInt32(reader["OrdersToday"]).ToString("N0");
                 lblStatRevenueValue.Text = Convert.ToDecimal(reader["RevenueToday"]).ToString("N0") + " đ";
+                lblStatLowStockValue.Text = Convert.ToInt32(reader["LowStockCount"]).ToString("N0");
             }
         }
         catch
         {
-            // Các form nạp danh sách đã báo lỗi kết nối; dashboard chỉ đánh dấu số liệu chưa tải được.
+            // Dashboard đánh dấu số liệu chưa tải được nếu xảy ra lỗi.
             lblStatProductsValue.Text = "--";
             lblStatOrdersValue.Text = "--";
             lblStatRevenueValue.Text = "--";
+            lblStatLowStockValue.Text = "--";
             lblDashboardStatus.Text = "Không thể tải số liệu tổng quan từ cơ sở dữ liệu.";
+        }
+    }
+    private void InitializeLowStockGrid()
+    {
+        dgvLowStockProducts = new DataGridView();
+
+        dgvLowStockProducts.AllowUserToAddRows = false;
+        dgvLowStockProducts.AllowUserToDeleteRows = false;
+        dgvLowStockProducts.AllowUserToResizeRows = false;
+        dgvLowStockProducts.ReadOnly = true;
+        dgvLowStockProducts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        dgvLowStockProducts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        dgvLowStockProducts.MultiSelect = false;
+        dgvLowStockProducts.RowHeadersVisible = false;
+        dgvLowStockProducts.BackgroundColor = Color.White;
+        dgvLowStockProducts.BorderStyle = BorderStyle.None;
+        dgvLowStockProducts.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+        dgvLowStockProducts.ColumnHeadersHeight = 38;
+        dgvLowStockProducts.RowTemplate.Height = 36;
+        dgvLowStockProducts.EnableHeadersVisualStyles = false;
+
+        dgvLowStockProducts.ColumnHeadersDefaultCellStyle.BackColor = Color.FromArgb(245, 247, 250);
+        dgvLowStockProducts.ColumnHeadersDefaultCellStyle.ForeColor = Color.FromArgb(60, 72, 88);
+        dgvLowStockProducts.ColumnHeadersDefaultCellStyle.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+
+        dgvLowStockProducts.DefaultCellStyle.Font = new Font("Segoe UI", 9.5F);
+        dgvLowStockProducts.DefaultCellStyle.ForeColor = Color.FromArgb(28, 43, 61);
+        dgvLowStockProducts.DefaultCellStyle.SelectionBackColor = Color.FromArgb(232, 240, 254);
+        dgvLowStockProducts.DefaultCellStyle.SelectionForeColor = Color.FromArgb(28, 43, 61);
+
+        dgvLowStockProducts.Columns.Add("ProductCode", "Mã sản phẩm");
+        dgvLowStockProducts.Columns.Add("Name", "Tên sản phẩm");
+        dgvLowStockProducts.Columns.Add("TotalStock", "Tồn kho");
+        dgvLowStockProducts.Columns.Add("VariantCount", "Số biến thể");
+
+        dgvLowStockProducts.Columns["ProductCode"].FillWeight = 25;
+        dgvLowStockProducts.Columns["Name"].FillWeight = 50;
+        dgvLowStockProducts.Columns["TotalStock"].FillWeight = 15;
+        dgvLowStockProducts.Columns["VariantCount"].FillWeight = 15;
+
+        dgvLowStockProducts.Columns["TotalStock"].DefaultCellStyle.Alignment =
+            DataGridViewContentAlignment.MiddleCenter;
+
+        dgvLowStockProducts.Columns["VariantCount"].DefaultCellStyle.Alignment =
+            DataGridViewContentAlignment.MiddleCenter;
+
+        dgvLowStockProducts.Location = new Point(20, 55);
+        dgvLowStockProducts.Size = new Size(
+            panelLowStockList.ClientSize.Width - 40,
+            panelLowStockList.ClientSize.Height - 75);
+
+        dgvLowStockProducts.Anchor = AnchorStyles.Top
+                                  | AnchorStyles.Bottom
+                                  | AnchorStyles.Left
+                                  | AnchorStyles.Right;
+
+        panelLowStockList.Controls.Add(dgvLowStockProducts);
+    }
+    private void LoadLowStockProducts()
+    {
+        try
+        {
+            using SqlConnection conn = new SqlConnection(connectionString);
+            conn.Open();
+
+            string sql = @"
+            SELECT TOP 5
+                ProductCode,
+                Name,
+                TotalStock,
+                VariantCount
+            FROM vw_ProductStock
+            WHERE TotalStock <= 5
+            ORDER BY TotalStock ASC, Name ASC";
+
+            using SqlCommand cmd = new SqlCommand(sql, conn);
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+            dgvLowStockProducts.Rows.Clear();
+
+            while (reader.Read())
+            {
+                dgvLowStockProducts.Rows.Add(
+                    reader["ProductCode"].ToString(),
+                    reader["Name"].ToString(),
+                    reader["TotalStock"].ToString(),
+                    reader["VariantCount"].ToString()
+                );
+            }
+        }
+        catch
+        {
+            dgvLowStockProducts.Rows.Clear();
         }
     }
 
