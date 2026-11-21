@@ -67,6 +67,11 @@ public class ProductsController : Controller
             return NotFound();
         }
 
+        product.RelatedProducts = await _productRepository.GetRelatedProductsAsync(
+            product.CategoryId,
+            product.ProductId,
+            cancellationToken: cancellationToken);
+
         return View(product);
     }
 }

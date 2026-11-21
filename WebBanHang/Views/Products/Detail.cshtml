@@ -249,3 +249,20 @@
         low = variant.StockQuantity is > 0 and <= 5
     }))</script>
 }
+
+@if (Model.RelatedProducts.Count > 0)
+{
+    <section class="section--tight" aria-labelledby="related-products-title">
+        <div class="section-head">
+            <h2 id="related-products-title">Có thể bạn cũng thích</h2>
+        </div>
+        <div class="product-grid">
+            @foreach (Product relatedProduct in Model.RelatedProducts)
+            {
+                <partial name="_ProductCard" model="relatedProduct" />
+            }
+        </div>
+    </section>
+}
+
+@await Html.PartialAsync("_RecentlyViewed", Model)
