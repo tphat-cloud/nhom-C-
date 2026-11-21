@@ -93,10 +93,10 @@ giao diện còn lại và việc tích hợp WEB-05 được theo dõi ở mụ
 | DES-05 | **Thẻ "Sắp hết hàng" trên dashboard** | Thẻ đếm số sản phẩm có tổng tồn ≤ 5 + danh sách top 5 cần nhập thêm; đọc từ `vw_ProductStock` | `FormMain.cs` | Nhân | Trung bình | Chưa làm |
 | DES-06 | **Xuất CSV đơn hàng** | Nút "Xuất CSV" trong `FormDonHang`: xuất đúng danh sách đang lọc (mã đơn, ngày, khách, SĐT, tổng tiền, trạng thái), ghi UTF-8 **có BOM** để Excel không lỗi tiếng Việt | `FormDonHang.cs`, `FormDonHang.Designer.cs` | Phát | Thấp | Chưa làm |
 | DES-07 | **Xem trước ảnh sản phẩm** | `PictureBox` cạnh ô URL ảnh: dán URL/đường dẫn là xem ngay; ảnh lỗi thì hiện ảnh mặc định, **không chặn lưu** | `FormMain.cs` | Nhân | Thấp | Chưa làm |
-| DES-08 | **Hiện/ẩn mật khẩu khi đăng nhập** | Nút con mắt đổi `UseSystemPasswordChar`; không đổi logic `PasswordHasher.Verify`, không ghi log mật khẩu | `Form1.cs`, `Form1.Designer.cs` | Phát | Thấp | Chưa làm |
+| DES-08 | **Hiện/ẩn mật khẩu khi đăng nhập** | Nút Hiện/Ẩn cạnh ô mật khẩu, đổi `PasswordChar` giữa `'●'` và hiện chữ; không đổi logic `PasswordHasher.Verify`, không ghi log mật khẩu | `Form1.cs`, `Form1.Designer.cs` | Phát | Thấp | ✅ PR #21 |
 | QA-01 | Test tự động (phần còn lại) | Còn các ca giỏ hàng (cộng/giới hạn số lượng), checkout (thiếu thông tin, quá tồn), tra cứu đơn (không tìm thấy) | `WebBanHang.Tests/` | Nam Anh | Trung bình | 🔶 Đã merge 5 test phân trang ở PR #11 và 7 test lỗi biên ở PR #15 |
 | QA-03 | **Test model sản phẩm** | Viết test cho phần logic đã có sẵn: `DiscountPercent`, `StockText`, `IsInStock`, ảnh dự phòng; `TotalPages`, `HasNextPage` của `ProductListViewModel` — file test mới, không đổi interface | `WebBanHang.Tests/ProductModelTests.cs` | Như | Thấp | ✅ PR #17 |
-| QA-02 | Kịch bản test thủ công | Bộ test case nghiệm thu từng chức năng + checklist chạy trên SQL Server thật | `docs/` | Phát | Cao | 🔶 Như đã góp 8 ca ở PR #19. Phát phụ trách tổng hợp và nghiệm thu |
+| QA-02 | Kịch bản test thủ công | Bộ test case nghiệm thu từng chức năng + checklist chạy trên SQL Server thật | `docs/qa/QA-02.md` | Phát | Cao | 🔶 Đã tổng hợp `docs/qa/QA-02.md`; cần chạy thật và điền kết quả (Như góp 8 ca ở PR #19) |
 | CI-01 | Pipeline CI | Build 2 project + chạy test | `.github/workflows/ci.yml` | Nam Anh | Thấp | ✅ Bật bước test ở PR #11 |
 | DOC-01 | Handbook hướng dẫn sử dụng | Tài liệu vận hành cho Admin/Staff + Khách, kèm ảnh màn hình | `docs/handbook/README.md` | Như | Cao | ✅ PR #18 |
 | DOC-02 | Tài liệu nghiệm thu & thuyết trình | Cập nhật báo cáo/PPT theo code thật (SEC-02, tính năng mới); chuẩn bị slide demo | `docs/baocao/` | Phát | Cao | Chưa làm |
@@ -191,7 +191,7 @@ Như đã bàn giao các phần sau trên `main`.
 ### Đợt 1 — gỡ điểm nghẽn (1–2 ngày)
 1. **WEB-02** (Nam Anh): đã merge qua PR #15.
 2. **QA-02** (Phát): chốt bộ test case để cả nhóm có căn cứ nghiệm thu.
-3. **DES-08** (Phát) và **DES-05** (Nhân): hai việc nhỏ, xong sớm để lấy đà.
+3. **DES-08** (Phát): đã merge qua PR #21. **DES-05** (Nhân): việc nhỏ kế tiếp.
 4. **PR #11**: đã merge bộ test phân trang và bước chạy test trong CI.
 
 ### Đợt 2 — tính năng giao diện (3–5 ngày)
