@@ -90,14 +90,59 @@ public sealed class ProductsControllerPaginationTests
         Assert.Equal(10, repository.RequestedPageSize);
     }
 
+    [Theory]
+    [InlineData(ProductSortOptions.Featured)]
+    [InlineData(ProductSortOptions.Newest)]
+    [InlineData(ProductSortOptions.PriceAscending)]
+    [InlineData(ProductSortOptions.PriceDescending)]
+    public async Task Index_RecognizedSort_PassesSortAndFiltersToRepository(string sort)
+    {
+        var repository = new FakeProductRepository { TotalCount = 25 };
+        var controller = new ProductsController(repository);
+
+        ProductListViewModel model = await GetModelAsync(
+            controller,
+            keyword: "ao",
+            categoryId: 3,
+            page: 2,
+            pageSize: 10,
+            sort: sort);
+
+        Assert.Equal(sort, model.Sort);
+        Assert.Equal(sort, repository.RequestedSort);
+        Assert.Equal("ao", repository.RequestedKeyword);
+        Assert.Equal(3, repository.RequestedCategoryId);
+        Assert.Equal(2, repository.RequestedPage);
+        Assert.Equal(10, repository.RequestedPageSize);
+    }
+
+    [Fact]
+    public async Task Index_UnsupportedSort_FallsBackToFeatured()
+    {
+        var repository = new FakeProductRepository { TotalCount = 10 };
+        var controller = new ProductsController(repository);
+
+        ProductListViewModel model = await GetModelAsync(
+            controller,
+            keyword: null,
+            categoryId: 0,
+            page: 1,
+            pageSize: 10,
+            sort: "price; DROP TABLE Products");
+
+        Assert.Equal(ProductSortOptions.Featured, model.Sort);
+        Assert.Equal(ProductSortOptions.Featured, repository.RequestedSort);
+    }
+
     private static async Task<ProductListViewModel> GetModelAsync(
         ProductsController controller,
         string? keyword,
         int categoryId,
         int page,
-        int pageSize)
+        int pageSize,
+        string? sort = ProductSortOptions.Featured)
     {
-        var result = await controller.Index(keyword, categoryId, page, pageSize);
+        var result = await controller.Index(keyword, categoryId, page, pageSize, sort);
         var viewResult = Assert.IsType<ViewResult>(result);
         return Assert.IsType<ProductListViewModel>(viewResult.ViewData!.Model);
     }
@@ -111,6 +156,7 @@ public sealed class ProductsControllerPaginationTests
         public int RequestedCategoryId { get; private set; }
         public int RequestedPage { get; private set; }
         public int RequestedPageSize { get; private set; }
+        public string? RequestedSort { get; private set; }
 
         public Task<IReadOnlyList<Category>> GetActiveCategoriesAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Category>>(Array.Empty<Category>());
@@ -133,12 +179,14 @@ public sealed class ProductsControllerPaginationTests
             int categoryId,
             int page = 1,
             int pageSize = ProductListViewModel.DefaultPageSize,
+            string sort = ProductSortOptions.Featured,
             CancellationToken cancellationToken = default)
         {
             RequestedKeyword = keyword;
             RequestedCategoryId = categoryId;
             RequestedPage = page;
             RequestedPageSize = pageSize;
+            RequestedSort = sort;
             return Task.FromResult(Products);
         }
 

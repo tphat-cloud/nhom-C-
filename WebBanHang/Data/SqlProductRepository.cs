@@ -122,23 +122,32 @@ public sealed class SqlProductRepository : IProductRepository
         int categoryId,
         int page = 1,
         int pageSize = ProductListViewModel.DefaultPageSize,
+        string sort = ProductSortOptions.Featured,
         CancellationToken cancellationToken = default)
     {
         const string sql = ProductSelect + "\n" + ProductFilterClause + """
 
-            ORDER BY p.IsFeatured DESC, p.Name, p.ProductId
+            ORDER BY
+                CASE WHEN @sort = N'featured' THEN p.IsFeatured END DESC,
+                CASE WHEN @sort = N'newest' THEN p.CreatedAt END DESC,
+                CASE WHEN @sort = N'price_asc' THEN p.Price END ASC,
+                CASE WHEN @sort = N'price_desc' THEN p.Price END DESC,
+                p.Name,
+                p.ProductId
             OFFSET @offset ROWS FETCH NEXT @pageSize ROWS ONLY
             """;
 
         int safePage = Math.Max(1, page);
         int safePageSize = Math.Clamp(pageSize, 1, ProductListViewModel.MaximumPageSize);
         long offset = ((long)safePage - 1) * safePageSize;
+        string safeSort = ProductSortOptions.Normalize(sort);
 
         await using SqlConnection connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync(cancellationToken);
 
         await using SqlCommand command = new(sql, connection);
         AddProductFilterParameters(command, keyword, categoryId);
+        command.Parameters.Add("@sort", SqlDbType.NVarChar, 20).Value = safeSort;
         command.Parameters.Add("@offset", SqlDbType.BigInt).Value = offset;
         command.Parameters.Add("@pageSize", SqlDbType.Int).Value = safePageSize;
 

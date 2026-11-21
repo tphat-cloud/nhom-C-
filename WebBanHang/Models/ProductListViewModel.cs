@@ -16,6 +16,8 @@ public class ProductListViewModel
     /// <summary>Danh mục đang lọc, 0 = tất cả.</summary>
     public int CategoryId { get; set; }
 
+    public string Sort { get; set; } = ProductSortOptions.Featured;
+
     public int Page { get; set; } = 1;
 
     public int PageSize { get; set; } = DefaultPageSize;
@@ -29,4 +31,20 @@ public class ProductListViewModel
     public bool HasPreviousPage => Page > 1;
 
     public bool HasNextPage => Page < TotalPages;
+}
+
+public static class ProductSortOptions
+{
+    public const string Featured = "featured";
+    public const string Newest = "newest";
+    public const string PriceAscending = "price_asc";
+    public const string PriceDescending = "price_desc";
+
+    public static string Normalize(string? sort) => sort?.Trim().ToLowerInvariant() switch
+    {
+        Newest => Newest,
+        PriceAscending => PriceAscending,
+        PriceDescending => PriceDescending,
+        _ => Featured
+    };
 }

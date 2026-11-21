@@ -4,7 +4,9 @@
     ViewData["Keyword"] = Model.Keyword;
 
     Category? activeCategory = Model.Categories.FirstOrDefault(category => category.CategoryId == Model.CategoryId);
-    bool hasFilter = !string.IsNullOrWhiteSpace(Model.Keyword) || Model.CategoryId != 0;
+    bool hasFilter = !string.IsNullOrWhiteSpace(Model.Keyword) ||
+                     Model.CategoryId != 0 ||
+                     Model.Sort != ProductSortOptions.Featured;
 }
 <div class="page-head">
     <p class="eyebrow">Cửa hàng</p>
@@ -27,6 +29,7 @@
         {
             <input type="hidden" name="categoryId" value="@Model.CategoryId" />
         }
+        <input type="hidden" name="sort" value="@Model.Sort" />
         <button type="submit" aria-label="Tìm kiếm">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="7"></circle>
@@ -35,16 +38,35 @@
         </button>
     </form>
 
+    <form class="product-sort" method="get" asp-area="" asp-controller="Products" asp-action="Index">
+        @if (!string.IsNullOrWhiteSpace(Model.Keyword))
+        {
+            <input type="hidden" name="keyword" value="@Model.Keyword" />
+        }
+        @if (Model.CategoryId != 0)
+        {
+            <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+        }
+        <label for="productSort">Sắp xếp</label>
+        <select id="productSort" name="sort">
+            <option value="@ProductSortOptions.Featured" selected="@(Model.Sort == ProductSortOptions.Featured)">Nổi bật</option>
+            <option value="@ProductSortOptions.Newest" selected="@(Model.Sort == ProductSortOptions.Newest)">Mới nhất</option>
+            <option value="@ProductSortOptions.PriceAscending" selected="@(Model.Sort == ProductSortOptions.PriceAscending)">Giá tăng dần</option>
+            <option value="@ProductSortOptions.PriceDescending" selected="@(Model.Sort == ProductSortOptions.PriceDescending)">Giá giảm dần</option>
+        </select>
+        <button class="btn btn--line btn--sm" type="submit">Áp dụng</button>
+    </form>
+
     <div class="filter-chips" role="group" aria-label="Lọc theo danh mục">
         <a class="filter-chip@(Model.CategoryId == 0 ? " is-active" : string.Empty)"
            asp-area="" asp-controller="Products" asp-action="Index" asp-route-keyword="@Model.Keyword"
-           asp-route-categoryId="0">Tất cả</a>
+           asp-route-categoryId="0" asp-route-sort="@Model.Sort">Tất cả</a>
 
         @foreach (Category category in Model.Categories)
         {
             <a class="filter-chip@(category.CategoryId == Model.CategoryId ? " is-active" : string.Empty)"
                asp-area="" asp-controller="Products" asp-action="Index" asp-route-keyword="@Model.Keyword"
-               asp-route-categoryId="@category.CategoryId">@category.Name</a>
+               asp-route-categoryId="@category.CategoryId" asp-route-sort="@Model.Sort">@category.Name</a>
         }
     </div>
 </div>
@@ -85,7 +107,8 @@ else
                 <li class="page-item">
                     <a class="page-link" asp-area="" asp-controller="Products" asp-action="Index"
                        asp-route-keyword="@Model.Keyword" asp-route-categoryId="@Model.CategoryId"
-                       asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize">Trước</a>
+                       asp-route-sort="@Model.Sort" asp-route-page="@(Model.Page - 1)"
+                       asp-route-pageSize="@Model.PageSize">Trước</a>
                 </li>
             }
             else
@@ -104,7 +127,8 @@ else
                 <li class="page-item">
                     <a class="page-link" asp-area="" asp-controller="Products" asp-action="Index"
                        asp-route-keyword="@Model.Keyword" asp-route-categoryId="@Model.CategoryId"
-                       asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize">Tiếp</a>
+                       asp-route-sort="@Model.Sort" asp-route-page="@(Model.Page + 1)"
+                       asp-route-pageSize="@Model.PageSize">Tiếp</a>
                 </li>
             }
             else
