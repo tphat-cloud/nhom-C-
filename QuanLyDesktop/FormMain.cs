@@ -1077,6 +1077,12 @@ public partial class FormMain : Form
         LoadDashboardSummary();
     }
 
+    private void btnKhachHang_Click(object? sender, EventArgs e)
+    {
+        using FormKhachHang formKhachHang = new();
+        formKhachHang.ShowDialog(this);
+    }
+
     private void button2_Click(object sender, EventArgs e)
     {
         // Chỉ Admin được mở màn hình quản lý danh mục.

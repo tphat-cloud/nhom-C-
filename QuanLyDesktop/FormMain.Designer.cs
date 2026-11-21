@@ -167,6 +167,7 @@ partial class FormMain
         button1 = new Button();
         btnDanhMuc = new Button();
         btnNhapKho = new Button();
+        btnKhachHang = new Button();
         grpThongTin.SuspendLayout();
         grpDanhSach.SuspendLayout();
         layoutRoot.SuspendLayout();
@@ -208,6 +209,7 @@ partial class FormMain
         panelSidebar.BackColor = Color.FromArgb(17, 43, 72);
         panelSidebar.Controls.Add(btnDanhMuc);
         panelSidebar.Controls.Add(btnNhapKho);
+        panelSidebar.Controls.Add(btnKhachHang);
         panelSidebar.Controls.Add(button1);
         panelSidebar.Controls.Add(btnSanPham);
         panelSidebar.Controls.Add(btnTrangChu);
@@ -1247,6 +1249,23 @@ partial class FormMain
         btnNhapKho.TextAlign = ContentAlignment.MiddleLeft;
         btnNhapKho.UseVisualStyleBackColor = false;
         btnNhapKho.Click += btnNhapKho_Click;
+        //
+        // btnKhachHang
+        //
+        btnKhachHang.BackColor = Color.FromArgb(17, 43, 72);
+        btnKhachHang.Cursor = Cursors.Hand;
+        btnKhachHang.FlatAppearance.BorderSize = 0;
+        btnKhachHang.FlatStyle = FlatStyle.Flat;
+        btnKhachHang.Font = new Font("Segoe UI", 9.5F, FontStyle.Regular, GraphicsUnit.Point, 0);
+        btnKhachHang.ForeColor = Color.FromArgb(223, 232, 243);
+        btnKhachHang.Location = new Point(12, 386);
+        btnKhachHang.Name = "btnKhachHang";
+        btnKhachHang.Size = new Size(202, 44);
+        btnKhachHang.TabIndex = 5;
+        btnKhachHang.Text = "   Quản lý khách hàng";
+        btnKhachHang.TextAlign = ContentAlignment.MiddleLeft;
+        btnKhachHang.UseVisualStyleBackColor = false;
+        btnKhachHang.Click += btnKhachHang_Click;
         // 
         // FormMain
         // 
@@ -1302,6 +1321,7 @@ partial class FormMain
     private Button button1;
     private Button btnDanhMuc;
     private Button btnNhapKho;
+    private Button btnKhachHang;
     private TextBox txtGiaGoc;
     private Label lblGiaGoc;
 
